@@ -1,0 +1,185 @@
+import Link from "next/link";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useAuth } from "./auth-context";
+
+type CreateAccountForm = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  terms: boolean;
+};
+
+export function CreateAccount() {
+  const { supabase } = useAuth();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEmailSent, setIsEmailSent] = useState(false);
+
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm<CreateAccountForm>();
+
+  const onSubmit = async (formData: CreateAccountForm) => {
+    setIsLoading(true);
+
+    const { data, error } = await supabase.auth.signInWithOtp({
+      email: formData.email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/simulator`,
+        data: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+        },
+      },
+    });
+
+    if (error) {
+      console.error("Error sending magic link:", error);
+      setIsLoading(false);
+      return;
+    } else {
+      setIsEmailSent(true);
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-black">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link href="/" className="text-green-400 font-bold text-3xl">
+            GradGuru
+          </Link>
+          <p className="text-gray-400 mt-2">
+            Create your account to get started
+          </p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          {!isEmailSent ? (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="firstName"
+                    className="block text-sm font-medium text-gray-300 mb-1"
+                  >
+                    First Name
+                  </label>
+                  <input
+                    {...register("firstName", { required: true })}
+                    aria-invalid={errors.firstName ? "true" : "false"}
+                    type="text"
+                    id="firstName"
+                    required
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="First name"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="lastName"
+                    className="block text-sm font-medium text-gray-300 mb-1"
+                  >
+                    Last Name
+                  </label>
+                  <input
+                    {...register("lastName", { required: true })}
+                    aria-invalid={errors.lastName ? "true" : "false"}
+                    type="text"
+                    id="lastName"
+                    required
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="Last name"
+                  />
+                </div>
+              </div>
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-300 mb-1"
+                >
+                  Email
+                </label>
+                <input
+                  {...register("email", { required: true })}
+                  aria-invalid={errors.email ? "true" : "false"}
+                  type="email"
+                  id="email"
+                  required
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Enter your email"
+                />
+              </div>
+              <div className="flex items-start">
+                <input
+                  {...register("terms", { required: true })}
+                  aria-invalid={errors.terms ? "true" : "false"}
+                  type="checkbox"
+                  id="terms"
+                  required
+                  className="h-4 w-4 mt-1 rounded border-gray-700 bg-gray-800 text-green-500 focus:ring-green-500 focus:ring-offset-gray-900"
+                />
+                <label htmlFor="terms" className="ml-2 text-sm text-gray-300">
+                  I agree to the{" "}
+                  <a
+                    href="#terms"
+                    className="text-green-400 hover:text-green-300"
+                  >
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="#privacy"
+                    className="text-green-400 hover:text-green-300"
+                  >
+                    Privacy Policy
+                  </a>
+                </label>
+              </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-500/70 text-black font-medium py-2 rounded-md transition-colors mt-6"
+              >
+                {isLoading ? "Creating account..." : "Create Account"}
+              </button>
+              <p className="text-sm text-gray-400 text-center mt-2">
+                We'll send you a magic link to verify your email
+              </p>
+            </form>
+          ) : (
+            <div className="text-center py-4">
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
+                <p className="text-green-400 font-medium">Check your email</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  We've sent you a magic link to verify your email and complete
+                  your registration
+                </p>
+              </div>
+              <button
+                onClick={() => setIsEmailSent(false)}
+                className="text-green-400 hover:text-green-300 text-sm"
+              >
+                Use a different email address
+              </button>
+            </div>
+          )}
+          <div className="mt-6 pt-6 border-t border-gray-800">
+            <p className="text-center text-sm text-gray-400">
+              Already have an account?{" "}
+              <Link
+                href="/auth/sign-in"
+                className="text-green-400 hover:text-green-300"
+              >
+                Sign in instead
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

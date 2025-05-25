@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -19,6 +19,20 @@ const config = {
     },
     extend: {
       colors: {
+        // Adjusting the gray scale for better contrast in dark mode
+        gray: {
+          900: "#101010",
+          800: "#1f1f1f",
+          700: "#2e2e2e",
+          400: "#9ca3af",
+          300: "#d1d5db",
+        },
+        // Ensuring consistent green accent colors
+        green: {
+          400: "#4ade80",
+          500: "#22c55e",
+          600: "#16a34a",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
