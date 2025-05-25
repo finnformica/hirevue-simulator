@@ -1,39 +1,35 @@
+import { Video } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { setCurrentTab, setPrompt } from "@/lib/store/slices/simulatorSlice";
 
-interface PromptTabProps {
-  onStart: () => void;
-}
+export function PromptTab() {
+  const dispatch = useAppDispatch();
 
-export function PromptTab({ onStart }: PromptTabProps) {
+  const prompt =
+    "Please describe a challenging project you worked on during your studies or internship, and explain how you overcame any obstacles and what you learned from the experience.";
+
+  const handleStart = () => {
+    dispatch(setPrompt(prompt));
+    dispatch(setCurrentTab("recording"));
+  };
+
   return (
     <div className="space-y-4 p-4">
       <h2 className="text-2xl font-bold">Interview Prompt</h2>
-
-      <Card className="p-6">
-        <h3 className="font-semibold mb-4">Question</h3>
-        <p className="text-lg mb-6">
-          Tell me about a time when you demonstrated leadership in a challenging
-          situation. What was the situation, what actions did you take, and what
-          was the outcome?
-        </p>
-
-        <div className="space-y-2">
-          <h4 className="font-medium">Tips:</h4>
-          <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-            <li>Use the STAR method (Situation, Task, Action, Result)</li>
-            <li>Be specific about your role and contributions</li>
-            <li>Quantify results when possible</li>
-            <li>Keep your response focused and concise</li>
-          </ul>
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Prompt</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>{prompt}</p>
+        </CardContent>
       </Card>
-
-      <div className="flex justify-end">
-        <Button onClick={onStart} size="lg">
-          Start Recording
-        </Button>
-      </div>
+      <Button onClick={handleStart}>
+        <Video className="w-4 h-4 mr-2" /> Start Recording
+      </Button>
     </div>
   );
 }

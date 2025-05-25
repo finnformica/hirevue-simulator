@@ -21,7 +21,7 @@ export function FeatureSection() {
       icon: <Zap className="h-10 w-10 text-green-400" />,
       title: "Actionable Feedback",
       description:
-        "Receive personalized tips to improve your responses and boost your interview performance score.",
+        "Receive personalised tips to improve your responses and boost your interview performance score.",
       detail:
         "Learn exactly what recruiters are looking for and how to structure your answers for maximum impact.",
     },

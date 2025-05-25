@@ -180,7 +180,7 @@ async function cacheAnalysis(
   }
 }
 
-async function analyzeSentiment(text: string, prompt: string) {
+async function analyseSentiment(text: string, prompt: string) {
   try {
     const data = await makeApiRequest("sentiment", {
       text,
@@ -200,7 +200,7 @@ async function analyzeSentiment(text: string, prompt: string) {
   }
 }
 
-async function analyzeClarity(text: string, prompt: string) {
+async function analyseClarity(text: string, prompt: string) {
   try {
     const data = await makeApiRequest("clarity", {
       text,
@@ -219,7 +219,7 @@ async function analyzeClarity(text: string, prompt: string) {
   }
 }
 
-async function analyzeTechnicalAccuracy(text: string, prompt: string) {
+async function analyseTechnicalAccuracy(text: string, prompt: string) {
   try {
     const data = await makeApiRequest("technicalAccuracy", {
       text,
@@ -248,12 +248,23 @@ async function extractKeyPoints(text: string) {
   return result.summary_text.split(". ").filter(Boolean);
 }
 
-async function analyzeAudio(
+async function analyseAudio(
   audioBuffer: ArrayBuffer
 ): Promise<AudioAnalysis | null> {
   try {
     const audioBlob = new Blob([audioBuffer], { type: "audio/webm" });
 
+    // First, convert the audio to base64
+    const audioBase64 = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        resolve(base64.split(",")[1]);
+      };
+      reader.readAsDataURL(audioBlob);
+    });
+
+    // Use the Whisper API for transcription
     const transcriptionResponse = await fetch(
       `${API_CONFIG.baseUrl}/openai/whisper-large-v3`,
       {
@@ -263,25 +274,28 @@ async function analyzeAudio(
           Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
         },
         body: JSON.stringify({
-          inputs: audioBlob,
+          inputs: audioBase64,
         }),
       }
     );
 
     if (!transcriptionResponse.ok) {
-      throw new Error(
-        `Transcription failed: ${transcriptionResponse.statusText}`
+      console.error(
+        "Transcription failed:",
+        await transcriptionResponse.text()
       );
+      return null;
     }
 
     const transcription = await transcriptionResponse.json();
-    const text = transcription.text;
+    const text = transcription.text ?? "";
 
+    // Analyse filler words
     const words = text.toLowerCase().split(/\s+/);
     const fillerWords = words.filter((word: string) => FILLER_WORDS.has(word));
     const fillerWordCount = fillerWords.length;
     const totalWords = words.length;
-    const fluency = 1 - fillerWordCount / totalWords;
+    const fluency = totalWords > 0 ? 1 - fillerWordCount / totalWords : null;
 
     const audioFeaturesResponse = await fetch(
       `${API_CONFIG.baseUrl}/microsoft/wavlm-base`,
@@ -320,7 +334,7 @@ async function analyzeAudio(
   }
 }
 
-async function analyzeKeywords(text: string, prompt: string) {
+async function analyseKeywords(text: string, prompt: string) {
   try {
     const data = await makeApiRequest("keywords", {
       text,
@@ -347,7 +361,7 @@ async function analyzeKeywords(text: string, prompt: string) {
   }
 }
 
-async function analyzeGrammar(text: string, prompt: string) {
+async function analyseGrammar(text: string, prompt: string) {
   try {
     const data = await makeApiRequest("technicalAccuracy", {
       text,
@@ -372,7 +386,7 @@ async function analyzeGrammar(text: string, prompt: string) {
   }
 }
 
-function analyzeSentenceComplexity(text: string): SentenceComplexity {
+function analyseSentenceComplexity(text: string): SentenceComplexity {
   try {
     const sentences = text.split(/[.!?]+/).filter(Boolean);
     const words = text.split(/\s+/);
@@ -409,7 +423,7 @@ function analyzeSentenceComplexity(text: string): SentenceComplexity {
   }
 }
 
-function analyzeRepetition(text: string): RepetitionAnalysis {
+function analyseRepetition(text: string): RepetitionAnalysis {
   try {
     const sentences = text.split(/[.!?]+/).filter(Boolean);
     const words = text.toLowerCase().split(/\s+/);
@@ -482,12 +496,12 @@ export async function POST(request: Request) {
       keywordAnalysis,
       audioAnalysis,
     ] = await Promise.all([
-      analyzeTechnicalAccuracy(transcription, prompt),
-      analyzeSentiment(transcription, prompt),
-      analyzeClarity(transcription, prompt),
-      analyzeGrammar(transcription, prompt),
-      analyzeKeywords(transcription, prompt),
-      analyzeAudio(audioBuffer),
+      analyseTechnicalAccuracy(transcription, prompt),
+      analyseSentiment(transcription, prompt),
+      analyseClarity(transcription, prompt),
+      analyseGrammar(transcription, prompt),
+      analyseKeywords(transcription, prompt),
+      analyseAudio(audioBuffer),
     ]);
 
     // Generate key points using zero-shot classification
@@ -512,9 +526,9 @@ export async function POST(request: Request) {
       ],
     });
 
-    // Analyze sentence complexity and repetition
-    const sentenceComplexity = analyzeSentenceComplexity(transcription);
-    const repetition = analyzeRepetition(transcription);
+    // Analyse sentence complexity and repetition
+    const sentenceComplexity = analyseSentenceComplexity(transcription);
+    const repetition = analyseRepetition(transcription);
 
     const analysisResult = {
       id: Date.now().toString(),
@@ -559,7 +573,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Analysis error:", error);
     return NextResponse.json(
-      { error: "Failed to analyze response" },
+      { error: "Failed to analyse response" },
       { status: 500 }
     );
   }

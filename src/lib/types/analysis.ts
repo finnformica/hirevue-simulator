@@ -52,7 +52,7 @@ export interface DetailedAnalysis {
   repetition: RepetitionAnalysis;
 }
 
-export interface Analysis {
+export interface AnalysisBase {
   id: string;
   interviewId: string;
   transcription: string;
@@ -67,10 +67,36 @@ export interface Analysis {
   createdAt: Date;
 }
 
-export interface CachedAnalysis {
-  id: string;
-  transcription: string;
-  prompt: string;
-  analysis: Analysis;
-  created_at: Date;
+export interface Analysis extends AnalysisBase {
+  type: "analysis";
+}
+
+export interface CachedAnalysis extends AnalysisBase {
+  type: "cached";
+  cacheId: string;
+  cachedAt: Date;
+}
+
+export type AnalysisResult = Analysis | CachedAnalysis;
+
+// Type guards
+export function isCachedAnalysis(
+  analysis: AnalysisResult
+): analysis is CachedAnalysis {
+  return analysis.type === "cached";
+}
+
+export function isFreshAnalysis(
+  analysis: AnalysisResult
+): analysis is Analysis {
+  return analysis.type === "analysis";
+}
+
+// Utility functions
+export function getAnalysisDate(analysis: AnalysisResult): Date {
+  return isCachedAnalysis(analysis) ? analysis.cachedAt : analysis.createdAt;
+}
+
+export function getAnalysisId(analysis: AnalysisResult): string {
+  return isCachedAnalysis(analysis) ? analysis.cacheId : analysis.id;
 }

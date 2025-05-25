@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import { AuthProvider } from "@/components/auth/auth-context";
+import { Providers } from "./providers";
 
 import "./globals.css";
 
@@ -15,13 +16,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <AuthProvider>
-        <body className={`${inter.className} dark`}>{children}</body>
+        <Providers>
+          <body className={`${inter.className} dark`}>{children}</body>
+        </Providers>
       </AuthProvider>
     </html>
   );

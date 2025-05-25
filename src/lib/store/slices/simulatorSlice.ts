@@ -1,0 +1,142 @@
+import { AnalysisResult } from "@/lib/types/analysis";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+
+export type TabValue = "prompt" | "recording" | "playback" | "analysis";
+
+export interface SimulatorState {
+  currentTab: TabValue;
+  prompt: string | null;
+  videoUrl: string | null;
+  transcription: string | null;
+  analysis: AnalysisResult | null;
+  isTranscribing: boolean;
+  isAnalysing: boolean;
+  error: string | null;
+}
+
+const initialState: SimulatorState = {
+  currentTab: "prompt",
+  prompt: null,
+  videoUrl: null,
+  transcription: null,
+  analysis: null,
+  isTranscribing: false,
+  isAnalysing: false,
+  error: null,
+};
+
+export const processRecording = createAsyncThunk(
+  "simulator/processRecording",
+  async (
+    {
+      videoBlob,
+      audioBlob,
+      prompt,
+    }: {
+      videoBlob: Blob;
+      audioBlob: Blob;
+      prompt: string;
+    },
+    { dispatch }
+  ) => {
+    try {
+      // Create videoUrl from videoBlob
+      const videoUrl = URL.createObjectURL(videoBlob);
+      dispatch(setVideoUrl(videoUrl));
+
+      // Get transcription from the audio using FormData
+      dispatch(setTranscribing(true));
+      const formData = new FormData();
+      formData.append("audio", audioBlob);
+      formData.append("prompt", prompt);
+
+      const transcriptionResponse = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!transcriptionResponse.ok) {
+        throw new Error("Transcription failed");
+      }
+
+      const { text: transcription } = await transcriptionResponse.json();
+      dispatch(setTranscription(transcription));
+
+      // Analyse the response
+      dispatch(setAnalysing(true));
+      const analysisResponse = await fetch("/api/analyse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transcription,
+          prompt,
+        }),
+      });
+
+      if (!analysisResponse.ok) {
+        throw new Error("Analysis failed");
+      }
+
+      const analysis = await analysisResponse.json();
+      dispatch(setAnalysis(analysis));
+
+      return { transcription, analysis };
+    } catch (error) {
+      dispatch(
+        setError(error instanceof Error ? error.message : "An error occurred")
+      );
+      throw error;
+    } finally {
+      dispatch(setTranscribing(false));
+      dispatch(setAnalysing(false));
+    }
+  }
+);
+
+const simulatorSlice = createSlice({
+  name: "simulator",
+  initialState,
+  reducers: {
+    setCurrentTab: (state, action) => {
+      state.currentTab = action.payload;
+    },
+    setPrompt: (state, action) => {
+      state.prompt = action.payload;
+    },
+    setVideoUrl: (state, action) => {
+      state.videoUrl = action.payload;
+    },
+    setTranscription: (state, action) => {
+      state.transcription = action.payload;
+    },
+    setAnalysis: (state, action) => {
+      state.analysis = action.payload;
+    },
+    setTranscribing: (state, action) => {
+      state.isTranscribing = action.payload;
+    },
+    setAnalysing: (state, action) => {
+      state.isAnalysing = action.payload;
+    },
+    setError: (state, action) => {
+      state.error = action.payload;
+    },
+    resetSimulator: (state) => {
+      return initialState;
+    },
+  },
+});
+
+export const {
+  setCurrentTab,
+  setPrompt,
+  setVideoUrl,
+  setTranscription,
+  setAnalysis,
+  setTranscribing,
+  setAnalysing,
+  setError,
+  resetSimulator,
+} = simulatorSlice.actions;
+
+export default simulatorSlice.reducer;
