@@ -14,7 +14,30 @@ import { useEffect } from "react";
 
 export default function SimulatorPage() {
   const dispatch = useAppDispatch();
-  const { prompt, currentTab } = useAppSelector((state) => state.simulator);
+  const { currentTab } = useAppSelector((state) => state.simulator);
+
+  const tabs = [
+    {
+      label: "Prompt",
+      value: "prompt",
+      render: () => <PromptTab />,
+    },
+    {
+      label: "Recording",
+      value: "recording",
+      render: () => <RecordingTab />,
+    },
+    {
+      label: "Playback",
+      value: "playback",
+      render: () => <PlaybackTab />,
+    },
+    {
+      label: "Analysis",
+      value: "analysis",
+      render: () => <AnalysisTab />,
+    },
+  ];
 
   useEffect(() => {
     return () => {
@@ -30,33 +53,18 @@ export default function SimulatorPage() {
         className="w-full"
       >
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="prompt">Prompt</TabsTrigger>
-          <TabsTrigger value="recording" disabled={!prompt}>
-            Recording
-          </TabsTrigger>
-          <TabsTrigger value="playback" disabled={!prompt}>
-            Playback
-          </TabsTrigger>
-          <TabsTrigger value="analysis" disabled={!prompt}>
-            Analysis
-          </TabsTrigger>
+          {tabs.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value} disabled>
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        <TabsContent value="prompt">
-          <PromptTab />
-        </TabsContent>
-
-        <TabsContent value="recording">
-          <RecordingTab />
-        </TabsContent>
-
-        <TabsContent value="playback">
-          <PlaybackTab />
-        </TabsContent>
-
-        <TabsContent value="analysis">
-          <AnalysisTab />
-        </TabsContent>
+        {tabs.map((tab) => (
+          <TabsContent key={tab.value} value={tab.value}>
+            {tab.render()}
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
   );

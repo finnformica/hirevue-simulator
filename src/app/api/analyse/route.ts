@@ -251,6 +251,11 @@ async function extractKeyPoints(text: string) {
 async function analyseAudio(
   audioBuffer: ArrayBuffer
 ): Promise<AudioAnalysis | null> {
+  if (!audioBuffer) {
+    console.error("Audio buffer is undefined");
+    return null;
+  }
+
   try {
     const audioBlob = new Blob([audioBuffer], { type: "audio/webm" });
 
