@@ -1,48 +1,49 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import {
+  AlertCircle,
+  CircleStop,
+  Mic,
+  MicOff,
+  Play,
+  Video,
+  VideoOff,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Progress } from "./ui/progress";
-import { AlertCircle, Mic, MicOff, Video, VideoOff } from "lucide-react";
-import { Alert, AlertDescription } from "./ui/alert";
+
+type RecordingStatus = "idle" | "countdown" | "recording" | "stopped";
 
 interface VideoRecorderProps {
-  onRecordingComplete?: (recordedBlob: Blob) => void;
   maxRecordingTime?: number; // in seconds
   countdownTime?: number; // in seconds
-  isCountingDown?: boolean;
-  onCountdownComplete?: () => void;
-  onRecordingStop?: (recordedBlob: Blob) => void;
-  maxRecordingTimeMs?: number; // in milliseconds
+  onRecordingComplete?: (recordedBlob: Blob) => void;
 }
 
 const VideoRecorder = ({
-  onRecordingComplete = () => {},
   maxRecordingTime = 120, // 2 minutes default
   countdownTime = 3, // 3 seconds default
-  isCountingDown = false,
-  onCountdownComplete = () => {},
-  onRecordingStop = () => {},
-  maxRecordingTimeMs,
+  onRecordingComplete = () => {},
 }: VideoRecorderProps) => {
   // Convert milliseconds to seconds if provided
-  const effectiveMaxRecordingTime = maxRecordingTimeMs
-    ? maxRecordingTimeMs / 1000
-    : maxRecordingTime;
-  const [permission, setPermission] = useState<boolean>(false);
-  const [recordingStatus, setRecordingStatus] = useState<
-    "idle" | "countdown" | "recording" | "stopped"
-  >("idle");
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
-  const [countdown, setCountdown] = useState<number>(countdownTime);
-  const [recordingTime, setRecordingTime] = useState<number>(0);
-  const [error, setError] = useState<string>("");
-  const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
-  const [videoEnabled, setVideoEnabled] = useState<boolean>(true);
+  const effectiveMaxRecordingTime = maxRecordingTime;
 
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
+  const [recordingStatus, setRecordingStatus] =
+    useState<RecordingStatus>("idle");
+
+  const [error, setError] = useState<string>("");
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [countdown, setCountdown] = useState<number>(countdownTime);
+  const [permission, setPermission] = useState<boolean>(false); // camera and audio permission
+  const [audioEnabled, setAudioEnabled] = useState<boolean>(true); // enable audio
+  const [videoEnabled, setVideoEnabled] = useState<boolean>(true); // enable video
+  const [recordingTime, setRecordingTime] = useState<number>(0); // time elapsed in seconds
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -65,7 +66,7 @@ const VideoRecorder = ({
       }
     } catch (err) {
       setError(
-        "Could not access camera or microphone. Please check your permissions.",
+        "Could not access camera or microphone, please check your permissions"
       );
       console.error("Error accessing media devices:", err);
     }
@@ -81,7 +82,6 @@ const VideoRecorder = ({
         if (prevCount <= 1) {
           clearInterval(countdownInterval);
           startRecording();
-          onCountdownComplete();
           return 0;
         }
         return prevCount - 1;
@@ -97,23 +97,21 @@ const VideoRecorder = ({
     setRecordingTime(0);
     chunksRef.current = [];
 
-    const media = new MediaRecorder(streamRef.current);
-    mediaRecorder.current = media;
+    const recorder = new MediaRecorder(streamRef.current);
+    mediaRecorderRef.current = recorder;
 
-    mediaRecorder.current.ondataavailable = (event) => {
+    recorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
         chunksRef.current.push(event.data);
       }
     };
 
-    mediaRecorder.current.onstop = () => {
+    recorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: "video/webm" });
-      setRecordedBlob(blob);
       onRecordingComplete(blob);
-      onRecordingStop(blob);
     };
 
-    mediaRecorder.current.start(200); // Collect data every 200ms
+    recorder.start();
 
     // Set up recording timer
     const recordingInterval = setInterval(() => {
@@ -130,8 +128,11 @@ const VideoRecorder = ({
 
   // Stop recording
   const stopRecording = () => {
-    if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
-      mediaRecorder.current.stop();
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
+      mediaRecorderRef.current.stop();
       setRecordingStatus("stopped");
     }
   };
@@ -161,19 +162,16 @@ const VideoRecorder = ({
   // Reset the recorder
   const resetRecorder = () => {
     setRecordingStatus("idle");
-    setRecordedBlob(null);
     setRecordingTime(0);
     setCountdown(countdownTime);
   };
 
   // Initialize camera if isCountingDown is true
   useEffect(() => {
-    if (isCountingDown && !permission) {
-      getCameraPermission().then(() => {
-        startCountdown();
-      });
+    if (!permission) {
+      getCameraPermission();
     }
-  }, [isCountingDown]);
+  }, [permission]);
 
   // Clean up on unmount
   useEffect(() => {
@@ -196,6 +194,7 @@ const VideoRecorder = ({
       {error && (
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Permission error</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -229,21 +228,19 @@ const VideoRecorder = ({
               </div>
             )}
           </div>
-
-          {/* Progress bar for recording time */}
-          {recordingStatus === "recording" && (
-            <div className="p-2">
-              <div className="flex justify-between text-sm mb-1">
-                <span>{formatTime(recordingTime)}</span>
-                <span>{formatTime(effectiveMaxRecordingTime)}</span>
-              </div>
-              <Progress
-                value={(recordingTime / effectiveMaxRecordingTime) * 100}
-              />
-            </div>
-          )}
         </CardContent>
       </Card>
+
+      {/* Progress bar for recording time */}
+      {recordingStatus === "recording" && (
+        <div className="mt-3">
+          <Progress value={(recordingTime / effectiveMaxRecordingTime) * 100} />
+          <div className="flex justify-between text-sm mt-1">
+            <span>{formatTime(recordingTime)}</span>
+            <span>{formatTime(effectiveMaxRecordingTime)}</span>
+          </div>
+        </div>
+      )}
 
       {/* Controls */}
       <div className="mt-4 flex flex-wrap gap-2 justify-center">
@@ -259,12 +256,14 @@ const VideoRecorder = ({
                 variant="default"
                 className="bg-red-500 hover:bg-red-600"
               >
+                <Play className="h-4 w-4 mr-2" />
                 Start Recording
               </Button>
             )}
 
             {recordingStatus === "recording" && (
               <Button onClick={stopRecording} variant="outline">
+                <CircleStop className="h-4 w-4 mr-2" />
                 Stop Recording
               </Button>
             )}
@@ -275,7 +274,11 @@ const VideoRecorder = ({
               </Button>
             )}
 
-            <Button onClick={toggleAudio} variant="outline">
+            <Button
+              onClick={toggleAudio}
+              variant="outline"
+              disabled={!permission}
+            >
               {audioEnabled ? (
                 <Mic className="h-4 w-4 mr-2" />
               ) : (
@@ -284,7 +287,11 @@ const VideoRecorder = ({
               {audioEnabled ? "Mute" : "Unmute"}
             </Button>
 
-            <Button onClick={toggleVideo} variant="outline">
+            <Button
+              onClick={toggleVideo}
+              variant="outline"
+              disabled={!permission}
+            >
               {videoEnabled ? (
                 <Video className="h-4 w-4 mr-2" />
               ) : (
