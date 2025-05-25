@@ -1,0 +1,53 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+
+# Next.js (React, Tailwind)
+
+# Next.js with React, Tailwind CSS, and Shadcn UI
+
+## Introduction
+This document outlines the best practices and coding standards for developing web applications using Next.js, React, Tailwind CSS, and Shadcn UI. The focus is on writing clean, maintainable, and performant code.
+
+## Code Style and Structure
+- **TypeScript**: Use TypeScript for all code. Prefer interfaces over types and avoid enums; use maps instead.
+- **Functional Components**: Use functional components with TypeScript interfaces. Avoid class components.
+- **Modularization**: Prefer iteration and modularization over code duplication.
+- **Descriptive Naming**: Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`).
+- **File Structure**: Organize files with exported components, subcomponents, helpers, static content, and types.
+
+## Naming Conventions
+- **Components**: Place all components in `src/components` and name them like `new-component.tsx`.
+- **Directories**: Use lowercase with dashes for directories (e.g., `components/auth-wizard`).
+- **Exports**: Favor named exports for components.
+
+## UI and Styling
+- **Shadcn UI and Tailwind CSS**: Use Shadcn UI for components and Tailwind CSS for styling.
+- **Responsive Design**: Implement responsive design with a mobile-first approach using Tailwind CSS.
+
+## Performance Optimization
+- **React Server Components (RSC)**: Minimize `use client`, `useEffect`, and `setState`; favor React Server Components.
+- **Suspense**: Wrap client components in Suspense with a fallback.
+- **Dynamic Loading**: Use dynamic loading for non-critical components.
+- **Image Optimization**: Optimize images using WebP format, include size data, and implement lazy loading.
+
+## Key Conventions
+- **State Management**: Use `nuqs` for URL search parameter state management.
+- **Web Vitals**: Optimize for Web Vitals (LCP, CLS, FID).
+- **Data Fetching and Routing**: Follow Next.js documentation for Data Fetching, Rendering, and Routing.
+- **Placeholder Images**: Use `https://placekitten.com/` for placeholder images in seed data.
+
+## Project Structure
+- **/src Directory**: Place both `/app` and `/components` folders under a `/src` directory for better organization and scalability.
+- **Component Organization**: Organize components by type or feature within `/src/components`.
+  - **By Type**: Group components like forms, buttons, layout elements, etc.
+  - **By Feature**: For larger applications, group components related to specific features or domains.
+- **Private Components**: Create a `_components` folder within relevant `/app` subdirectories for components used only within specific pages.
+- **Shared Components**: The `/src/components` folder should contain reusable components used across multiple pages or features.
+- **Modular Approach**: Adopt a modular structure where each feature or domain has its own folder containing components, hooks, and utilities specific to that feature.
+
+## Conclusion
+By following these guidelines, you can ensure that your Next.js projects are well-structured, maintainable, and optimized for performance. This approach not only improves code quality but also enhances the overall development experience.

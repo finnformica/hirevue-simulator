@@ -1,14 +1,14 @@
-"use client";
+import { useState } from "react";
+
+import { Analysis } from "@/lib/types";
 
 import { AnalysisTab } from "@/components/analysis-tab";
 import { PlaybackTab } from "@/components/playback-tab";
 import { PromptTab } from "@/components/prompt-tab";
 import { RecordingTab } from "@/components/recording-tab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Analysis } from "@/lib/types";
-import { useState } from "react";
 
-export default function SimulatorPage() {
+export function InterviewSimulator() {
   const [activeTab, setActiveTab] = useState("prompt");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
