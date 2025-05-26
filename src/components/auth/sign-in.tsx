@@ -1,7 +1,8 @@
+import { useAuth } from "@/providers/auth-provider";
+import { paths } from "@/utils/paths";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useAuth } from "../../providers/auth-provider";
 
 type SignInForm = {
   email: string;
@@ -22,7 +23,7 @@ export function SignIn() {
   const onSubmit = async (formData: SignInForm) => {
     setIsLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithOtp({
       email: formData.email,
       options: {
         emailRedirectTo: window.location.origin,
@@ -99,7 +100,7 @@ export function SignIn() {
             <p className="text-center text-sm text-gray-400">
               Don't have an account?{" "}
               <Link
-                href="/auth/create-account"
+                href={paths.createAccount}
                 className="text-green-400 hover:text-green-300"
               >
                 Create one now

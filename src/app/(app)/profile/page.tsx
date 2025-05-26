@@ -1,4 +1,4 @@
-import { supabaseClientForServer } from "@/utils/supabase/server";
+import { createClientForServer } from "@/utils/supabase/server";
 import {
   BarChart2,
   Bell,
@@ -13,7 +13,8 @@ import {
 import Link from "next/link";
 
 export default async function Profile() {
-  const session = await supabaseClientForServer.auth.getUser();
+  const supabase = await createClientForServer();
+  const session = await supabase.auth.getUser();
   const { user } = session.data;
 
   const stats = [

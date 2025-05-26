@@ -1,5 +1,6 @@
 import { RootState } from "@/lib/store";
 import { AnalysisResult } from "@/lib/types/analysis";
+import { endpoints } from "@/utils/endpoints";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 export type TabValue = "prompt" | "recording" | "playback" | "analysis";
@@ -59,7 +60,7 @@ export const processRecording = createAsyncThunk(
       formData.append("audio", audioBlob);
       formData.append("prompt", prompt);
 
-      const transcriptionResponse = await fetch("/api/transcribe", {
+      const transcriptionResponse = await fetch(endpoints.transcribe, {
         method: "POST",
         body: formData,
       });
@@ -85,7 +86,7 @@ export const processRecording = createAsyncThunk(
         reader.readAsDataURL(audioBlob);
       });
 
-      const analysisResponse = await fetch("/api/analyse", {
+      const analysisResponse = await fetch(endpoints.analyse, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

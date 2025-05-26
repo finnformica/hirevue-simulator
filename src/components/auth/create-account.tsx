@@ -1,7 +1,8 @@
+import { useAuth } from "@/providers/auth-provider";
+import { paths } from "@/utils/paths";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useAuth } from "../../providers/auth-provider";
 
 type CreateAccountForm = {
   first_name: string;
@@ -171,7 +172,7 @@ export function CreateAccount() {
             <p className="text-center text-sm text-gray-400">
               Already have an account?{" "}
               <Link
-                href="/auth/sign-in"
+                href={paths.signIn}
                 className="text-green-400 hover:text-green-300"
               >
                 Sign in instead
