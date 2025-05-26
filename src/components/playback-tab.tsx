@@ -236,7 +236,7 @@ const PlaybackTab = () => {
       </Card>
 
       {/* Transcription */}
-      <div className="mt-2 p-4 bg-muted rounded-lg">
+      <div className="mt-2 p-4 bg-muted/50 rounded-lg">
         <h3 className="text-lg font-semibold mb-2">Transcription</h3>
         {isTranscribing ? (
           <p className="text-muted-foreground">Transcribing your response...</p>

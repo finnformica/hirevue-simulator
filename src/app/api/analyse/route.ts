@@ -1,8 +1,5 @@
 import { supabaseApi } from "@/utils/supabase/api";
-import { HfInference } from "@huggingface/inference";
 import { NextResponse } from "next/server";
-
-const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 // API Configuration
 const API_CONFIG = {
@@ -55,7 +52,7 @@ const MODELS = {
   sentiment: "finiteautomata/bertweet-base-sentiment-analysis",
   textClassification: "facebook/bart-large-mnli",
   summarization: "facebook/bart-large-cnn",
-  speechRecognition: "openai/whisper-large-v3",
+  speechRecognition: "facebook/wav2vec2-base-960h",
   grammar: "deepset/roberta-base-grammar",
   keywordExtraction: "facebook/bart-large-mnli",
 };
@@ -180,72 +177,61 @@ async function cacheAnalysis(
   }
 }
 
-async function analyseSentiment(text: string, prompt: string) {
+async function safeExecute<T>(
+  fn: () => Promise<T>,
+  errorMessage: string
+): Promise<{ data: T | null; error: string | null }> {
   try {
-    const data = await makeApiRequest("sentiment", {
-      text,
-      candidate_labels: ["POS", "NEU", "NEG"],
-    });
-
-    const sentimentMap: { [key: string]: number } = {
-      POS: 1,
-      NEU: 0.5,
-      NEG: 0,
-    };
-
-    return sentimentMap[data[0].label] || null;
+    const data = await fn();
+    return { data, error: null };
   } catch (error) {
-    console.error("Error in sentiment analysis:", error);
-    return null;
+    console.error(`${errorMessage}:`, error);
+    return { data: null, error: errorMessage };
   }
+}
+
+async function analyseSentiment(text: string, prompt: string) {
+  const data = await makeApiRequest("sentiment", {
+    text,
+    candidate_labels: ["POS", "NEU", "NEG"],
+  });
+
+  const sentimentMap: { [key: string]: number } = {
+    POS: 1,
+    NEU: 0.5,
+    NEG: 0,
+  };
+
+  return sentimentMap[data[0].label] || null;
 }
 
 async function analyseClarity(text: string, prompt: string) {
-  try {
-    const data = await makeApiRequest("clarity", {
-      text,
-      candidate_labels: [
-        "clear and concise",
-        "unclear and verbose",
-        "moderately clear",
-      ],
-    });
+  const data = await makeApiRequest("clarity", {
+    text,
+    candidate_labels: [
+      "clear and concise",
+      "unclear and verbose",
+      "moderately clear",
+    ],
+  });
 
-    const clarityIndex = data.labels.indexOf("clear and concise");
-    return data.scores[clarityIndex] || null;
-  } catch (error) {
-    console.error("Error in clarity analysis:", error);
-    return null;
-  }
+  const clarityIndex = data.labels.indexOf("clear and concise");
+  return data.scores[clarityIndex] || null;
 }
 
 async function analyseTechnicalAccuracy(text: string, prompt: string) {
-  try {
-    const data = await makeApiRequest("technicalAccuracy", {
-      text,
-      candidate_labels: [
-        "technical accuracy",
-        "clarity",
-        "relevance",
-        "completeness",
-      ],
-    });
-
-    const technicalAccuracyIndex = data.labels.indexOf("technical accuracy");
-    return data.scores[technicalAccuracyIndex] || null;
-  } catch (error) {
-    console.error("Error in technical accuracy analysis:", error);
-    return null;
-  }
-}
-
-async function extractKeyPoints(text: string) {
-  const result = await hf.summarization({
-    model: MODELS.summarization,
-    inputs: text,
+  const data = await makeApiRequest("technicalAccuracy", {
+    text,
+    candidate_labels: [
+      "technical accuracy",
+      "clarity",
+      "relevance",
+      "completeness",
+    ],
   });
 
-  return result.summary_text.split(". ").filter(Boolean);
+  const technicalAccuracyIndex = data.labels.indexOf("technical accuracy");
+  return data.scores[technicalAccuracyIndex] || null;
 }
 
 async function analyseAudio(
@@ -256,139 +242,121 @@ async function analyseAudio(
     return null;
   }
 
-  try {
-    const audioBlob = new Blob([audioBuffer], { type: "audio/webm" });
+  const audioBlob = new Blob([audioBuffer], { type: "audio/webm" });
 
-    // First, convert the audio to base64
-    const audioBase64 = await new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        resolve(base64.split(",")[1]);
-      };
-      reader.readAsDataURL(audioBlob);
-    });
-
-    // Use the Whisper API for transcription
-    const transcriptionResponse = await fetch(
-      `${API_CONFIG.baseUrl}/openai/whisper-large-v3`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-        },
-        body: JSON.stringify({
-          inputs: audioBase64,
-        }),
-      }
-    );
-
-    if (!transcriptionResponse.ok) {
-      console.error(
-        "Transcription failed:",
-        await transcriptionResponse.text()
-      );
-      return null;
-    }
-
-    const transcription = await transcriptionResponse.json();
-    const text = transcription.text ?? "";
-
-    // Analyse filler words
-    const words = text.toLowerCase().split(/\s+/);
-    const fillerWords = words.filter((word: string) => FILLER_WORDS.has(word));
-    const fillerWordCount = fillerWords.length;
-    const totalWords = words.length;
-    const fluency = totalWords > 0 ? 1 - fillerWordCount / totalWords : null;
-
-    const audioFeaturesResponse = await fetch(
-      `${API_CONFIG.baseUrl}/microsoft/wavlm-base`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-        },
-        body: JSON.stringify({
-          inputs: audioBlob,
-        }),
-      }
-    );
-
-    if (!audioFeaturesResponse.ok) {
-      throw new Error(
-        `Audio features failed: ${audioFeaturesResponse.statusText}`
-      );
-    }
-
-    const audioFeatures = await audioFeaturesResponse.json();
-
-    return {
-      voiceModulation: audioFeatures[0]?.score || null,
-      pacing: audioFeatures[1]?.score
-        ? Math.min(audioFeatures[1].score / 150, 1)
-        : null,
-      fluency,
-      fillerWordCount,
-      fillerWords: Array.from(new Set(fillerWords)),
+  // First, convert the audio to base64
+  const audioBase64 = await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      resolve(base64.split(",")[1]);
     };
-  } catch (error) {
-    console.error("Error in audio analysis:", error);
+    reader.readAsDataURL(audioBlob);
+  });
+
+  // Use the Whisper API for transcription
+  const transcriptionResponse = await fetch(
+    `${API_CONFIG.baseUrl}/${MODELS.speechRecognition}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        inputs: audioBase64,
+      }),
+    }
+  );
+
+  if (!transcriptionResponse.ok) {
+    console.error("Transcription failed:", await transcriptionResponse.text());
     return null;
   }
+
+  const transcription = await transcriptionResponse.json();
+  const text = transcription.text ?? "";
+
+  // Analyse filler words
+  const words = text.toLowerCase().split(/\s+/);
+  const fillerWords = words.filter((word: string) => FILLER_WORDS.has(word));
+  const fillerWordCount = fillerWords.length;
+  const totalWords = words.length;
+  const fluency = totalWords > 0 ? 1 - fillerWordCount / totalWords : null;
+
+  const audioFeaturesResponse = await fetch(
+    `${API_CONFIG.baseUrl}/microsoft/wavlm-base`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        inputs: audioBlob,
+      }),
+    }
+  );
+
+  if (!audioFeaturesResponse.ok) {
+    throw new Error(
+      `Audio features failed: ${audioFeaturesResponse.statusText}`
+    );
+  }
+
+  const audioFeatures = await audioFeaturesResponse.json();
+
+  return {
+    voiceModulation: audioFeatures[0]?.score || null,
+    pacing: audioFeatures[1]?.score
+      ? Math.min(audioFeatures[1].score / 150, 1)
+      : null,
+    fluency,
+    fillerWordCount,
+    fillerWords: Array.from(new Set(fillerWords)),
+  };
 }
 
 async function analyseKeywords(text: string, prompt: string) {
-  try {
-    const data = await makeApiRequest("keywords", {
-      text,
-      candidate_labels: [
-        "technical terms",
-        "domain-specific vocabulary",
-        "key concepts",
-        "important points",
-      ],
-    });
+  const data = await makeApiRequest("keywords", {
+    text,
+    candidate_labels: [
+      "technical terms",
+      "domain-specific vocabulary",
+      "key concepts",
+      "important points",
+    ],
+  });
 
-    const keywords = data.labels
-      .filter((label: string, index: number) => data.scores[index] > 0.5)
-      .map((label: string) => label.toLowerCase());
+  const keywords = data.labels
+    .filter((label: string, index: number) => data.scores[index] > 0.5)
+    .map((label: string) => label.toLowerCase());
 
-    return {
-      matchedKeywords: keywords,
-      missingKeywords: [],
-      relevanceScore: Math.max(...data.scores) || null,
-    };
-  } catch (error) {
-    console.error("Error in keyword analysis:", error);
-    return null;
-  }
+  return {
+    matchedKeywords: keywords,
+    missingKeywords: [],
+    relevanceScore: Math.max(...data.scores) || null,
+  };
 }
 
 async function analyseGrammar(text: string, prompt: string) {
-  try {
-    const data = await makeApiRequest("technicalAccuracy", {
-      text,
-      candidate_labels: [
-        "grammatically correct",
-        "grammatically incorrect",
-        "partially correct",
-      ],
-    });
+  const data = await makeApiRequest("technicalAccuracy", {
+    text,
+    candidate_labels: [
+      "grammatically correct",
+      "grammatically incorrect",
+      "partially correct",
+    ],
+  });
 
-    const grammarIndex = data.labels.indexOf("grammatically correct");
-    const score = data.scores[grammarIndex];
+  const grammarIndex = data.labels.indexOf("grammatically correct");
+  const score = data.scores[grammarIndex];
 
-    return {
-      errorCount: Math.round((1 - score) * 10),
-      errors: [],
-      score: score || null,
-    };
-  } catch (error) {
-    console.error("Error in grammar analysis:", error);
-    return null;
-  }
+  return {
+    errorCount: Math.round((1 - score) * 10),
+    errors: [],
+    score: score || null,
+  };
 }
 
 function analyseSentenceComplexity(text: string): SentenceComplexity {
@@ -479,59 +447,98 @@ function analyseRepetition(text: string): RepetitionAnalysis {
   }
 }
 
+async function analyseKeyPoints(text: string, prompt: string) {
+  const data = await makeApiRequest("keyPoints", {
+    text,
+    candidate_labels: [
+      "main point",
+      "supporting detail",
+      "example",
+      "conclusion",
+    ],
+  });
+
+  return (
+    data?.labels
+      ?.filter((label: string, index: number) => data.scores[index] > 0.5)
+      .map((label: string) => label) ?? null
+  );
+}
+
+async function analyseImprovements(text: string, prompt: string) {
+  const data = await makeApiRequest("improvements", {
+    text,
+    candidate_labels: [
+      "clarity improvement",
+      "technical depth",
+      "structure",
+      "examples",
+    ],
+  });
+
+  return (
+    data?.labels
+      ?.filter((label: string, index: number) => data.scores[index] > 0.5)
+      .map((label: string) => label) ?? null
+  );
+}
+
 export async function POST(request: Request) {
   try {
     const { transcription, audio, prompt } = await request.json();
 
     // Check for cached analysis
-    const cachedAnalysis = await getCachedAnalysis(transcription, prompt);
-    if (cachedAnalysis) {
-      return NextResponse.json(cachedAnalysis.analysis);
-    }
+    // const cachedAnalysis = await getCachedAnalysis(transcription, prompt);
+    // if (cachedAnalysis) {
+    //   return NextResponse.json(cachedAnalysis.analysis);
+    // }
 
     // Convert audio from base64 to ArrayBuffer
     const audioBuffer = new Uint8Array(Buffer.from(audio, "base64")).buffer;
 
-    // Run all analyses in parallel
+    // Run all analyses in parallel with error handling
     const [
-      technicalAccuracy,
-      sentimentScore,
-      clarityScore,
-      grammarAnalysis,
-      keywordAnalysis,
-      audioAnalysis,
+      technicalAccuracyResult,
+      sentimentScoreResult,
+      clarityScoreResult,
+      grammarAnalysisResult,
+      keywordAnalysisResult,
+      audioAnalysisResult,
+      keyPointsResult,
+      improvementsResult,
     ] = await Promise.all([
-      analyseTechnicalAccuracy(transcription, prompt),
-      analyseSentiment(transcription, prompt),
-      analyseClarity(transcription, prompt),
-      analyseGrammar(transcription, prompt),
-      analyseKeywords(transcription, prompt),
-      analyseAudio(audioBuffer),
+      safeExecute(
+        () => analyseTechnicalAccuracy(transcription, prompt),
+        "Technical accuracy analysis failed"
+      ),
+      safeExecute(
+        () => analyseSentiment(transcription, prompt),
+        "Sentiment analysis failed"
+      ),
+      safeExecute(
+        () => analyseClarity(transcription, prompt),
+        "Clarity analysis failed"
+      ),
+      safeExecute(
+        () => analyseGrammar(transcription, prompt),
+        "Grammar analysis failed"
+      ),
+      safeExecute(
+        () => analyseKeywords(transcription, prompt),
+        "Keyword analysis failed"
+      ),
+      safeExecute(() => analyseAudio(audioBuffer), "Audio analysis failed"),
+      safeExecute(
+        () => analyseKeyPoints(transcription, prompt),
+        "Key points analysis failed"
+      ),
+      safeExecute(
+        () => analyseImprovements(transcription, prompt),
+        "Improvements analysis failed"
+      ),
     ]);
 
-    // Generate key points using zero-shot classification
-    const keyPointsData = await makeApiRequest("keyPoints", {
-      text: transcription,
-      candidate_labels: [
-        "main point",
-        "supporting detail",
-        "example",
-        "conclusion",
-      ],
-    });
-
-    // Generate improvement areas using zero-shot classification
-    const improvementsData = await makeApiRequest("improvements", {
-      text: transcription,
-      candidate_labels: [
-        "clarity improvement",
-        "technical depth",
-        "structure",
-        "examples",
-      ],
-    });
-
-    // Analyse sentence complexity and repetition
+    // Analyse sentence complexity and repetition (these are synchronous, so we don't need safeExecute)
     const sentenceComplexity = analyseSentenceComplexity(transcription);
     const repetition = analyseRepetition(transcription);
 
@@ -540,39 +547,38 @@ export async function POST(request: Request) {
       interviewId: "temp",
       transcription,
       prompt,
-      sentimentScore,
-      clarityScore,
-      technicalAccuracy,
+      sentimentScore: sentimentScoreResult.data,
+      clarityScore: clarityScoreResult.data,
+      technicalAccuracy: technicalAccuracyResult.data,
       confidenceMetrics: {
-        voiceModulation: audioAnalysis?.voiceModulation ?? null,
-        pacing: audioAnalysis?.pacing ?? null,
+        voiceModulation: audioAnalysisResult.data?.voiceModulation ?? null,
+        pacing: audioAnalysisResult.data?.pacing ?? null,
         vocabulary: null,
       },
-      keyPoints:
-        keyPointsData?.labels
-          ?.filter(
-            (label: string, index: number) => keyPointsData.scores[index] > 0.5
-          )
-          .map((label: string) => label) ?? null,
-      improvementAreas:
-        improvementsData?.labels
-          ?.filter(
-            (label: string, index: number) =>
-              improvementsData.scores[index] > 0.5
-          )
-          .map((label: string) => label) ?? null,
+      keyPoints: keyPointsResult.data,
+      improvementAreas: improvementsResult.data,
       detailedAnalysis: {
-        audio: audioAnalysis,
-        keywords: keywordAnalysis,
-        grammar: grammarAnalysis,
+        audio: audioAnalysisResult.data,
+        keywords: keywordAnalysisResult.data,
+        grammar: grammarAnalysisResult.data,
         sentenceComplexity,
         repetition,
+      },
+      errors: {
+        technicalAccuracy: technicalAccuracyResult.error,
+        sentimentScore: sentimentScoreResult.error,
+        clarityScore: clarityScoreResult.error,
+        grammarAnalysis: grammarAnalysisResult.error,
+        keywordAnalysis: keywordAnalysisResult.error,
+        audioAnalysis: audioAnalysisResult.error,
+        keyPoints: keyPointsResult.error,
+        improvements: improvementsResult.error,
       },
       createdAt: new Date(),
     };
 
     // Cache the analysis result
-    await cacheAnalysis(analysisResult, transcription, prompt);
+    // await cacheAnalysis(analysisResult, transcription, prompt);
 
     return NextResponse.json(analysisResult);
   } catch (error) {

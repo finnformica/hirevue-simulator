@@ -1,3 +1,4 @@
+import { RootState } from "@/lib/store";
 import { AnalysisResult } from "@/lib/types/analysis";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
@@ -37,8 +38,16 @@ export const processRecording = createAsyncThunk(
       audioBlob: Blob;
       prompt: string;
     },
-    { dispatch }
+    { dispatch, getState }
   ) => {
+    // Get current state
+    const state = getState() as RootState;
+
+    // Early exit if already processing
+    if (state.simulator.isTranscribing || state.simulator.isAnalysing) {
+      return;
+    }
+
     try {
       // Create videoUrl from videoBlob
       const videoUrl = URL.createObjectURL(videoBlob);
@@ -59,17 +68,30 @@ export const processRecording = createAsyncThunk(
         throw new Error("Transcription failed");
       }
 
-      const { text: transcription } = await transcriptionResponse.json();
+      const { text } = await transcriptionResponse.json();
+      const transcription = text.trim();
       dispatch(setTranscription(transcription));
 
       // Analyse the response
       dispatch(setAnalysing(true));
+
+      // Convert audioBlob to base64
+      const audioBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = reader.result as string;
+          resolve(base64.split(",")[1]); // Remove the data URL prefix
+        };
+        reader.readAsDataURL(audioBlob);
+      });
+
       const analysisResponse = await fetch("/api/analyse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           transcription,
           prompt,
+          audio: audioBase64,
         }),
       });
 
