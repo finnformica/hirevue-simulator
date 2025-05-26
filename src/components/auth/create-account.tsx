@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useAuth } from "./auth-context";
+import { useAuth } from "../../providers/auth-provider";
 
 type CreateAccountForm = {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
   terms: boolean;
 };
@@ -28,10 +28,10 @@ export function CreateAccount() {
     const { data, error } = await supabase.auth.signInWithOtp({
       email: formData.email,
       options: {
-        emailRedirectTo: `${window.location.origin}/simulator`,
+        emailRedirectTo: window.location.origin,
         data: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
         },
       },
     });
@@ -63,16 +63,16 @@ export function CreateAccount() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label
-                    htmlFor="firstName"
+                    htmlFor="first_name"
                     className="block text-sm font-medium text-gray-300 mb-1"
                   >
                     First Name
                   </label>
                   <input
-                    {...register("firstName", { required: true })}
-                    aria-invalid={errors.firstName ? "true" : "false"}
+                    {...register("first_name", { required: true })}
+                    aria-invalid={errors.first_name ? "true" : "false"}
                     type="text"
-                    id="firstName"
+                    id="first_name"
                     required
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="First name"
@@ -80,16 +80,16 @@ export function CreateAccount() {
                 </div>
                 <div>
                   <label
-                    htmlFor="lastName"
+                    htmlFor="last_name"
                     className="block text-sm font-medium text-gray-300 mb-1"
                   >
                     Last Name
                   </label>
                   <input
-                    {...register("lastName", { required: true })}
-                    aria-invalid={errors.lastName ? "true" : "false"}
+                    {...register("last_name", { required: true })}
+                    aria-invalid={errors.last_name ? "true" : "false"}
                     type="text"
-                    id="lastName"
+                    id="last_name"
                     required
                     className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Last name"

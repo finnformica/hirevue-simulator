@@ -1,21 +1,22 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export type Theme = "light" | "dark" | "system";
+
 interface UserState {
-  id: string | null;
-  email: string | null;
-  name: string | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+  theme: Theme;
 }
 
 const initialState: UserState = {
-  id: null,
-  email: null,
-  name: null,
   isAuthenticated: false,
-  isLoading: false,
-  error: null,
+  user: null,
+  theme: "system",
 };
 
 const userSlice = createSlice({
@@ -27,30 +28,18 @@ const userSlice = createSlice({
       action: PayloadAction<{
         id: string;
         email: string;
-        name: string;
-      }>
+        firstName: string;
+        lastName: string;
+      } | null>
     ) => {
-      state.id = action.payload.id;
-      state.email = action.payload.email;
-      state.name = action.payload.name;
-      state.isAuthenticated = true;
-      state.error = null;
+      state.user = action.payload;
+      state.isAuthenticated = !!action.payload;
     },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
-    },
-    setError: (state, action: PayloadAction<string | null>) => {
-      state.error = action.payload;
-    },
-    clearUser: (state) => {
-      state.id = null;
-      state.email = null;
-      state.name = null;
-      state.isAuthenticated = false;
-      state.error = null;
+    setTheme: (state, action: PayloadAction<Theme>) => {
+      state.theme = action.payload;
     },
   },
 });
 
-export const { setUser, setLoading, setError, clearUser } = userSlice.actions;
+export const { setUser, setTheme } = userSlice.actions;
 export default userSlice.reducer;

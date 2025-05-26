@@ -1,14 +1,14 @@
 import { supabaseClientForServer } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
-export default async function RootPage() {
+export async function AuthGuard({ children }: { children: React.ReactNode }) {
   const {
     data: { session },
   } = await supabaseClientForServer.auth.getSession();
 
-  if (session) {
-    redirect("/profile");
+  if (!session) {
+    redirect("/sign-in");
   }
 
-  redirect("/home");
+  return <>{children}</>;
 }

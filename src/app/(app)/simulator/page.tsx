@@ -47,6 +47,7 @@ export default function SimulatorPage() {
 
   return (
     <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-8">Hirevue Simulator</h1>
       <Tabs
         value={currentTab}
         onValueChange={(value) => dispatch(setCurrentTab(value))}

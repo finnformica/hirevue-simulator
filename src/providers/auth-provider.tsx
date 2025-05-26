@@ -56,8 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
-    router.refresh();
-  }, [supabase, router]);
+  }, [supabase]);
 
   const value = {
     user,

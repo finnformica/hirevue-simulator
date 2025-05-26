@@ -17,8 +17,7 @@ export function PromptTab() {
   };
 
   return (
-    <div className="space-y-4 p-4">
-      <h2 className="text-2xl font-bold">Interview Prompt</h2>
+    <div className="space-y-4">
       <Card>
         <CardHeader>
           <CardTitle>Your Prompt</CardTitle>

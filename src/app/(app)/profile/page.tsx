@@ -5,7 +5,6 @@ import {
   Calendar,
   ChevronRight,
   Clock,
-  Settings,
   Shield,
   Trophy,
   User,
@@ -15,6 +14,7 @@ import Link from "next/link";
 
 export default async function Profile() {
   const session = await supabaseClientForServer.auth.getUser();
+  const { user } = session.data;
 
   const stats = [
     {
@@ -61,25 +61,7 @@ export default async function Profile() {
   ];
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header */}
-      <header className="border-b border-gray-800 bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-green-400 font-bold text-2xl">
-              GradGuru
-            </Link>
-            <div className="flex items-center space-x-4">
-              <button className="p-2 text-gray-400 hover:text-white">
-                <Bell className="h-5 w-5" />
-              </button>
-              <button className="p-2 text-gray-400 hover:text-white">
-                <Settings className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Profile Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
@@ -88,7 +70,11 @@ export default async function Profile() {
               <User className="h-8 w-8 text-gray-400" />
             </div>
             <div className="ml-4">
-              <h1 className="text-2xl font-bold">{session.data.user?.email}</h1>
+              <h1 className="text-2xl font-bold">
+                {user?.user_metadata
+                  ? `${user?.user_metadata.first_name} ${user?.user_metadata.last_name}`
+                  : session.data.user?.email}
+              </h1>
               <p className="text-gray-400">{session.data.user?.email}</p>
             </div>
           </div>

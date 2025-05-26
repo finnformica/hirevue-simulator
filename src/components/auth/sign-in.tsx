@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useAuth } from "./auth-context";
+import { useAuth } from "../../providers/auth-provider";
 
 type SignInForm = {
   email: string;
@@ -25,7 +25,7 @@ export function SignIn() {
     const { data, error } = await supabase.auth.signInWithOtp({
       email: formData.email,
       options: {
-        emailRedirectTo: `${window.location.origin}/simulator`,
+        emailRedirectTo: window.location.origin,
       },
     });
 
