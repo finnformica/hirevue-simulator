@@ -26,10 +26,15 @@ export function CreateAccount() {
   const onSubmit = async (formData: CreateAccountForm) => {
     setIsLoading(true);
 
+    const emailRedirectTo =
+      process?.env?.NEXT_PUBLIC_SITE_URL ??
+      process?.env?.NEXT_PUBLIC_VERCEL_URL ??
+      "http://localhost:3000/";
+
     const { data, error } = await supabase.auth.signInWithOtp({
       email: formData.email,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo,
         data: {
           first_name: formData.first_name,
           last_name: formData.last_name,

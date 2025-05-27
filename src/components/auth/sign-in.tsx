@@ -23,10 +23,16 @@ export function SignIn() {
   const onSubmit = async (formData: SignInForm) => {
     setIsLoading(true);
 
+    const emailRedirectTo =
+      process?.env?.NEXT_PUBLIC_SITE_URL ??
+      process?.env?.NEXT_PUBLIC_VERCEL_URL ??
+      "http://localhost:3000/";
+
     const { error } = await supabase.auth.signInWithOtp({
       email: formData.email,
       options: {
-        emailRedirectTo: window.location.origin,
+        shouldCreateUser: false,
+        emailRedirectTo,
       },
     });
 
