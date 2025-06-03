@@ -66,6 +66,11 @@ export const RecordingTab = () => {
 
         streamRef.current = stream;
         setPermission(true);
+
+        console.log(
+          "Video ref current srcObject:",
+          videoRef.current?.srcObject
+        );
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
