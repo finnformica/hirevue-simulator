@@ -1,3 +1,4 @@
+import { paths } from "@/utils/paths";
 import { createClientForServer } from "@/utils/supabase/server";
 import {
   BarChart2,
@@ -80,7 +81,7 @@ export default async function Profile() {
             </div>
           </div>
           <Link
-            href="/simulator"
+            href={paths.simulator}
             className="bg-green-500 hover:bg-green-600 text-black font-medium px-4 py-2 rounded-md transition-colors"
           >
             Start Practice Interview

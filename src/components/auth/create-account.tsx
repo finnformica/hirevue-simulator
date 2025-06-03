@@ -1,8 +1,10 @@
-import { useAuth } from "@/providers/auth-provider";
-import { paths } from "@/utils/paths";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+
+import { useAuth } from "@/providers/auth-provider";
+import { paths } from "@/utils/paths";
 
 type CreateAccountForm = {
   first_name: string;
@@ -12,7 +14,7 @@ type CreateAccountForm = {
 };
 
 export function CreateAccount() {
-  const { supabase } = useAuth();
+  const { supabase, session } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
@@ -23,13 +25,17 @@ export function CreateAccount() {
     handleSubmit,
   } = useForm<CreateAccountForm>();
 
+  if (session) {
+    redirect(paths.profile);
+  }
+
   const onSubmit = async (formData: CreateAccountForm) => {
     setIsLoading(true);
 
     const emailRedirectTo =
       process?.env?.NEXT_PUBLIC_SITE_URL ??
       process?.env?.NEXT_PUBLIC_VERCEL_URL ??
-      "http://localhost:3000/";
+      "http://localhost:3000";
 
     const { data, error } = await supabase.auth.signInWithOtp({
       email: formData.email,
@@ -56,7 +62,7 @@ export function CreateAccount() {
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-black">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="text-green-400 font-bold text-3xl">
+          <Link href={paths.home} className="text-green-400 font-bold text-3xl">
             GradGuru
           </Link>
           <p className="text-gray-400 mt-2">

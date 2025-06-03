@@ -1,3 +1,4 @@
+import { paths } from "@/utils/paths";
 import { createClientForServer } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -8,8 +9,8 @@ export default async function RootPage() {
   } = await supabase.auth.getSession();
 
   if (session) {
-    redirect("/profile");
+    redirect(paths.profile);
   }
 
-  redirect("/home");
+  redirect(paths.home);
 }

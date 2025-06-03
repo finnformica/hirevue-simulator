@@ -14,6 +14,7 @@ import {
 import { useAppDispatch } from "@/lib/store/hooks";
 import { setTheme } from "@/lib/store/slices/userSlice";
 import { useAuth } from "@/providers/auth-provider";
+import { paths } from "@/utils/paths";
 import { LogOut, Menu, Monitor, Moon, Settings, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -36,7 +37,7 @@ export function UserMenu() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push("/home");
+    router.push(paths.home);
   };
 
   const getThemeIcon = () => {
@@ -67,7 +68,7 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <Link href="/profile">
+        <Link href={paths.profile}>
           <DropdownMenuItem>
             <Settings className="mr-2 h-4 w-4" />
             <span>Profile</span>
