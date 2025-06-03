@@ -1,5 +1,7 @@
 "use client";
 
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile, toBlobURL } from "@ffmpeg/util";
 import { Video } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -34,6 +36,62 @@ export const RecordingTab = () => {
   const streamRef = useRef<MediaStream | null>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const ffmpegRef = useRef<FFmpeg | null>(null);
+
+  const loadFFmpeg = async () => {
+    try {
+      const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd";
+
+      const ffmpeg = new FFmpeg();
+      ffmpegRef.current = ffmpeg;
+
+      ffmpeg.on("log", ({ message }) => {
+        console.log(message);
+      });
+
+      await ffmpeg.load({
+        coreURL: await toBlobURL(
+          `${baseURL}/ffmpeg-core.js`,
+          "text/javascript"
+        ),
+        wasmURL: await toBlobURL(
+          `${baseURL}/ffmpeg-core.wasm`,
+          "application/wasm"
+        ),
+      });
+    } catch (error) {
+      console.error("Error loading FFmpeg:", error);
+    }
+  };
+
+  async function setupMedia() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+
+      // check if the video track is ready
+      const videoTrack = stream.getVideoTracks()[0];
+      console.log("Video state:", videoTrack.readyState); // should be "live"
+
+      // check if the audio track is ready
+      const audioTrack = stream.getAudioTracks()[0];
+      console.log("Audio state:", audioTrack.readyState); // should be "live"
+
+      streamRef.current = stream;
+      setPermission(true);
+
+      console.log("Video ref current srcObject:", videoRef.current?.srcObject);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (error) {
+      console.error("Error accessing media devices:", error);
+      setError("Failed to access camera and microphone");
+      setPermission(false);
+    }
+  }
 
   // recording timer display in mm:ss
   useEffect(() => {
@@ -49,38 +107,7 @@ export const RecordingTab = () => {
   }, [isRecording, timeLeft]);
 
   useEffect(() => {
-    async function setupMedia() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-
-        // check if the video track is ready
-        const videoTrack = stream.getVideoTracks()[0];
-        console.log("Video state:", videoTrack.readyState); // should be "live"
-
-        // check if the audio track is ready
-        const audioTrack = stream.getAudioTracks()[0];
-        console.log("Audio state:", audioTrack.readyState); // should be "live"
-
-        streamRef.current = stream;
-        setPermission(true);
-
-        console.log(
-          "Video ref current srcObject:",
-          videoRef.current?.srcObject
-        );
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (error) {
-        console.error("Error accessing media devices:", error);
-        setError("Failed to access camera and microphone");
-        setPermission(false);
-      }
-    }
-
+    loadFFmpeg();
     setupMedia();
 
     return () => {
@@ -125,7 +152,29 @@ export const RecordingTab = () => {
 
     recorder.onstop = async () => {
       const videoBlob = new Blob(chunksRef.current, { type: "video/webm" });
-      const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" });
+
+      const ffmpeg = ffmpegRef.current;
+      if (!ffmpeg) throw new Error("FFmpeg not loaded");
+
+      // Load FFmpeg if not loaded
+      if (!ffmpeg.loaded) await ffmpeg.load();
+
+      // Write the video blob to FFmpeg's virtual filesystem
+      ffmpeg.writeFile("input.webm", await fetchFile(videoBlob));
+
+      // Extract audio
+      await ffmpeg.exec([
+        "-i",
+        "input.webm",
+        "-vn",
+        "-acodec",
+        "libmp3lame",
+        "output.mp3",
+      ]);
+
+      // Read the audio file
+      const audioData = await ffmpeg.readFile("output.mp3");
+      const audioBlob = new Blob([audioData], { type: "audio/mp3" });
 
       if (prompt) {
         dispatch(processRecording({ videoBlob, audioBlob, prompt }));
