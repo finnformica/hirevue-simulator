@@ -1,7 +1,6 @@
 import { useAuth } from "@/providers/auth-provider";
 import { paths } from "@/utils/paths";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -10,8 +9,7 @@ type SignInForm = {
 };
 
 export function SignIn() {
-  const { supabase, session } = useAuth();
-
+  const { supabase } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
 
@@ -21,10 +19,6 @@ export function SignIn() {
     handleSubmit,
   } = useForm<SignInForm>();
 
-  if (session) {
-    redirect(paths.profile);
-  }
-
   const onSubmit = async (formData: SignInForm) => {
     setIsLoading(true);
 
@@ -32,6 +26,8 @@ export function SignIn() {
       process?.env?.NEXT_PUBLIC_SITE_URL ??
       process?.env?.NEXT_PUBLIC_VERCEL_URL ??
       "http://localhost:3000/";
+
+    console.log(emailRedirectTo, emailRedirectTo.replace(/\/$/, ""));
 
     const { error } = await supabase.auth.signInWithOtp({
       email: formData.email,

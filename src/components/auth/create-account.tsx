@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -14,8 +13,7 @@ type CreateAccountForm = {
 };
 
 export function CreateAccount() {
-  const { supabase, session } = useAuth();
-
+  const { supabase } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
 
@@ -24,10 +22,6 @@ export function CreateAccount() {
     formState: { errors },
     handleSubmit,
   } = useForm<CreateAccountForm>();
-
-  if (session) {
-    redirect(paths.profile);
-  }
 
   const onSubmit = async (formData: CreateAccountForm) => {
     setIsLoading(true);
