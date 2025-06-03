@@ -25,15 +25,13 @@ export function SignIn() {
     const emailRedirectTo =
       process?.env?.NEXT_PUBLIC_SITE_URL ??
       process?.env?.NEXT_PUBLIC_VERCEL_URL ??
-      "http://localhost:3000/";
-
-    console.log(emailRedirectTo, emailRedirectTo.replace(/\/$/, ""));
+      "http://localhost:3000";
 
     const { error } = await supabase.auth.signInWithOtp({
       email: formData.email,
       options: {
         shouldCreateUser: false,
-        emailRedirectTo: emailRedirectTo.replace(/\/$/, ""),
+        emailRedirectTo,
       },
     });
 

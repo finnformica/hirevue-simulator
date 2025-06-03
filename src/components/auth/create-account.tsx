@@ -34,7 +34,7 @@ export function CreateAccount() {
     const { data, error } = await supabase.auth.signInWithOtp({
       email: formData.email,
       options: {
-        emailRedirectTo: emailRedirectTo.replace(/\/$/, ""),
+        emailRedirectTo,
         data: {
           first_name: formData.first_name,
           last_name: formData.last_name,
