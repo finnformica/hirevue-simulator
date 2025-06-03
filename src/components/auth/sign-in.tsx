@@ -37,7 +37,7 @@ export function SignIn() {
       email: formData.email,
       options: {
         shouldCreateUser: false,
-        emailRedirectTo,
+        emailRedirectTo: emailRedirectTo.replace(/\/$/, ""),
       },
     });
 
