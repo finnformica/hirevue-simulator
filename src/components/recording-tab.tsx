@@ -55,6 +55,15 @@ export const RecordingTab = () => {
           video: true,
           audio: true,
         });
+
+        // check if the video track is ready
+        const videoTrack = stream.getVideoTracks()[0];
+        console.log("Video state:", videoTrack.readyState); // should be "live"
+
+        // check if the audio track is ready
+        const audioTrack = stream.getAudioTracks()[0];
+        console.log("Audio state:", audioTrack.readyState); // should be "live"
+
         streamRef.current = stream;
         setPermission(true);
         if (videoRef.current) {
