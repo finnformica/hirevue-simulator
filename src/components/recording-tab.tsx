@@ -240,6 +240,7 @@ export const RecordingTab = () => {
             autoPlay
             playsInline
             muted
+            crossOrigin="anonymous"
             className="w-full aspect-video bg-black"
           />
 
