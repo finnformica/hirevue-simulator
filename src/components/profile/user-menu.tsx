@@ -15,7 +15,15 @@ import { useAppDispatch } from "@/lib/store/hooks";
 import { setTheme } from "@/lib/store/slices/userSlice";
 import { useAuth } from "@/providers/auth-provider";
 import { paths } from "@/utils/paths";
-import { LogOut, Menu, Monitor, Moon, Settings, Sun } from "lucide-react";
+import {
+  CircleDotDashed,
+  LogOut,
+  Menu,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -95,6 +103,12 @@ export function UserMenu() {
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
+        <Link href={paths.home}>
+          <DropdownMenuItem>
+            <CircleDotDashed className="mr-2 h-4 w-4" />
+            <span>Home page</span>
+          </DropdownMenuItem>
+        </Link>
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
