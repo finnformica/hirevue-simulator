@@ -3,12 +3,6 @@ import { createClientForServer } from "@/utils/supabase/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
-
   const supabase = await createClientForServer();
   const {
     data: { session },
@@ -36,8 +30,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(paths.home, request.url));
   }
 
-  response.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+  // If user is not signed in and trying to access /api routes, return 401
+  if (!session && request.nextUrl.pathname.startsWith("/api/")) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const response = NextResponse.next({ request: { headers: request.headers } });
+
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  response.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
 
   return response;
 }
@@ -51,7 +52,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    // "/((?!_next/static|_next/image|favicon.ico).*)",
-    "/:path*",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
