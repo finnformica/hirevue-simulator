@@ -36,6 +36,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(paths.home, request.url));
   }
 
+  response.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+  response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+
   return response;
 }
 
@@ -48,6 +51,7 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    // "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/:path*",
   ],
 };
