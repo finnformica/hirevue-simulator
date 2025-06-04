@@ -25,7 +25,9 @@ export const RecordingTab = () => {
   const countdown = countdownTime * 1000;
 
   const [error, setError] = useState<string | null>(null);
-  const [permission, setPermission] = useState(false); // camera and microphone permission
+  const [permission, setPermission] = useState<
+    "pending" | "denied" | "accepted"
+  >("pending"); // camera and microphone permission
   const [isRecording, setIsRecording] = useState(false);
   const [timeLeft, setTimeLeft] = useState(maxRecordingTime); // 60 seconds for the interview question
   const [isCountingDown, setIsCountingDown] = useState(false); // display countdown timer
@@ -80,7 +82,7 @@ export const RecordingTab = () => {
       console.log("Audio state:", audioTrack.readyState); // should be "live"
 
       streamRef.current = stream;
-      setPermission(true);
+      setPermission("accepted");
 
       console.log("Video ref current srcObject:", videoRef.current?.srcObject);
       if (videoRef.current) {
@@ -89,8 +91,7 @@ export const RecordingTab = () => {
       }
     } catch (error) {
       console.error("Error accessing media devices:", error);
-      setError("Failed to access camera and microphone");
-      setPermission(false);
+      setPermission("denied");
     }
   }
 
@@ -201,20 +202,6 @@ export const RecordingTab = () => {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  if (!permission) {
-    return (
-      <div className="p-4 text-center">
-        <h2 className="text-2xl font-bold mb-4">
-          Camera & Microphone Access Required
-        </h2>
-        <p className="text-gray-600">
-          Please allow access to your camera and microphone to start the
-          interview.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-2">
       {error && (
@@ -263,6 +250,28 @@ export const RecordingTab = () => {
           {isRecording && (
             <div className="mt-4">
               <Progress value={(timeLeft / maxRecordingTime) * 100} />
+            </div>
+          )}
+
+          {(permission === "pending" || permission === "denied") && (
+            <div
+              className={`absolute inset-0 flex text-center items-center justify-center z-10 ${permission === "pending" ? "bg-black/70 text-white" : "bg-black/80 text-red-400"}`}
+            >
+              <div>
+                <p className="text-lg font-semibold">
+                  {permission === "pending"
+                    ? "Requesting camera and microphone access…"
+                    : "Camera/Microphone access denied"}
+                </p>
+                {permission === "denied" && (
+                  <>
+                    {error && <p className="mt-2 text-sm">{error}</p>}
+                    <p className="mt-2 text-sm">
+                      Please enable permissions and reload the page.
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </CardContent>
