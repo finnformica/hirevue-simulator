@@ -85,6 +85,7 @@ export const RecordingTab = () => {
       console.log("Video ref current srcObject:", videoRef.current?.srcObject);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.play(); // Force video to play in case autoPlay is not working
       }
     } catch (error) {
       console.error("Error accessing media devices:", error);
