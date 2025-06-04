@@ -1,8 +1,10 @@
-import { useAuth } from "@/providers/auth-provider";
-import { paths } from "@/utils/paths";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useAuth } from "@/providers/auth-provider";
+import { paths } from "@/utils/paths";
 
 type SignInForm = {
   email: string;
@@ -12,6 +14,7 @@ export function SignIn() {
   const { supabase } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
     register,
@@ -21,6 +24,7 @@ export function SignIn() {
 
   const onSubmit = async (formData: SignInForm) => {
     setIsLoading(true);
+    setErrorMsg(null);
 
     const emailRedirectTo =
       process?.env?.NEXT_PUBLIC_SITE_URL ??
@@ -36,7 +40,13 @@ export function SignIn() {
     });
 
     if (error) {
-      console.error("Error sending magic link:", error);
+      if (error.status === 422) {
+        setErrorMsg(
+          "No account found for this email. You may need to create an account."
+        );
+      } else {
+        setErrorMsg(error.message || "An error occurred. Please try again.");
+      }
       setIsLoading(false);
       return;
     } else {
@@ -55,6 +65,12 @@ export function SignIn() {
           <p className="text-gray-400 mt-2">Sign in to your account</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          {errorMsg && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{errorMsg}</AlertDescription>
+            </Alert>
+          )}
           {!isEmailSent ? (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>

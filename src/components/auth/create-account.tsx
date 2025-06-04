@@ -2,6 +2,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/providers/auth-provider";
 import { paths } from "@/utils/paths";
 
@@ -16,6 +17,7 @@ export function CreateAccount() {
   const { supabase } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
     register,
@@ -25,13 +27,14 @@ export function CreateAccount() {
 
   const onSubmit = async (formData: CreateAccountForm) => {
     setIsLoading(true);
+    setErrorMsg(null);
 
     const emailRedirectTo =
       process?.env?.NEXT_PUBLIC_SITE_URL ??
       process?.env?.NEXT_PUBLIC_VERCEL_URL ??
       "http://localhost:3000";
 
-    const { data, error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithOtp({
       email: formData.email,
       options: {
         emailRedirectTo,
@@ -43,7 +46,16 @@ export function CreateAccount() {
     });
 
     if (error) {
-      console.error("Error sending magic link:", error);
+      // Handle common Supabase errors
+      if (error.status === 400) {
+        setErrorMsg("Please enter a valid email address.");
+      } else if (error.status === 409) {
+        setErrorMsg(
+          "An account with this email already exists. Please sign in instead."
+        );
+      } else {
+        setErrorMsg(error.message || "An error occurred. Please try again.");
+      }
       setIsLoading(false);
       return;
     } else {
@@ -64,6 +76,12 @@ export function CreateAccount() {
           </p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
+          {errorMsg && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{errorMsg}</AlertDescription>
+            </Alert>
+          )}
           {!isEmailSent ? (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
