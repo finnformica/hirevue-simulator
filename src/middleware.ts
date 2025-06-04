@@ -37,9 +37,6 @@ export async function middleware(request: NextRequest) {
 
   const response = NextResponse.next({ request: { headers: request.headers } });
 
-  response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
-  response.headers.set("Cross-Origin-Embedder-Policy", "require-corp");
-
   return response;
 }
 
