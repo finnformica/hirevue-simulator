@@ -4,13 +4,18 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const supabase = await createClientForServer();
+  // Do not run code between createServerClient and
+  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
+  // issues with users being randomly logged out.
+
+  // IMPORTANT: DO NOT REMOVE auth.getUser()
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // If user is signed in and trying to access auth pages, redirect to profile
   if (
-    session &&
+    user &&
     (request.nextUrl.pathname === paths.signIn ||
       request.nextUrl.pathname === paths.createAccount)
   ) {
@@ -21,17 +26,17 @@ export async function middleware(request: NextRequest) {
   // Handled by Auth Guard in the app layout
 
   // If user is signed in and on the root page, redirect to profile
-  if (session && request.nextUrl.pathname === "/") {
+  if (user && request.nextUrl.pathname === "/") {
     return NextResponse.redirect(new URL(paths.profile, request.url));
   }
 
   // If user is not signed in and on the root page, redirect to home
-  if (!session && request.nextUrl.pathname === "/") {
+  if (!user && request.nextUrl.pathname === "/") {
     return NextResponse.redirect(new URL(paths.home, request.url));
   }
 
   // If user is not signed in and trying to access /api routes, return 401
-  if (!session && request.nextUrl.pathname.startsWith("/api/")) {
+  if (!user && request.nextUrl.pathname.startsWith("/api/")) {
     return new Response("Unauthorized", { status: 401 });
   }
 

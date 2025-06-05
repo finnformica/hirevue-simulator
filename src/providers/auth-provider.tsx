@@ -1,6 +1,9 @@
 "use client";
 
-import { createClientForBrowser } from "@/utils/supabase/client";
+import {
+  supabaseClientForBrowser as supabase,
+  SupabaseClientForBrowser,
+} from "@/utils/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import {
@@ -14,7 +17,7 @@ import {
 type AuthContextType = {
   user: User | null;
   session: Session | null;
-  supabase: ReturnType<typeof createClientForBrowser>;
+  supabase: SupabaseClientForBrowser;
   isLoading: boolean;
   signOut: () => Promise<void>;
 };
@@ -26,7 +29,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const supabase = createClientForBrowser();
 
   useEffect(() => {
     const getSession = async () => {

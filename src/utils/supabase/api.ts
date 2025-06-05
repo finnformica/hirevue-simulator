@@ -1,3 +1,4 @@
+// IMPORTANT = remove this file in favour of the server side supabase client
 import { createClient } from "@supabase/supabase-js";
 
 export const supabaseApi = createClient(
