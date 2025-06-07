@@ -1,5 +1,5 @@
 export interface InterviewSchema {
-  id: number; // bigint
+  id: string; // uuid
   created_at: string; // ISO timestamp
   user_id: string | null; // uuid
   prompt_id: string | null; // uuid
@@ -7,4 +7,16 @@ export interface InterviewSchema {
   status: string | null;
 }
 
-export type InterviewSchemaInsert = Omit<InterviewSchema, "id" | "created_at">;
+export type InterviewSchemaInsert = Omit<InterviewSchema, "created_at">;
+
+export interface TranscriptionSchema {
+  id: string; // uuid
+  created_at: string; // ISO timestamp
+  interview_id: string; // uuid
+  text_content: string;
+}
+
+export type TranscriptionSchemaInsert = Omit<
+  TranscriptionSchema,
+  "id" | "created_at"
+>;

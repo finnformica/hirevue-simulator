@@ -1,3 +1,5 @@
+import { insertRecords } from "@/lib/supabase/server";
+import { TranscriptionSchemaInsert } from "@/lib/types/schemas";
 import { NextResponse } from "next/server";
 
 const HF_API_URL =
@@ -8,10 +10,18 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const audioFile = formData.get("audio") as File;
+    const interviewId = formData.get("interviewId") as string;
 
     if (!audioFile) {
       return NextResponse.json(
         { error: "No audio file provided" },
+        { status: 400 }
+      );
+    }
+
+    if (!interviewId) {
+      return NextResponse.json(
+        { error: "No interviewId provided" },
         { status: 400 }
       );
     }
@@ -42,11 +52,28 @@ export async function POST(request: Request) {
     }
 
     const result = await response.json();
+    const text = result.text;
 
-    return NextResponse.json({
-      text: result.text,
-      confidence: result.confidence || 0.95,
+    const records: TranscriptionSchemaInsert[] = [
+      {
+        interview_id: interviewId,
+        text_content: text,
+      },
+    ];
+
+    // Insert transcription record using insertRecords
+    const { error: insertError } = await insertRecords({
+      table: "transcriptions",
+      records,
     });
+    if (insertError) {
+      return NextResponse.json(
+        { error: "Failed to save transcription: " + insertError.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ text });
   } catch (error) {
     console.error("Transcription error:", error);
     return NextResponse.json(

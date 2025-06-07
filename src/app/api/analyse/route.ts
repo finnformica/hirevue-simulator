@@ -1,4 +1,3 @@
-import { supabaseApi } from "@/utils/supabase/api";
 import { NextResponse } from "next/server";
 
 // API Configuration
@@ -119,62 +118,6 @@ interface RepetitionAnalysis {
     sentences: string[];
   }>;
   repetitionScore: number;
-}
-
-interface CachedAnalysis {
-  id: string;
-  transcription: string;
-  prompt: string;
-  analysis: any;
-  created_at: Date;
-}
-
-async function getCachedAnalysis(
-  transcription: string,
-  prompt: string
-): Promise<CachedAnalysis | null> {
-  try {
-    const { data, error } = await supabaseApi
-      .from("analysis_cache")
-      .select("*")
-      .eq("transcription", transcription)
-      .eq("prompt", prompt)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error) {
-      console.error("Error fetching cached analysis:", error);
-      return null;
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error fetching cached analysis:", error);
-    return null;
-  }
-}
-
-async function cacheAnalysis(
-  analysis: any,
-  transcription: string,
-  prompt: string
-): Promise<void> {
-  try {
-    const { error } = await supabaseApi.from("analysis_cache").insert({
-      id: analysis.id,
-      transcription,
-      prompt,
-      analysis,
-      created_at: new Date().toISOString(),
-    });
-
-    if (error) {
-      console.error("Error caching analysis:", error);
-    }
-  } catch (error) {
-    console.error("Error caching analysis:", error);
-  }
 }
 
 async function safeExecute<T>(

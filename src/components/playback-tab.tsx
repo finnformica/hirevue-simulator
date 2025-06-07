@@ -241,7 +241,7 @@ const PlaybackTab = () => {
         {isTranscribing ? (
           <p className="text-muted-foreground">Transcribing your response...</p>
         ) : transcription ? (
-          <p className="whitespace-pre-wrap">{transcription}</p>
+          <p className="whitespace-pre-wrap break-words">{transcription}</p>
         ) : (
           <p className="text-muted-foreground">No transcription available</p>
         )}

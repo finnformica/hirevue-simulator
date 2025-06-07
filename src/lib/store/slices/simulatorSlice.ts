@@ -22,6 +22,7 @@ export interface SimulatorState {
   isTranscribing: boolean;
   isAnalysing: boolean;
   error: string | null;
+  interviewId: string | null;
 }
 
 const initialState: SimulatorState = {
@@ -33,16 +34,19 @@ const initialState: SimulatorState = {
   isTranscribing: false,
   isAnalysing: false,
   error: null,
+  interviewId: null,
 };
 
 export const processRecording = createAsyncThunk(
   "simulator/processRecording",
   async (
     {
+      interviewId,
       videoBlob,
       audioBlob,
       prompt,
     }: {
+      interviewId: string;
       videoBlob: Blob;
       audioBlob: Blob;
       prompt: string;
@@ -67,6 +71,7 @@ export const processRecording = createAsyncThunk(
       const formData = new FormData();
       formData.append("audio", audioBlob);
       formData.append("prompt", prompt);
+      formData.append("interviewId", interviewId);
 
       const transcriptionResponse = await fetch(endpoints.transcribe, {
         method: "POST",
@@ -152,6 +157,9 @@ const simulatorSlice = createSlice({
     setError: (state, action) => {
       state.error = action.payload;
     },
+    setInterviewId: (state, action) => {
+      state.interviewId = action.payload;
+    },
     resetSimulator: (state) => {
       return initialState;
     },
@@ -168,6 +176,7 @@ export const {
   setAnalysing,
   setError,
   resetSimulator,
+  setInterviewId,
 } = simulatorSlice.actions;
 
 export default simulatorSlice.reducer;

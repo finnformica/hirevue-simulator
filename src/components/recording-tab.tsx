@@ -4,6 +4,7 @@ import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile, toBlobURL } from "@ffmpeg/util";
 import { Video } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { v4 as uuid } from "uuid";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import {
   processRecording,
   setCurrentTab,
+  setInterviewId,
 } from "@/lib/store/slices/simulatorSlice";
 import { useAuth } from "@/providers/auth-provider";
 import { uploadInterview } from "@/utils/api/interview";
@@ -24,7 +26,7 @@ type Permission = "pending" | "denied" | "accepted";
 export const RecordingTab = () => {
   const { user } = useAuth();
   const dispatch = useAppDispatch();
-  const { prompt } = useAppSelector((state) => state.simulator);
+  const { prompt, interviewId } = useAppSelector((state) => state.simulator);
 
   const countdownTime = 3;
   const maxRecordingTime = 120;
@@ -104,6 +106,9 @@ export const RecordingTab = () => {
     setupMedia();
 
     return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, []);
@@ -128,6 +133,11 @@ export const RecordingTab = () => {
   const startRecording = () => {
     if (!streamRef.current) return;
 
+    setError(null);
+
+    // generate a new interview id for each recording
+    dispatch(setInterviewId(uuid()));
+
     const recorder = new MediaRecorder(streamRef.current, {
       mimeType: "video/webm",
     });
@@ -141,9 +151,16 @@ export const RecordingTab = () => {
     };
 
     recorder.onstop = async () => {
+      if (!user || !prompt || !interviewId || loading) {
+        setError("Error processing recording, please try again.");
+        return;
+      }
+
+      setLoading(true);
+
       const videoBlob = new Blob(chunksRef.current, { type: "video/webm" });
 
-      const ffmpeg = ffmpegRef.current;
+      const ffmpeg = ffmpegRef?.current;
       if (!ffmpeg) throw new Error("FFmpeg not loaded");
 
       // Load FFmpeg if not loaded
@@ -167,33 +184,38 @@ export const RecordingTab = () => {
       const audioBlob = new Blob([audioData], { type: "audio/mp3" });
 
       // After processing, upload to Supabase and insert interview record
-      if (user && prompt && !loading) {
-        setLoading(true);
+      const payload = {
+        userId: user.id,
+        interviewId,
+        promptId: prompt.id,
+        videoBlob,
+      };
 
-        const payload = {
-          userId: user.id,
-          promptId: prompt.id,
-          videoBlob,
-        };
+      // upload the video blob and insert the interview record
+      const { error: uploadError } = await uploadInterview(payload);
 
-        const { error: uploadError, data: interviewData } =
-          await uploadInterview(payload);
-
-        if (uploadError) {
-          setError("Failed to upload recording: " + uploadError.message);
-          return;
-        }
-
-        setLoading(false);
-        // Optionally, you can use interviewData for further UI updates
-      }
-
-      if (prompt) {
-        dispatch(
-          processRecording({ videoBlob, audioBlob, prompt: prompt.question })
+      if (uploadError) {
+        setError(
+          "Failed to upload recording: " +
+            uploadError.message +
+            "\nPlease try again."
         );
+        setLoading(false);
+        return;
       }
+
+      dispatch(
+        processRecording({
+          videoBlob,
+          audioBlob,
+          prompt: prompt.question,
+          interviewId,
+        })
+      );
+
       dispatch(setCurrentTab("playback"));
+
+      setLoading(false);
     };
 
     recorder.start();

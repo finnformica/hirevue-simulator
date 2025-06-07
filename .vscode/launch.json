@@ -1,14 +1,32 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
+    "compounds": [{"name": "next.js + chrome", "configurations": ["next.js", "chrome"]}],
     "configurations": [
         {
-            "command": "npm run dev",
-            "name": "Next.js",
+            "name": "next.js",
+            "type": "node-terminal",
             "request": "launch",
-            "type": "node-terminal"
+            "command": "npm run dev --inspect",
+        },
+        {
+            "name": "chrome",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}/src",
+            "userDataDir": "${workspaceFolder}/.vscode/chrome",
+            "skipFiles": [
+                "<node_internals>/**", 
+                "${workspaceFolder}/node_modules/**/*.js", 
+                "${workspaceFolder}/lib/**/*.js", 
+                "webpack-internal:///**"
+            ],
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack://_N_E/*": "${workspaceFolder}/*",
+                "webpack:///./src/*": "${webRoot}/src/*",
+                "webpack:///src/*": "${webRoot}/src/*"
+            }
         }
     ]
 }
