@@ -5,9 +5,17 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 export type TabValue = "prompt" | "recording" | "playback" | "analysis";
 
+type Prompt = {
+  id: string;
+  question: string;
+  difficulty: string;
+  category: string;
+  duration: number;
+};
+
 export interface SimulatorState {
   currentTab: TabValue;
-  prompt: string | null;
+  prompt: Prompt | null;
   videoUrl: string | null;
   transcription: string | null;
   analysis: AnalysisResult | null;

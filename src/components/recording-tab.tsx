@@ -7,16 +7,22 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import {
   processRecording,
   setCurrentTab,
 } from "@/lib/store/slices/simulatorSlice";
+import { useAuth } from "@/providers/auth-provider";
+import { uploadInterview } from "@/utils/api/interview";
 
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Progress } from "./ui/progress";
 
+type Permission = "pending" | "denied" | "accepted";
+
 export const RecordingTab = () => {
+  const { user } = useAuth();
   const dispatch = useAppDispatch();
   const { prompt } = useAppSelector((state) => state.simulator);
 
@@ -24,32 +30,27 @@ export const RecordingTab = () => {
   const maxRecordingTime = 120;
   const countdown = countdownTime * 1000;
 
-  const [error, setError] = useState<string | null>(null);
-  const [permission, setPermission] = useState<
-    "pending" | "denied" | "accepted"
-  >("pending"); // camera and microphone permission
+  const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(maxRecordingTime); // 60 seconds for the interview question
   const [isCountingDown, setIsCountingDown] = useState(false); // display countdown timer
   const [countdownValue, setCountdownValue] = useState(countdown); // countdown value for the time in seconds
+  const [permission, setPermission] = useState<Permission>("pending"); // camera and microphone permission
 
   const chunksRef = useRef<Blob[]>([]);
+  const ffmpegRef = useRef<FFmpeg | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const ffmpegRef = useRef<FFmpeg | null>(null);
 
-  const loadFFmpeg = async () => {
+  async function loadFFmpeg() {
     try {
       const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd";
 
       const ffmpeg = new FFmpeg();
       ffmpegRef.current = ffmpeg;
-
-      ffmpeg.on("log", ({ message }) => {
-        console.log(message);
-      });
 
       await ffmpeg.load({
         coreURL: await toBlobURL(
@@ -64,7 +65,7 @@ export const RecordingTab = () => {
     } catch (error) {
       console.error("Error loading FFmpeg:", error);
     }
-  };
+  }
 
   async function setupMedia() {
     try {
@@ -73,21 +74,11 @@ export const RecordingTab = () => {
         audio: true,
       });
 
-      // check if the video track is ready
-      const videoTrack = stream.getVideoTracks()[0];
-      console.log("Video state:", videoTrack.readyState); // should be "live"
-
-      // check if the audio track is ready
-      const audioTrack = stream.getAudioTracks()[0];
-      console.log("Audio state:", audioTrack.readyState); // should be "live"
-
       streamRef.current = stream;
       setPermission("accepted");
 
-      console.log("Video ref current srcObject:", videoRef.current?.srcObject);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play(); // Force video to play in case autoPlay is not working
       }
     } catch (error) {
       console.error("Error accessing media devices:", error);
@@ -113,9 +104,6 @@ export const RecordingTab = () => {
     setupMedia();
 
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, []);
@@ -178,8 +166,32 @@ export const RecordingTab = () => {
       const audioData = await ffmpeg.readFile("output.mp3");
       const audioBlob = new Blob([audioData], { type: "audio/mp3" });
 
+      // After processing, upload to Supabase and insert interview record
+      if (user && prompt && !loading) {
+        setLoading(true);
+
+        const payload = {
+          userId: user.id,
+          promptId: prompt.id,
+          videoBlob,
+        };
+
+        const { error: uploadError, data: interviewData } =
+          await uploadInterview(payload);
+
+        if (uploadError) {
+          setError("Failed to upload recording: " + uploadError.message);
+          return;
+        }
+
+        setLoading(false);
+        // Optionally, you can use interviewData for further UI updates
+      }
+
       if (prompt) {
-        dispatch(processRecording({ videoBlob, audioBlob, prompt }));
+        dispatch(
+          processRecording({ videoBlob, audioBlob, prompt: prompt.question })
+        );
       }
       dispatch(setCurrentTab("playback"));
     };
@@ -216,7 +228,7 @@ export const RecordingTab = () => {
           <CardTitle>Your Prompt</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>{prompt}</p>
+          <p>{prompt?.question}</p>
         </CardContent>
       </Card>
 
@@ -230,6 +242,12 @@ export const RecordingTab = () => {
             muted
             className="w-full aspect-video bg-black"
           />
+
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-20">
+              <Spinner size={56} />
+            </div>
+          )}
 
           {/* Countdown overlay */}
           {isCountingDown && (

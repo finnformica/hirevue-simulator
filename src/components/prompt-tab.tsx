@@ -8,8 +8,14 @@ import { setCurrentTab, setPrompt } from "@/lib/store/slices/simulatorSlice";
 export function PromptTab() {
   const dispatch = useAppDispatch();
 
-  const prompt =
-    "Please describe a challenging project you worked on during your studies or internship, and explain how you overcame any obstacles and what you learned from the experience.";
+  const prompt = {
+    id: "63545bce-d8ce-4f09-a9f1-d73611c2107a",
+    question:
+      "Please describe a challenging project you worked on during your studies or internship, and explain how you overcame any obstacles and what you learned from the experience.",
+    category: "general",
+    difficulty: "easy",
+    duration: 120,
+  };
 
   const handleStart = () => {
     dispatch(setPrompt(prompt));
@@ -23,7 +29,7 @@ export function PromptTab() {
           <CardTitle>Your Prompt</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>{prompt}</p>
+          <p>{prompt.question}</p>
         </CardContent>
       </Card>
       <Button onClick={handleStart}>
