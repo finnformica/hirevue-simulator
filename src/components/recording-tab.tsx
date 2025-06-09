@@ -1,10 +1,9 @@
 "use client";
 
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile, toBlobURL } from "@ffmpeg/util";
+import { toBlobURL } from "@ffmpeg/util";
 import { Video } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { v4 as uuid } from "uuid";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,10 +12,8 @@ import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import {
   processRecording,
   setCurrentTab,
-  setInterviewId,
 } from "@/lib/store/slices/simulatorSlice";
 import { useAuth } from "@/providers/auth-provider";
-import { uploadInterview } from "@/utils/api/interview";
 
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Progress } from "./ui/progress";
@@ -26,7 +23,7 @@ type Permission = "pending" | "denied" | "accepted";
 export const RecordingTab = () => {
   const { user } = useAuth();
   const dispatch = useAppDispatch();
-  const { prompt, interviewId } = useAppSelector((state) => state.simulator);
+  const { prompt } = useAppSelector((state) => state.simulator);
 
   const countdownTime = 3;
   const maxRecordingTime = 120;
@@ -114,29 +111,33 @@ export const RecordingTab = () => {
   }, []);
 
   const startCountdown = () => {
-    setIsCountingDown(true);
-    setCountdownValue(countdown);
+    if (true) {
+      console.log("start recording...");
+      dispatch(processRecording({}));
+      dispatch(setCurrentTab("playback"));
+      return;
+    }
 
-    countdownRef.current = setInterval(() => {
-      setCountdownValue((prev) => {
-        if (prev <= 1000) {
-          clearInterval(countdownRef.current!);
-          setIsCountingDown(false);
-          startRecording();
-          return 0;
-        }
-        return prev - 1000;
-      });
-    }, 1000);
+    // setIsCountingDown(true);
+    // setCountdownValue(countdown);
+
+    // countdownRef.current = setInterval(() => {
+    //   setCountdownValue((prev) => {
+    //     if (prev <= 1000) {
+    //       clearInterval(countdownRef.current!);
+    //       setIsCountingDown(false);
+    //       startRecording();
+    //       return 0;
+    //     }
+    //     return prev - 1000;
+    //   });
+    // }, 1000);
   };
 
   const startRecording = () => {
     if (!streamRef.current) return;
 
     setError(null);
-
-    // generate a new interview id for each recording
-    dispatch(setInterviewId(uuid()));
 
     const recorder = new MediaRecorder(streamRef.current, {
       mimeType: "video/webm",
@@ -150,73 +151,76 @@ export const RecordingTab = () => {
       }
     };
 
-    recorder.onstop = async () => {
-      if (!user || !prompt || !interviewId || loading) {
-        setError("Error processing recording, please try again.");
-        return;
-      }
+    // recorder.onstop = async () => {
+    //   if (loading) return;
+    //   if (!user || !prompt) {
+    //     setError("Error processing recording, please try again.");
+    //     return;
+    //   }
 
-      setLoading(true);
+    //   const interviewId = uuid();
 
-      const videoBlob = new Blob(chunksRef.current, { type: "video/webm" });
+    //   setLoading(true);
 
-      const ffmpeg = ffmpegRef?.current;
-      if (!ffmpeg) throw new Error("FFmpeg not loaded");
+    //   const videoBlob = new Blob(chunksRef.current, { type: "video/webm" });
 
-      // Load FFmpeg if not loaded
-      if (!ffmpeg.loaded) await ffmpeg.load();
+    //   const ffmpeg = ffmpegRef?.current;
+    //   if (!ffmpeg) throw new Error("FFmpeg not loaded");
 
-      // Write the video blob to FFmpeg's virtual filesystem
-      ffmpeg.writeFile("input.webm", await fetchFile(videoBlob));
+    //   // Load FFmpeg if not loaded
+    //   if (!ffmpeg.loaded) await ffmpeg.load();
 
-      // Extract audio
-      await ffmpeg.exec([
-        "-i",
-        "input.webm",
-        "-vn",
-        "-acodec",
-        "libmp3lame",
-        "output.mp3",
-      ]);
+    //   // Write the video blob to FFmpeg's virtual filesystem
+    //   ffmpeg.writeFile("input.webm", await fetchFile(videoBlob));
 
-      // Read the audio file
-      const audioData = await ffmpeg.readFile("output.mp3");
-      const audioBlob = new Blob([audioData], { type: "audio/mp3" });
+    //   // Extract audio
+    //   await ffmpeg.exec([
+    //     "-i",
+    //     "input.webm",
+    //     "-vn",
+    //     "-acodec",
+    //     "libmp3lame",
+    //     "output.mp3",
+    //   ]);
 
-      // After processing, upload to Supabase and insert interview record
-      const payload = {
-        userId: user.id,
-        interviewId,
-        promptId: prompt.id,
-        videoBlob,
-      };
+    //   // Read the audio file
+    //   const audioData = await ffmpeg.readFile("output.mp3");
+    //   const audioBlob = new Blob([audioData], { type: "audio/mp3" });
 
-      // upload the video blob and insert the interview record
-      const { error: uploadError } = await uploadInterview(payload);
+    //   // After processing, upload to Supabase and insert interview record
+    //   const payload = {
+    //     userId: user.id,
+    //     interviewId,
+    //     promptId: prompt.id,
+    //     videoBlob,
+    //   };
 
-      if (uploadError) {
-        setError(
-          "Failed to upload recording: " +
-            uploadError.message +
-            "\nPlease try again."
-        );
-        setLoading(false);
-        return;
-      }
+    //   // upload the video blob and insert the interview record
+    //   const { error: uploadError } = await uploadInterview(payload);
 
-      dispatch(
-        processRecording({
-          videoBlob,
-          audioBlob,
-          prompt: prompt.question,
-          interviewId,
-        })
-      );
+    //   if (uploadError) {
+    //     setError(
+    //       "Failed to upload recording: " +
+    //         uploadError.message +
+    //         "\nPlease try again."
+    //     );
+    //     setLoading(false);
+    //     return;
+    //   }
 
-      dispatch(setCurrentTab("playback"));
+    //   dispatch(
+    //     processRecording({
+    //       videoBlob,
+    //       audioBlob,
+    //       prompt: prompt.question,
+    //       interviewId,
+    //     })
+    //   );
 
-      setLoading(false);
-    };
+    //   dispatch(setCurrentTab("playback"));
+
+    //   setLoading(false);
+    // };
 
     recorder.start();
     setIsRecording(true);

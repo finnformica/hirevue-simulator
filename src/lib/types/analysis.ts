@@ -1,102 +1,82 @@
-export interface AudioAnalysis {
-  voiceModulation: number | null;
-  pacing: number | null;
-  fluency: number | null;
-  fillerWordCount: number;
-  fillerWords: string[];
+export interface FluencyAnalysis {
+  fillerWords: {
+    count: number;
+    perMinute: number;
+    rating: "Ideal" | "Acceptable" | "Risk";
+    examples: string[];
+  };
+  speakingSpeed: {
+    wordsPerMinute: number;
+    rating: "Too Slow" | "Good" | "Too Fast";
+    segments: Array<{
+      start: number;
+      end: number;
+      speed: number;
+    }>;
+  };
 }
 
 export interface KeywordAnalysis {
-  matchedKeywords: string[];
-  missingKeywords: string[];
-  relevanceScore: number | null;
+  matched: Array<{
+    keyword: string;
+    weight: number;
+    context: string;
+    timing: number;
+  }>;
+  missed: string[];
+  score: number;
+  coverage: number;
 }
 
 export interface GrammarAnalysis {
-  errorCount: number | null;
+  errorRate: number;
+  totalErrors: number;
   errors: Array<{
     type: string;
+    original: string;
     suggestion: string;
     context: string;
   }>;
-  score: number | null;
+  rating: "Excellent" | "Good" | "Needs Improvement";
 }
 
-export interface SentenceComplexity {
+export interface SentenceComplexityAnalysis {
+  simple: number;
+  compound: number;
+  complex: number;
+  compoundComplex: number;
   averageLength: number;
-  complexityScore: number;
-  complexSentences: number;
-  simpleSentences: number;
+  complexityRatio: number;
+  rating: "Balanced" | "Too Simple" | "Too Complex";
 }
 
 export interface RepetitionAnalysis {
-  repeatedWords: Array<{
+  wordFrequency: Array<{
     word: string;
     count: number;
     sentences: string[];
   }>;
+  phraseRepetition: Array<{
+    phrase: string;
+    count: number;
+    context: string[];
+  }>;
   repetitionScore: number;
+  rating: "Good" | "Moderate" | "High";
 }
 
-export interface ConfidenceMetrics {
-  voiceModulation: number | null;
-  pacing: number | null;
-  vocabulary: number | null;
+export interface AnalysisFeedback {
+  strengths: string[];
+  areasForImprovement: string[];
+  specificRecommendations: string[];
+  practiceExercises: string[];
 }
 
-export interface DetailedAnalysis {
-  audio: AudioAnalysis | null;
-  keywords: KeywordAnalysis | null;
-  grammar: GrammarAnalysis | null;
-  sentenceComplexity: SentenceComplexity;
+export interface AnalysisResult {
+  fluency: FluencyAnalysis;
+  keywords: KeywordAnalysis;
+  grammar: GrammarAnalysis;
+  sentenceComplexity: SentenceComplexityAnalysis;
   repetition: RepetitionAnalysis;
-}
-
-export interface AnalysisBase {
-  id: string;
-  interviewId: string;
-  transcription: string;
-  prompt: string;
-  sentimentScore: number | null;
-  clarityScore: number | null;
-  technicalAccuracy: number | null;
-  confidenceMetrics: ConfidenceMetrics;
-  keyPoints: string[] | null;
-  improvementAreas: string[] | null;
-  detailedAnalysis: DetailedAnalysis;
-  createdAt: Date;
-}
-
-export interface Analysis extends AnalysisBase {
-  type: "analysis";
-}
-
-export interface CachedAnalysis extends AnalysisBase {
-  type: "cached";
-  cacheId: string;
-  cachedAt: Date;
-}
-
-export type AnalysisResult = Analysis | CachedAnalysis;
-
-// Type guards
-export function isCachedAnalysis(
-  analysis: AnalysisResult
-): analysis is CachedAnalysis {
-  return analysis.type === "cached";
-}
-
-export function isFreshAnalysis(
-  analysis: AnalysisResult
-): analysis is Analysis {
-  return analysis.type === "analysis";
-}
-
-// Utility functions
-export function getAnalysisDate(analysis: AnalysisResult): Date {
-  return isCachedAnalysis(analysis) ? analysis.cachedAt : analysis.createdAt;
-}
-
-export function getAnalysisId(analysis: AnalysisResult): string {
-  return isCachedAnalysis(analysis) ? analysis.cacheId : analysis.id;
+  feedback: AnalysisFeedback;
 }

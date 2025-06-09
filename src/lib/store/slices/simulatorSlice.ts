@@ -3,6 +3,8 @@ import { AnalysisResult } from "@/lib/types/analysis";
 import { endpoints } from "@/utils/endpoints";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
+import samplePayload from "@/sample_payload.json";
+
 export type TabValue = "prompt" | "recording" | "playback" | "analysis";
 
 type Prompt = {
@@ -22,7 +24,6 @@ export interface SimulatorState {
   isTranscribing: boolean;
   isAnalysing: boolean;
   error: string | null;
-  interviewId: string | null;
 }
 
 const initialState: SimulatorState = {
@@ -34,27 +35,28 @@ const initialState: SimulatorState = {
   isTranscribing: false,
   isAnalysing: false,
   error: null,
-  interviewId: null,
 };
 
 export const processRecording = createAsyncThunk(
   "simulator/processRecording",
   async (
     {
-      interviewId,
-      videoBlob,
-      audioBlob,
-      prompt,
+      // interviewId,
+      // videoBlob,
+      // audioBlob,
+      // prompt,
     }: {
-      interviewId: string;
-      videoBlob: Blob;
-      audioBlob: Blob;
-      prompt: string;
+      // interviewId: string;
+      // videoBlob: Blob;
+      // audioBlob: Blob;
+      // prompt: string;
     },
     { dispatch, getState }
   ) => {
     // Get current state
     const state = getState() as RootState;
+
+    console.log("processing recording...");
 
     // Early exit if already processing
     if (state.simulator.isTranscribing || state.simulator.isAnalysing) {
@@ -63,50 +65,54 @@ export const processRecording = createAsyncThunk(
 
     try {
       // Create videoUrl from videoBlob
-      const videoUrl = URL.createObjectURL(videoBlob);
-      dispatch(setVideoUrl(videoUrl));
+      // const videoUrl = URL.createObjectURL(videoBlob);
+      // dispatch(setVideoUrl(videoUrl));
 
-      // Get transcription from the audio using FormData
-      dispatch(setTranscribing(true));
-      const formData = new FormData();
-      formData.append("audio", audioBlob);
-      formData.append("prompt", prompt);
-      formData.append("interviewId", interviewId);
+      // // Get transcription from the audio using FormData
+      // dispatch(setTranscribing(true));
+      // const formData = new FormData();
+      // formData.append("audio", audioBlob);
+      // formData.append("prompt", prompt);
+      // formData.append("interviewId", interviewId);
 
-      const transcriptionResponse = await fetch(endpoints.transcribe, {
-        method: "POST",
-        body: formData,
-      });
+      // const transcriptionResponse = await fetch(endpoints.transcribe, {
+      //   method: "POST",
+      //   body: formData,
+      // });
 
-      if (!transcriptionResponse.ok) {
-        throw new Error("Transcription failed");
-      }
+      // if (!transcriptionResponse.ok) {
+      //   throw new Error("Transcription failed");
+      // }
 
-      const { text } = await transcriptionResponse.json();
-      const transcription = text.trim();
-      dispatch(setTranscription(transcription));
+      // const { text } = await transcriptionResponse.json();
+      // const transcription = text.trim();
+      // dispatch(setTranscription(transcription));
 
-      // Analyse the response
-      dispatch(setAnalysing(true));
+      // // Analyse the response
+      // dispatch(setAnalysing(true));
 
-      // Convert audioBlob to base64
-      const audioBase64 = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = reader.result as string;
-          resolve(base64.split(",")[1]); // Remove the data URL prefix
-        };
-        reader.readAsDataURL(audioBlob);
-      });
+      // // Convert audioBlob to base64
+      // const audioBase64 = await new Promise<string>((resolve) => {
+      //   const reader = new FileReader();
+      //   reader.onloadend = () => {
+      //     const base64 = reader.result as string;
+      //     resolve(base64.split(",")[1]); // Remove the data URL prefix
+      //   };
+      //   reader.readAsDataURL(audioBlob);
+      // });
+
+      // const payload = {
+      //   transcription,
+      //   prompt,
+      //   audio: audioBase64,
+      // };
+
+      const transcription = samplePayload.transcription;
 
       const analysisResponse = await fetch(endpoints.analyse, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          transcription,
-          prompt,
-          audio: audioBase64,
-        }),
+        body: JSON.stringify(samplePayload),
       });
 
       if (!analysisResponse.ok) {
@@ -157,9 +163,6 @@ const simulatorSlice = createSlice({
     setError: (state, action) => {
       state.error = action.payload;
     },
-    setInterviewId: (state, action) => {
-      state.interviewId = action.payload;
-    },
     resetSimulator: (state) => {
       return initialState;
     },
@@ -176,7 +179,6 @@ export const {
   setAnalysing,
   setError,
   resetSimulator,
-  setInterviewId,
 } = simulatorSlice.actions;
 
 export default simulatorSlice.reducer;
