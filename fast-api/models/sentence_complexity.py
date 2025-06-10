@@ -1,6 +1,4 @@
-from transformers import pipeline
-
-zero_shot_pipe = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+from models.pipelines import zero_shot_pipe
 
 def analyse_sentence_complexity(text: str):
     sentences = [s.strip() for s in text.split('.') if s.strip()]

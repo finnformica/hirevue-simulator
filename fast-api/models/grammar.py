@@ -1,8 +1,5 @@
-from transformers import pipeline
 from utils import cosine_similarity
-
-grammar_pipe = pipeline("text2text-generation", model="vennify/t5-base-grammar-correction")
-embed_pipe = pipeline("feature-extraction", model="sentence-transformers/all-MiniLM-L6-v2")
+from models.pipelines import grammar_pipe, embed_pipe
 
 def analyse_grammar(text: str):
     # 1. Correct the whole text

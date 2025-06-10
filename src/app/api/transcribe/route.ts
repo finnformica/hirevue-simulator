@@ -66,6 +66,7 @@ export async function POST(request: Request) {
       table: "transcriptions",
       records,
     });
+
     if (insertError) {
       return NextResponse.json(
         { error: "Failed to save transcription: " + insertError.message },

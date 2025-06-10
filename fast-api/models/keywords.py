@@ -1,8 +1,5 @@
-from transformers import pipeline
-from utils import cosine_similarity
-from utils import to_python_type
-
-embed_pipe = pipeline("feature-extraction", model="sentence-transformers/all-MiniLM-L6-v2")
+from models.pipelines import embed_pipe
+from utils import to_python_type, cosine_similarity
 
 def analyse_keywords(text: str, required_keywords: list):
     # Batch embedding for all keywords

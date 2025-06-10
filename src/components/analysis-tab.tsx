@@ -143,6 +143,54 @@ function AnalysisSection({
   );
 }
 
+function MetricFeedbackSection({
+  metric,
+  feedback,
+}: {
+  metric: string;
+  feedback: {
+    strengths: string[];
+    areasForImprovement: string[];
+    specificRecommendations: string[];
+    practiceExercises: string[];
+  };
+}) {
+  if (!feedback) return null;
+  return (
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle className="text-base capitalize">
+          {metric.replace(/([A-Z])/g, " $1")}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <FeedbackSection
+            title="Strengths"
+            items={feedback.strengths}
+            type="strength"
+          />
+          <FeedbackSection
+            title="Areas for Improvement"
+            items={feedback.areasForImprovement}
+            type="improvement"
+          />
+          <FeedbackSection
+            title="Recommendations"
+            items={feedback.specificRecommendations}
+            type="recommendation"
+          />
+          <FeedbackSection
+            title="Practice Exercises"
+            items={feedback.practiceExercises}
+            type="exercise"
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function AnalysisTab() {
   const dispatch = useAppDispatch();
   const { analysis, isAnalysing, error, transcription } = useAppSelector(
@@ -184,6 +232,16 @@ export function AnalysisTab() {
       </div>
     );
   }
+
+  // Render grouped feedback for each metric
+  const feedback: Record<string, any> = analysis.feedback || {};
+  const feedbackMetrics = [
+    "grammar",
+    "keywords",
+    "sentenceComplexity",
+    "fluency",
+    "repetition",
+  ];
 
   return (
     <div className="container mx-auto p-4 space-y-4">
@@ -349,28 +407,15 @@ export function AnalysisTab() {
               <CardTitle>Personalized Feedback</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[300px] pr-4">
+              <ScrollArea className="h-[600px] pr-4">
                 <div className="space-y-6">
-                  <FeedbackSection
-                    title="Strengths"
-                    items={analysis.feedback.strengths}
-                    type="strength"
-                  />
-                  <FeedbackSection
-                    title="Areas for Improvement"
-                    items={analysis.feedback.areasForImprovement}
-                    type="improvement"
-                  />
-                  <FeedbackSection
-                    title="Recommendations"
-                    items={analysis.feedback.specificRecommendations}
-                    type="recommendation"
-                  />
-                  <FeedbackSection
-                    title="Practice Exercises"
-                    items={analysis.feedback.practiceExercises}
-                    type="exercise"
-                  />
+                  {feedbackMetrics.map((metric) => (
+                    <MetricFeedbackSection
+                      key={metric}
+                      metric={metric}
+                      feedback={(feedback as Record<string, any>)[metric]}
+                    />
+                  ))}
                 </div>
               </ScrollArea>
             </CardContent>
