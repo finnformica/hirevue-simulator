@@ -20,6 +20,7 @@ export interface SimulatorState {
   videoUrl: string | null;
   transcription: string | null;
   analysis: AnalysisResult | null;
+  openaiAnalysis: string | null;
   isTranscribing: boolean;
   isAnalysing: boolean;
   error: string | null;
@@ -31,6 +32,7 @@ const initialState: SimulatorState = {
   videoUrl: null,
   transcription: null,
   analysis: null,
+  openaiAnalysis: null,
   isTranscribing: false,
   isAnalysing: false,
   error: null,
@@ -107,6 +109,7 @@ export const processRecording = createAsyncThunk(
         required_keywords: ["rosemary", "projects"],
       };
 
+      // Old analysis
       const analysisResponse = await fetch(endpoints.analyse, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -120,7 +123,21 @@ export const processRecording = createAsyncThunk(
       const analysis = await analysisResponse.json();
       dispatch(setAnalysis(analysis));
 
-      return { transcription, analysis };
+      // New OpenAI analysis
+      const openaiResponse = await fetch(endpoints.openaiAnalyse, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!openaiResponse.ok) {
+        throw new Error("OpenAI Analysis failed");
+      }
+
+      const { analysis: openaiAnalysis } = await openaiResponse.json();
+      dispatch(setOpenaiAnalysis(openaiAnalysis));
+
+      return { transcription, analysis, openaiAnalysis };
     } catch (error) {
       dispatch(
         setError(error instanceof Error ? error.message : "An error occurred")
@@ -152,6 +169,9 @@ const simulatorSlice = createSlice({
     setAnalysis: (state, action) => {
       state.analysis = action.payload;
     },
+    setOpenaiAnalysis: (state, action) => {
+      state.openaiAnalysis = action.payload;
+    },
     setTranscribing: (state, action) => {
       state.isTranscribing = action.payload;
     },
@@ -173,6 +193,7 @@ export const {
   setVideoUrl,
   setTranscription,
   setAnalysis,
+  setOpenaiAnalysis,
   setTranscribing,
   setAnalysing,
   setError,
