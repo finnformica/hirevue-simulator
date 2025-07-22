@@ -193,9 +193,8 @@ function MetricFeedbackSection({
 
 export function AnalysisTab() {
   const dispatch = useAppDispatch();
-  const { analysis, isAnalysing, error, transcription } = useAppSelector(
-    (state) => state.simulator
-  );
+  const { analysis, openaiAnalysis, isAnalysing, error, transcription } =
+    useAppSelector((state) => state.simulator);
 
   if (isAnalysing) {
     return (
@@ -233,6 +232,22 @@ export function AnalysisTab() {
     );
   }
 
+  // Render OpenAI feedback if available
+  const renderOpenaiAnalysis = openaiAnalysis && (
+    <Card>
+      <CardHeader>
+        <CardTitle>AI Interview Coach Feedback</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="prose max-w-none">
+          {openaiAnalysis.split("\n").map((line, idx) => (
+            <p key={idx}>{line}</p>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   // Render grouped feedback for each metric
   const feedback: Record<string, any> = analysis.feedback || {};
   const feedbackMetrics = [
@@ -245,6 +260,8 @@ export function AnalysisTab() {
 
   return (
     <div className="container mx-auto p-4 space-y-4">
+      {/* OpenAI Feedback */}
+      {renderOpenaiAnalysis}
       {/* Overall Performance Summary */}
       <Card>
         <CardHeader>
