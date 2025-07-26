@@ -1,7 +1,4 @@
 import { NextResponse } from "next/server";
-import { insertRecords } from "@/lib/supabase/server";
-import { TranscriptionSchemaInsert } from "@/lib/types/schemas";
-
 
 export async function POST(request: Request) {
   try {
