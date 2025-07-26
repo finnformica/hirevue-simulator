@@ -79,4 +79,5 @@ export interface AnalysisResult {
   sentenceComplexity: SentenceComplexityAnalysis;
   repetition: RepetitionAnalysis;
   feedback: AnalysisFeedback;
+  aiAnalysis: string;
 }

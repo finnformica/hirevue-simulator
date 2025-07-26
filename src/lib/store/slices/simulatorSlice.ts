@@ -57,8 +57,6 @@ export const processRecording = createAsyncThunk(
     // Get current state
     const state = getState() as RootState;
 
-    console.log("processing recording...");
-
     // Early exit if already processing
     if (state.simulator.isTranscribing || state.simulator.isAnalysing) {
       return;
@@ -104,9 +102,11 @@ export const processRecording = createAsyncThunk(
       });
 
       const payload = {
+        interviewId,
         transcription,
         duration_seconds: 120,
         required_keywords: ["rosemary", "projects"],
+        prompt,
       };
 
       // Old analysis
@@ -123,21 +123,7 @@ export const processRecording = createAsyncThunk(
       const analysis = await analysisResponse.json();
       dispatch(setAnalysis(analysis));
 
-      // New OpenAI analysis
-      const openaiResponse = await fetch(endpoints.openaiAnalyse, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!openaiResponse.ok) {
-        throw new Error("OpenAI Analysis failed");
-      }
-
-      const { analysis: openaiAnalysis } = await openaiResponse.json();
-      dispatch(setOpenaiAnalysis(openaiAnalysis));
-
-      return { transcription, analysis, openaiAnalysis };
+      return { transcription, analysis };
     } catch (error) {
       dispatch(
         setError(error instanceof Error ? error.message : "An error occurred")
@@ -169,9 +155,6 @@ const simulatorSlice = createSlice({
     setAnalysis: (state, action) => {
       state.analysis = action.payload;
     },
-    setOpenaiAnalysis: (state, action) => {
-      state.openaiAnalysis = action.payload;
-    },
     setTranscribing: (state, action) => {
       state.isTranscribing = action.payload;
     },
@@ -193,7 +176,6 @@ export const {
   setVideoUrl,
   setTranscription,
   setAnalysis,
-  setOpenaiAnalysis,
   setTranscribing,
   setAnalysing,
   setError,

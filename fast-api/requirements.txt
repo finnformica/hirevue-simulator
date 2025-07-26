@@ -9,3 +9,4 @@ numpy
 scipy 
 python-multipart
 torchaudio
+python-dotenv
