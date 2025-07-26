@@ -4,6 +4,11 @@ import shutil
 import os
 import time
 
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv('.env.local')
+
 # Import pipelines to ensure they are initialized on app start
 import models.pipelines
 
@@ -14,18 +19,22 @@ from models.fluency import analyse_fluency
 from models.repetition import analyse_repetition
 from models.transcribe import transcribe_audio
 from models.feedback import generate_feedback
-
+from models.ai_coach import generate_ai_feedback
 
 app = FastAPI()
+
 
 class AnalyseRequest(BaseModel):
     transcription: str
     required_keywords: list[str] = []
     duration_seconds: float = None
+    prompt: str = None
 
-@app.get('/')
+
+@app.get("/")
 def index():
     return "Hello world"
+
 
 @app.post("/transcribe")
 async def transcribe(audio: UploadFile = File(...)):
@@ -36,20 +45,21 @@ async def transcribe(audio: UploadFile = File(...)):
     os.remove(audio_path)
     return {"transcription": transcription}
 
+
 @app.post("/analyse")
 async def analyse(req: AnalyseRequest):
     start_time = time.time()
-    print('Starting analysis')
-    
+
     grammar = analyse_grammar(req.transcription)
     keywords = analyse_keywords(req.transcription, req.required_keywords)
     sentence_complexity = analyse_sentence_complexity(req.transcription)
     fluency = analyse_fluency(req.transcription, req.duration_seconds)
     repetition = analyse_repetition(req.transcription)
-    
+    ai_analysis = generate_ai_feedback(req.transcription, req.prompt)
+
     end_time = time.time()
     execution_time = end_time - start_time
-    print(f'Analysis complete in {execution_time:.2f} seconds')
+    print(f"Analysis complete in {execution_time:.2f} seconds")
 
     results = {
         "grammar": grammar,
@@ -57,9 +67,10 @@ async def analyse(req: AnalyseRequest):
         "sentenceComplexity": sentence_complexity,
         "fluency": fluency,
         "repetition": repetition,
+        "aiAnalysis": ai_analysis,
     }
 
     feedback = generate_feedback(results)
     results["feedback"] = feedback
-    
+
     return results

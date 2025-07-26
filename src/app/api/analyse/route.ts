@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { insertRecords } from "@/lib/supabase/server";
+import { AnalysisSchemaInsert } from "@/lib/types/schemas";
 
 const FASTAPI_URL = process.env.FASTAPI_URL;
 
@@ -12,13 +14,25 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { transcription, required_keywords, duration_seconds } = body;
+    const {
+      interviewId,
+      transcription,
+      required_keywords,
+      duration_seconds,
+      prompt,
+    } = body;
 
-    if (!transcription || !required_keywords || !duration_seconds) {
+    if (
+      !interviewId ||
+      !transcription ||
+      !required_keywords ||
+      !duration_seconds ||
+      !prompt
+    ) {
       return NextResponse.json(
         {
           error:
-            "Incorrect payload provided, expected: transcription, required_keywords, duration_seconds",
+            "Incorrect payload provided, expected: interviewId, transcription, required_keywords, duration_seconds, prompt",
         },
         { status: 400 }
       );
@@ -32,6 +46,7 @@ export async function POST(request: Request) {
         transcription,
         required_keywords: required_keywords,
         duration_seconds: duration_seconds,
+        prompt: prompt,
       }),
     });
 
@@ -41,6 +56,44 @@ export async function POST(request: Request) {
     }
 
     const result = await response.json();
+
+
+    const records: AnalysisSchemaInsert[] = [
+      {
+        interview_id: interviewId,
+        grammar: result.grammar ?? {},
+        sentence_complexity: result.sentenceComplexity ?? {},
+        keywords: result.keywords ?? {},
+        fluency: result.fluency ?? {},
+        repetition: result.repetition ?? {},
+        feedback: result.feedback ?? {},
+        ai_coach_summary: result.aiAnalysis,
+      },
+    ];
+
+    let insertData, insertError;
+    try {
+      const result = await insertRecords({
+        table: "analysis",
+        records,
+      });
+      insertData = result.data;
+      insertError = result.error;
+    } catch (error) {
+      console.error("Exception during Supabase insertion:", error);
+      insertError = error;
+    }
+
+    if (insertError) {
+      return NextResponse.json(
+        {
+          error:
+            "Failed to save analysis: " + (insertError as any)?.message ||
+            "Unknown error",
+        },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(result);
   } catch (error) {

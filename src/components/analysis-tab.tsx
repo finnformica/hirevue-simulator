@@ -6,6 +6,7 @@ import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import Markdown from "react-markdown";
 
 function RatingBadge({ rating }: { rating: string }) {
   const getRatingColor = (rating: string) => {
@@ -193,8 +194,9 @@ function MetricFeedbackSection({
 
 export function AnalysisTab() {
   const dispatch = useAppDispatch();
-  const { analysis, openaiAnalysis, isAnalysing, error, transcription } =
-    useAppSelector((state) => state.simulator);
+  const { analysis, isAnalysing, error, transcription } = useAppSelector(
+    (state) => state.simulator
+  );
 
   if (isAnalysing) {
     return (
@@ -233,16 +235,14 @@ export function AnalysisTab() {
   }
 
   // Render OpenAI feedback if available
-  const renderOpenaiAnalysis = openaiAnalysis && (
+  const renderAnalysis = analysis.aiAnalysis && (
     <Card>
       <CardHeader>
         <CardTitle>AI Interview Coach Feedback</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="prose max-w-none">
-          {openaiAnalysis.split("\n").map((line, idx) => (
-            <p key={idx}>{line}</p>
-          ))}
+          <Markdown>{analysis.aiAnalysis}</Markdown>
         </div>
       </CardContent>
     </Card>
@@ -260,8 +260,8 @@ export function AnalysisTab() {
 
   return (
     <div className="container mx-auto p-4 space-y-4">
-      {/* OpenAI Feedback */}
-      {renderOpenaiAnalysis}
+      {/*  Feedback */}
+      {renderAnalysis}
       {/* Overall Performance Summary */}
       <Card>
         <CardHeader>
