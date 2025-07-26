@@ -57,32 +57,23 @@ export async function POST(request: Request) {
 
     const result = await response.json();
 
-
     const records: AnalysisSchemaInsert[] = [
       {
         interview_id: interviewId,
-        grammar: result.grammar ?? {},
-        sentence_complexity: result.sentenceComplexity ?? {},
-        keywords: result.keywords ?? {},
-        fluency: result.fluency ?? {},
-        repetition: result.repetition ?? {},
-        feedback: result.feedback ?? {},
-        ai_coach_summary: result.aiAnalysis,
+        grammar: result?.grammar ?? {},
+        sentence_complexity: result?.sentenceComplexity ?? {},
+        keywords: result?.keywords ?? {},
+        fluency: result?.fluency ?? {},
+        repetition: result?.repetition ?? {},
+        feedback: result?.feedback ?? {},
+        ai_coach_summary: result?.aiAnalysis ?? "",
       },
     ];
 
-    let insertData, insertError;
-    try {
-      const result = await insertRecords({
-        table: "analysis",
-        records,
-      });
-      insertData = result.data;
-      insertError = result.error;
-    } catch (error) {
-      console.error("Exception during Supabase insertion:", error);
-      insertError = error;
-    }
+    const { error: insertError } = await insertRecords({
+      table: "analysis",
+      records,
+    });
 
     if (insertError) {
       return NextResponse.json(

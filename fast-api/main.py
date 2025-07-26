@@ -7,7 +7,7 @@ import time
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv('.env.local')
+load_dotenv()
 
 # Import pipelines to ensure they are initialized on app start
 import models.pipelines
