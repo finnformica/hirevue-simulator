@@ -1,11 +1,13 @@
 "use client";
 
 import { ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { useAppDispatch } from "@/lib/store/hooks";
 import { AnalysisGrade, InterviewAttempt } from "@/lib/types/schemas";
 import { useInterviewAttempts } from "@/utils/api/interview";
 import { PromptWithLastAttempt } from "@/utils/api/prompts";
@@ -60,6 +62,8 @@ export function QuestionRow({
   onToggle,
 }: QuestionRowProps) {
   const [displayedCount, setDisplayedCount] = useState(5);
+  const router = useRouter();
+  const dispatch = useAppDispatch();
 
   // Fetch attempts only when expanded, with increasing page size
   const { attempts, totalCount, isLoading } = useInterviewAttempts(
@@ -81,6 +85,11 @@ export function QuestionRow({
 
   const handleHide = () => {
     setDisplayedCount(5);
+  };
+
+  const handlePracticeClick = () => {
+    // Navigate to the dynamic simulator route with the prompt ID
+    router.push(`/simulator/${question.id}`);
   };
 
   const hasMoreAttempts = displayedCount < totalCount;
@@ -145,7 +154,10 @@ export function QuestionRow({
           )}
         </TableCell>
         <TableCell className="w-32">
-          <Button className="bg-green-600 hover:bg-green-700 text-white">
+          <Button
+            className="bg-green-600 hover:bg-green-700 text-white"
+            onClick={handlePracticeClick}
+          >
             Practice
           </Button>
         </TableCell>

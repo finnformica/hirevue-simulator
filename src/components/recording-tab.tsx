@@ -203,7 +203,7 @@ export const RecordingTab = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Your Prompt</CardTitle>
+          <CardTitle>Your Interview Question</CardTitle>
         </CardHeader>
         <CardContent>
           <p>{prompt?.question}</p>

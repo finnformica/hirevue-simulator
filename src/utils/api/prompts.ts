@@ -81,6 +81,31 @@ export async function fetchPrompts(): Promise<PromptWithLastAttempt[]> {
   return promptsWithAttempts;
 }
 
+export async function fetchPromptById(
+  promptId: string
+): Promise<PromptSchema | null> {
+  const { data: prompt, error } = await supabaseClientForBrowser
+    .from("prompts")
+    .select(
+      `
+      id,
+      created_at,
+      question,
+      duration,
+      difficulty,
+      category
+    `
+    )
+    .eq("id", promptId)
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to fetch prompt: ${error.message}`);
+  }
+
+  return prompt;
+}
+
 export async function fetchInterviewAttempts(
   promptId: string,
   page: number = 1,
