@@ -80,7 +80,7 @@ export default async function Profile() {
           </div>
         </div>
         <Link
-          href={paths.simulator}
+          href={paths.questions}
           className="bg-green-500 hover:bg-green-600 text-black font-medium px-4 py-2 rounded-md transition-colors"
         >
           Start Practice Interview
