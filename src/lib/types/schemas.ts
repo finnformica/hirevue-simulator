@@ -39,7 +39,7 @@ export interface AnalysisSchema {
   repetition: JSON;
   feedback: JSON;
   ai_coach_summary: string;
-  grade: AnalysisGrade;
+  grade?: AnalysisGrade;
 }
 
 export type AnalysisSchemaInsert = Omit<AnalysisSchema, "id" | "created_at">;
