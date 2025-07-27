@@ -235,15 +235,16 @@ export function AnalysisTab() {
   }
 
   // Render OpenAI feedback if available
-  const renderAnalysis = analysis.aiAnalysis && (
+  const renderAnalysis = (
     <Card>
       <CardHeader>
         <CardTitle>AI Interview Coach Feedback</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="prose max-w-none">
-          <Markdown>{analysis.aiAnalysis}</Markdown>
-        </div>
+              {
+        analysis.aiAnalysis ? 
+        (<Markdown>{analysis.aiAnalysis}</Markdown>) : (<p>AI analysis is not available</p>)
+        }
       </CardContent>
     </Card>
   );
