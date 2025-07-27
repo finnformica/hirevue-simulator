@@ -1,13 +1,17 @@
-import { InterviewAttempt, PromptSchema } from "@/lib/types/schemas";
+import {
+  AnalysisGrade,
+  InterviewAttempt,
+  PromptSchema,
+} from "@/lib/types/schemas";
 import { supabaseClientForBrowser } from "@/utils/supabase/client";
 import useSWR from "swr";
 
 // Extended prompt schema with last attempt info
 export interface PromptWithLastAttempt extends PromptSchema {
   lastAttempt: {
-    grade: string | null;
+    grade: AnalysisGrade;
     date: string;
-  };
+  } | null;
 }
 
 // Custom hook for fetching prompts
@@ -56,10 +60,12 @@ export async function fetchPrompts(): Promise<PromptWithLastAttempt[]> {
 
   // Transform the data to match the PromptWithLastAttempt interface
   const promptsWithAttempts: PromptWithLastAttempt[] = prompts.map((prompt) => {
-    // Get the most recent interview (first in the array due to ordering)
+    // Get the most recent interview (last in the array due to ordering)
     const interviews = prompt.last_attempt || [];
-    const lastInterview = interviews.length > 0 ? interviews[0] : null;
-    const grade = lastInterview?.analysis?.[0]?.grade ?? null;
+    const lastInterview =
+      interviews.length > 0 ? interviews[interviews.length - 1] : null;
+    const grade = lastInterview?.analysis[0]?.grade;
+    const date = new Date(lastInterview?.created_at).toLocaleDateString();
 
     return {
       id: prompt.id,
@@ -68,7 +74,7 @@ export async function fetchPrompts(): Promise<PromptWithLastAttempt[]> {
       duration: prompt.duration,
       difficulty: prompt.difficulty,
       category: prompt.category,
-      lastAttempt: { grade, date: lastInterview?.created_at },
+      lastAttempt: lastInterview ? { grade, date } : null,
     };
   });
 
@@ -120,41 +126,10 @@ export async function fetchInterviewAttempts(
     const analysis = interview.analysis?.[0]; // Get the first analysis record (should be only one)
     const grade = analysis?.grade || null;
 
-    // Map grade to score and result
-    let score = 0;
-    let result = "Analysis not available";
-
-    if (grade) {
-      switch (grade) {
-        case "Excellent":
-          score = 90;
-          result = "Excellent";
-          break;
-        case "Good":
-          score = 80;
-          result = "Good";
-          break;
-        case "Needs Improvement":
-          score = 65;
-          result = "Needs Improvement";
-          break;
-        case "Poor":
-          score = 50;
-          result = "Poor";
-          break;
-        default:
-          score = 0;
-          result = "Analysis not available";
-      }
-    }
-
     return {
       id: interview.id,
       created_at: interview.created_at,
       date: new Date(interview.created_at).toLocaleDateString(),
-      score,
-      duration: 0, // We don't have duration in the current schema
-      result,
       grade,
     };
   });

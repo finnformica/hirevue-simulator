@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { InterviewAttempt } from "@/lib/types/schemas";
+import { AnalysisGrade, InterviewAttempt } from "@/lib/types/schemas";
 import { useInterviewAttempts } from "@/utils/api/interview";
 import { PromptWithLastAttempt } from "@/utils/api/prompts";
 
@@ -17,7 +17,7 @@ const difficultyColors = {
 };
 
 // Helper function to get color classes based on result
-function getResultColorClasses(result: string): string {
+function getResultColorClasses(result: AnalysisGrade | null): string {
   switch (result) {
     case "Excellent":
     case "Good":
@@ -25,6 +25,7 @@ function getResultColorClasses(result: string): string {
     case "Average":
       return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
     case "Poor":
+    case "Failed":
       return "bg-red-500/20 text-red-400 border-red-500/30";
     default:
       return "bg-gray-500/20 text-gray-400 border-gray-500/30";
@@ -32,7 +33,7 @@ function getResultColorClasses(result: string): string {
 }
 
 // Helper function to get text color classes based on result
-function getResultTextColorClasses(result: string | null): string {
+function getResultTextColorClasses(result: AnalysisGrade | null): string {
   switch (result) {
     case "Excellent":
     case "Good":
@@ -40,6 +41,7 @@ function getResultTextColorClasses(result: string | null): string {
     case "Average":
       return "text-yellow-400";
     case "Poor":
+    case "Failed":
       return "text-red-400";
     default:
       return "text-gray-400";
@@ -126,9 +128,11 @@ export function QuestionRow({
             <div className="text-sm">
               <div>{question.lastAttempt.date}</div>
               <div
-                className={`text-xs ${getResultTextColorClasses(question.lastAttempt.grade)}`}
+                className={`text-xs ${getResultTextColorClasses(
+                  question.lastAttempt.grade
+                )}`}
               >
-                {question.lastAttempt.grade}
+                {question.lastAttempt.grade ?? "Analysis not available"}
               </div>
             </div>
           ) : (
@@ -177,15 +181,10 @@ export function QuestionRow({
                             </span>
                             <Badge
                               variant="outline"
-                              className={getResultColorClasses(attempt.result)}
+                              className={getResultColorClasses(attempt.grade)}
                             >
-                              {attempt.result}
+                              {attempt.grade ?? "Analysis not available"}
                             </Badge>
-                            {attempt.grade && (
-                              <span className="text-gray-400 text-sm">
-                                Grade: {attempt.grade}
-                              </span>
-                            )}
                           </div>
                           <Button
                             variant="outline"

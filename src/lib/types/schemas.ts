@@ -21,6 +21,13 @@ export type TranscriptionSchemaInsert = Omit<
   "id" | "created_at"
 >;
 
+export type AnalysisGrade =
+  | "Excellent"
+  | "Good"
+  | "Average"
+  | "Poor"
+  | "Failed";
+
 export interface AnalysisSchema {
   id: string;
   created_at: string;
@@ -32,6 +39,7 @@ export interface AnalysisSchema {
   repetition: JSON;
   feedback: JSON;
   ai_coach_summary: string;
+  grade: AnalysisGrade;
 }
 
 export type AnalysisSchemaInsert = Omit<AnalysisSchema, "id" | "created_at">;
@@ -50,9 +58,6 @@ export type PromptSchemaInsert = Omit<PromptSchema, "id" | "created_at">;
 export interface InterviewAttempt {
   id: string;
   created_at: string;
-  date: string; // formatted date
-  score: number;
-  duration: number;
-  result: string;
-  grade?: "Excellent" | "Good" | "Needs Improvement" | "Poor";
+  date: string;
+  grade: AnalysisGrade;
 }
