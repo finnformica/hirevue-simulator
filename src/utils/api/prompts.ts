@@ -106,6 +106,24 @@ export async function fetchPromptById(
   return prompt;
 }
 
+// Custom hook for fetching a single prompt by ID
+export function usePrompt(promptId: string | null) {
+  const { data, error, isLoading, mutate } = useSWR<PromptSchema | null>(
+    promptId ? `prompt-${promptId}` : null,
+    async () => {
+      if (!promptId) return null;
+      return await fetchPromptById(promptId);
+    }
+  );
+
+  return {
+    prompt: data,
+    isLoading,
+    error,
+    refresh: mutate,
+  };
+}
+
 export async function fetchInterviewAttempts(
   promptId: string,
   page: number = 1,

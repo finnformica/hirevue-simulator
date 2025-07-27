@@ -11,15 +11,26 @@ import {
   setCurrentTab,
   setPrompt,
 } from "@/lib/store/slices/simulatorSlice";
-import { fetchPromptById } from "@/utils/api/prompts";
+import { usePrompt } from "@/utils/api/prompts";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 
 export default function SimulatorPage() {
   const dispatch = useAppDispatch();
-  const { currentTab } = useAppSelector((state) => state.simulator);
+  const { currentTab, prompt } = useAppSelector((state) => state.simulator);
   const params = useParams();
   const promptId = params.id as string;
+
+  // Use the reusable hook to fetch prompt data
+  const { prompt: promptData } = usePrompt(promptId);
+
+  // Update Redux state when prompt data is loaded
+  useEffect(() => {
+    if (promptData && !prompt) {
+      dispatch(setPrompt(promptData));
+      dispatch(setCurrentTab("prompt"));
+    }
+  }, [promptData, prompt, dispatch]);
 
   const tabs = [
     {
@@ -43,26 +54,6 @@ export default function SimulatorPage() {
       render: () => <AnalysisTab />,
     },
   ];
-
-  // Fetch prompt data when component mounts or promptId changes
-  useEffect(() => {
-    const loadPrompt = async () => {
-      if (promptId) {
-        try {
-          const promptData = await fetchPromptById(promptId);
-          if (promptData) {
-            dispatch(setPrompt(promptData));
-            dispatch(setCurrentTab("prompt"));
-          }
-        } catch (error) {
-          console.error("Failed to load prompt:", error);
-          // Handle error - could redirect to questions page or show error message
-        }
-      }
-    };
-
-    loadPrompt();
-  }, [promptId, dispatch]);
 
   useEffect(() => {
     return () => {
