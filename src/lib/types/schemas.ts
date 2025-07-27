@@ -34,7 +34,25 @@ export interface AnalysisSchema {
   ai_coach_summary: string;
 }
 
-export type AnalysisSchemaInsert = Omit<
-AnalysisSchema, 
-"id" | "created_at"
->;
+export type AnalysisSchemaInsert = Omit<AnalysisSchema, "id" | "created_at">;
+export interface PromptSchema {
+  id: string; // uuid
+  created_at: string; // ISO timestamp
+  question: string;
+  duration: number; // smallint
+  difficulty: "easy" | "medium" | "hard"; // difficulty_level enum
+  category: "general" | "behavioral" | "technical"; // prompt_category enum
+}
+
+export type PromptSchemaInsert = Omit<PromptSchema, "id" | "created_at">;
+
+// Type for interview attempts with simplified analysis data
+export interface InterviewAttempt {
+  id: string;
+  created_at: string;
+  date: string; // formatted date
+  score: number;
+  duration: number;
+  result: string;
+  grade?: "Excellent" | "Good" | "Needs Improvement" | "Poor";
+}
