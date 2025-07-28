@@ -106,7 +106,7 @@ The backend API will be available at [http://localhost:8000](http://localhost:80
 
 - `GET /` - Health check
 - `POST /transcribe` - Transcribe audio file
-- `POST /analyse` - Analyze transcription (sequential)
+- `POST /analyse` - Analyse transcription (sequential)
 
 ## Development
 

@@ -11,6 +11,7 @@ import { useAppDispatch } from "@/lib/store/hooks";
 import { AnalysisGrade, InterviewAttempt } from "@/lib/types/schemas";
 import { useInterviewAttempts } from "@/utils/api/interview";
 import { PromptWithLastAttempt } from "@/utils/api/prompts";
+import { paths } from "@/utils/paths";
 
 const difficultyColors = {
   easy: "bg-green-500/20 text-green-400 border-green-500/30",
@@ -90,6 +91,11 @@ export function QuestionRow({
   const handlePracticeClick = () => {
     // Navigate to the dynamic simulator route with the prompt ID
     router.push(`/simulator/${question.id}`);
+  };
+
+  const handleReviewClick = (attemptId: string) => {
+    // Navigate to the review page with the interview ID
+    router.push(paths.review(attemptId));
   };
 
   const hasMoreAttempts = displayedCount < totalCount;
@@ -202,6 +208,7 @@ export function QuestionRow({
                             variant="outline"
                             size="sm"
                             className="border-gray-600 text-gray-300 hover:bg-gray-700 bg-transparent"
+                            onClick={() => handleReviewClick(attempt.id)}
                           >
                             Review Attempt
                           </Button>

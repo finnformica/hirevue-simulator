@@ -182,3 +182,108 @@ export async function fetchInterviewAttempts(
     totalCount: count || 0,
   };
 }
+
+export async function fetchInterviewById(interviewId: string): Promise<{
+  interview: {
+    id: string;
+    created_at: string;
+    storage_path: string;
+    status: string;
+  } | null;
+  analysis: {
+    grammar: any;
+    sentence_complexity: any;
+    keywords: any;
+    fluency: any;
+    repetition: any;
+    feedback: any;
+    ai_coach_summary: string;
+    grade: string;
+  } | null;
+  transcription: {
+    text_content: string;
+  } | null;
+  prompt: {
+    id: string;
+    question: string;
+    difficulty: string;
+    category: string;
+    duration: number;
+  } | null;
+}> {
+  const { data: interview, error: interviewError } =
+    await supabaseClientForBrowser
+      .from("interviews")
+      .select(
+        `
+      id,
+      created_at,
+      storage_path,
+      status,
+      analysis:analysis(
+        grammar,
+        sentence_complexity,
+        keywords,
+        fluency,
+        repetition,
+        feedback,
+        ai_coach_summary,
+        grade
+      ),
+      transcription:transcriptions(
+        text_content
+      ),
+      prompt:prompts(
+        id,
+        question,
+        difficulty,
+        category,
+        duration
+      )
+    `
+      )
+      .eq("id", interviewId)
+      .single();
+
+  if (interviewError) {
+    throw new Error(`Failed to fetch interview: ${interviewError.message}`);
+  }
+
+  // Handle the case where prompt might be an array or object
+  const promptData = interview?.prompt ?? null;
+  const prompt = Array.isArray(promptData) ? promptData[0] : promptData;
+
+  const result = {
+    interview: interview
+      ? {
+          id: interview.id,
+          created_at: interview.created_at,
+          storage_path: interview.storage_path,
+          status: interview.status,
+        }
+      : null,
+    analysis: interview?.analysis?.[0] ?? null,
+    transcription: interview?.transcription?.[0] ?? null,
+    prompt,
+  };
+
+  return result;
+}
+
+// Custom hook for fetching interview data by ID
+export function useInterview(interviewId: string | null) {
+  const { data, error, isLoading, mutate } = useSWR(
+    interviewId ? `interview-${interviewId}` : null,
+    async () => {
+      if (!interviewId) return null;
+      return await fetchInterviewById(interviewId);
+    }
+  );
+
+  return {
+    data,
+    isLoading,
+    error,
+    refresh: mutate,
+  };
+}
