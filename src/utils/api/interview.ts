@@ -1,5 +1,7 @@
 import { insertRecords, uploadBlob } from "@/lib/supabase/server";
-import { InterviewSchemaInsert } from "@/lib/types/schemas";
+import { InterviewAttempt, InterviewSchemaInsert } from "@/lib/types/schemas";
+import useSWR from "swr";
+import { fetchInterviewAttempts } from "./prompts";
 
 interface UploadInterviewParams {
   userId: string;
@@ -8,6 +10,29 @@ interface UploadInterviewParams {
   videoBlob: Blob;
   bucket?: string;
   status?: string;
+}
+
+// Custom hook for fetching interview attempts with increasing page size
+export function useInterviewAttempts(
+  promptId: string | null,
+  pageSize: number = 5
+) {
+  const key = promptId ? `interview-attempts-${promptId}-${pageSize}` : null;
+  const { data, error, isLoading, mutate } = useSWR<{
+    attempts: InterviewAttempt[];
+    totalCount: number;
+  }>(key, async () => {
+    if (!promptId) return { attempts: [], totalCount: 0 };
+    return await fetchInterviewAttempts(promptId, 1, pageSize);
+  });
+
+  return {
+    attempts: data?.attempts || [],
+    totalCount: data?.totalCount || 0,
+    isLoading,
+    error,
+    refresh: mutate,
+  };
 }
 
 export async function uploadInterview({

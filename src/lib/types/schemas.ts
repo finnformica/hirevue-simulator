@@ -21,6 +21,13 @@ export type TranscriptionSchemaInsert = Omit<
   "id" | "created_at"
 >;
 
+export type AnalysisGrade =
+  | "Excellent"
+  | "Good"
+  | "Average"
+  | "Poor"
+  | "Failed";
+
 export interface AnalysisSchema {
   id: string;
   created_at: string;
@@ -32,9 +39,25 @@ export interface AnalysisSchema {
   repetition: JSON;
   feedback: JSON;
   ai_coach_summary: string;
+  grade?: AnalysisGrade;
 }
 
-export type AnalysisSchemaInsert = Omit<
-AnalysisSchema, 
-"id" | "created_at"
->;
+export type AnalysisSchemaInsert = Omit<AnalysisSchema, "id" | "created_at">;
+export interface PromptSchema {
+  id: string; // uuid
+  created_at: string; // ISO timestamp
+  question: string;
+  duration: number; // smallint
+  difficulty: "easy" | "medium" | "hard"; // difficulty_level enum
+  category: "general" | "behavioral" | "technical"; // prompt_category enum
+}
+
+export type PromptSchemaInsert = Omit<PromptSchema, "id" | "created_at">;
+
+// Type for interview attempts with simplified analysis data
+export interface InterviewAttempt {
+  id: string;
+  created_at: string;
+  date: string;
+  grade: AnalysisGrade;
+}

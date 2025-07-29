@@ -9,16 +9,32 @@ import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import {
   resetSimulator,
   setCurrentTab,
+  setPrompt,
 } from "@/lib/store/slices/simulatorSlice";
+import { usePrompt } from "@/utils/api/prompts";
+import { useParams } from "next/navigation";
 import { useEffect } from "react";
 
 export default function SimulatorPage() {
   const dispatch = useAppDispatch();
-  const { currentTab } = useAppSelector((state) => state.simulator);
+  const { currentTab, prompt } = useAppSelector((state) => state.simulator);
+  const params = useParams();
+  const promptId = params.id as string;
+
+  // Use the reusable hook to fetch prompt data
+  const { prompt: promptData } = usePrompt(promptId);
+
+  // Update Redux state when prompt data is loaded
+  useEffect(() => {
+    if (promptData && !prompt) {
+      dispatch(setPrompt(promptData));
+      dispatch(setCurrentTab("prompt"));
+    }
+  }, [promptData, prompt, dispatch]);
 
   const tabs = [
     {
-      label: "Prompt",
+      label: "Question",
       value: "prompt",
       render: () => <PromptTab />,
     },

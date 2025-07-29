@@ -22,7 +22,9 @@ export default async function AppLayout({
             </div>
           </div>
         </header>
-        <main className="container mx-auto py-6">{children}</main>
+        <main className="container mx-auto px-4 sm:px-6 lg:px-16 py-12">
+          {children}
+        </main>
       </div>
     </AuthGuard>
   );
