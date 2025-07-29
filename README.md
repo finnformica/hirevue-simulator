@@ -10,7 +10,7 @@ hirevue-simulator/
 │   ├── app/               # Next.js app directory
 │   ├── components/        # React components
 │   └── ...
-├── fast-api/              # FastAPI backend application
+├── fastapi/              # FastAPI backend application
 │   ├── main.py           # Main FastAPI application
 │   ├── models/           # ML models and analysis functions
 │   └── ...
@@ -66,7 +66,7 @@ The frontend will be available at [http://localhost:3000](http://localhost:3000)
 ### 1. Navigate to the backend directory
 
 ```bash
-cd fast-api
+cd fastapi
 ```
 
 ### 2. Create a virtual environment (recommended)
@@ -115,7 +115,7 @@ The backend API will be available at [http://localhost:8000](http://localhost:80
 1. **Terminal 1 - Backend:**
 
 ```bash
-cd fast-api
+cd fastapi
 source venv/bin/activate  # or activate your virtual environment
 uvicorn main:app --reload
 ```
