@@ -1,12 +1,8 @@
 fastapi
 uvicorn
 transformers
-torch
 sentence-transformers
 pydantic
 soundfile
 numpy
-scipy 
-python-multipart
-torchaudio
 python-dotenv
