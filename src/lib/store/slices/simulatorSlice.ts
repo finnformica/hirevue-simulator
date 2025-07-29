@@ -24,6 +24,13 @@ export interface SimulatorState {
   isTranscribing: boolean;
   isAnalysing: boolean;
   error: string | null;
+  // Review state
+  reviewData: {
+    interview: any;
+    analysis: any;
+    transcription: any;
+    prompt: any;
+  } | null;
 }
 
 const initialState: SimulatorState = {
@@ -36,6 +43,7 @@ const initialState: SimulatorState = {
   isTranscribing: false,
   isAnalysing: false,
   error: null,
+  reviewData: null,
 };
 
 export const processRecording = createAsyncThunk(
@@ -167,6 +175,13 @@ const simulatorSlice = createSlice({
     resetSimulator: (state) => {
       return initialState;
     },
+    // Review actions
+    setReviewData: (state, action) => {
+      state.reviewData = action.payload;
+    },
+    resetReview: (state) => {
+      state.reviewData = null;
+    },
   },
 });
 
@@ -180,6 +195,9 @@ export const {
   setAnalysing,
   setError,
   resetSimulator,
+  // Review actions
+  setReviewData,
+  resetReview,
 } = simulatorSlice.actions;
 
 export default simulatorSlice.reducer;

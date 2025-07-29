@@ -3,10 +3,10 @@ import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { setCurrentTab } from "@/lib/store/slices/simulatorSlice";
 import { cn } from "@/lib/utils";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
+import Markdown from "react-markdown";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import Markdown from "react-markdown";
 
 function RatingBadge({ rating }: { rating: string }) {
   const getRatingColor = (rating: string) => {
@@ -194,11 +194,16 @@ function MetricFeedbackSection({
 
 export function AnalysisTab() {
   const dispatch = useAppDispatch();
-  const { analysis, isAnalysing, error, transcription } = useAppSelector(
-    (state) => state.simulator
-  );
+  const { analysis, isAnalysing, error, transcription, reviewData } =
+    useAppSelector((state) => state.simulator);
 
-  if (isAnalysing) {
+  // Use review data if available, otherwise use simulator data
+  const currentAnalysis = reviewData?.analysis || analysis;
+  const currentTranscription =
+    reviewData?.transcription?.text_content || transcription;
+  const isReviewMode = !!reviewData;
+
+  if (isAnalysing && !isReviewMode) {
     return (
       <div className="flex items-center justify-center p-8">
         <p className="text-lg">Analysing your response...</p>
@@ -206,7 +211,7 @@ export function AnalysisTab() {
     );
   }
 
-  if (error) {
+  if (error && !isReviewMode) {
     return (
       <div className="text-red-500 text-center p-8">
         <p className="text-lg">{error}</p>
@@ -220,16 +225,18 @@ export function AnalysisTab() {
     );
   }
 
-  if (!analysis) {
+  if (!currentAnalysis) {
     return (
       <div className="text-center p-8">
         <p className="text-lg">No analysis available</p>
-        <Button
-          onClick={() => dispatch(setCurrentTab("recording"))}
-          className="mt-4"
-        >
-          Record Response
-        </Button>
+        {!isReviewMode && (
+          <Button
+            onClick={() => dispatch(setCurrentTab("recording"))}
+            className="mt-4"
+          >
+            Record Response
+          </Button>
+        )}
       </div>
     );
   }
@@ -241,16 +248,17 @@ export function AnalysisTab() {
         <CardTitle>AI Interview Coach Feedback</CardTitle>
       </CardHeader>
       <CardContent>
-              {
-        analysis.aiAnalysis ? 
-        (<Markdown>{analysis.aiAnalysis}</Markdown>) : (<p>AI analysis is not available</p>)
-        }
+        {currentAnalysis.aiAnalysis ? (
+          <Markdown>{currentAnalysis.aiAnalysis}</Markdown>
+        ) : (
+          <p>AI analysis is not available</p>
+        )}
       </CardContent>
     </Card>
   );
 
   // Render grouped feedback for each metric
-  const feedback: Record<string, any> = analysis.feedback || {};
+  const feedback: Record<string, any> = currentAnalysis.feedback || {};
   const feedbackMetrics = [
     "grammar",
     "keywords",
@@ -260,7 +268,7 @@ export function AnalysisTab() {
   ];
 
   return (
-    <div className="container mx-auto p-4 space-y-4">
+    <div className="mx-auto space-y-4">
       {/*  Feedback */}
       {renderAnalysis}
       {/* Overall Performance Summary */}
@@ -272,28 +280,34 @@ export function AnalysisTab() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <MetricCard
               title="Fluency"
-              value={`${analysis.fluency.fillerWords.perMinute.toFixed(1)}/min`}
-              rating={analysis.fluency.fillerWords.rating}
+              value={`${currentAnalysis.fluency.fillerWords.perMinute.toFixed(1)}/min`}
+              rating={currentAnalysis.fluency.fillerWords.rating}
               description="Filler words per minute"
               trend={
-                analysis.fluency.fillerWords.rating === "Ideal" ? "up" : "down"
+                currentAnalysis.fluency.fillerWords.rating === "Ideal"
+                  ? "up"
+                  : "down"
               }
             />
             <MetricCard
               title="Speaking Speed"
-              value={`${analysis.fluency.speakingSpeed.wordsPerMinute.toFixed(0)} WPM`}
-              rating={analysis.fluency.speakingSpeed.rating}
+              value={`${currentAnalysis.fluency.speakingSpeed.wordsPerMinute.toFixed(0)} WPM`}
+              rating={currentAnalysis.fluency.speakingSpeed.rating}
               description="Words per minute"
               trend={
-                analysis.fluency.speakingSpeed.rating === "Good" ? "up" : "down"
+                currentAnalysis.fluency.speakingSpeed.rating === "Good"
+                  ? "up"
+                  : "down"
               }
             />
             <MetricCard
               title="Grammar"
-              value={`${analysis.grammar.errorRate.toFixed(1)}%`}
-              rating={analysis.grammar.rating}
+              value={`${currentAnalysis.grammar.errorRate.toFixed(1)}%`}
+              rating={currentAnalysis.grammar.rating}
               description="Error rate"
-              trend={analysis.grammar.rating === "Excellent" ? "up" : "down"}
+              trend={
+                currentAnalysis.grammar.rating === "Excellent" ? "up" : "down"
+              }
             />
           </div>
         </CardContent>
@@ -315,11 +329,11 @@ export function AnalysisTab() {
                 <div className="space-y-4">
                   <MetricCard
                     title="Keyword Coverage"
-                    value={`${analysis.keywords.coverage.toFixed(0)}%`}
+                    value={`${currentAnalysis.keywords.coverage.toFixed(0)}%`}
                     rating={
-                      analysis.keywords.coverage >= 80
+                      currentAnalysis.keywords.coverage >= 80
                         ? "Good"
-                        : analysis.keywords.coverage >= 50
+                        : currentAnalysis.keywords.coverage >= 50
                           ? "Moderate"
                           : "Needs Improvement"
                     }
@@ -327,21 +341,23 @@ export function AnalysisTab() {
                   />
                   <MetricCard
                     title="Grammar Accuracy"
-                    value={`${(100 - analysis.grammar.errorRate).toFixed(1)}%`}
-                    rating={analysis.grammar.rating}
+                    value={`${(100 - currentAnalysis.grammar.errorRate).toFixed(1)}%`}
+                    rating={currentAnalysis.grammar.rating}
                     description="Grammatical accuracy"
                   />
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium">Missed Keywords</h4>
                     <div className="flex flex-wrap gap-2">
-                      {analysis.keywords.missed.map((keyword, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs"
-                        >
-                          {keyword}
-                        </span>
-                      ))}
+                      {currentAnalysis.keywords.missed.map(
+                        (keyword: string, index: number) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs"
+                          >
+                            {keyword}
+                          </span>
+                        )
+                      )}
                     </div>
                   </div>
                 </div>
@@ -353,21 +369,21 @@ export function AnalysisTab() {
                 <div className="space-y-4">
                   <MetricCard
                     title="Filler Words"
-                    value={analysis.fluency.fillerWords.count}
-                    rating={analysis.fluency.fillerWords.rating}
-                    description={`${analysis.fluency.fillerWords.perMinute.toFixed(1)} per minute`}
+                    value={currentAnalysis.fluency.fillerWords.count}
+                    rating={currentAnalysis.fluency.fillerWords.rating}
+                    description={`${currentAnalysis.fluency.fillerWords.perMinute.toFixed(1)} per minute`}
                   />
                   <MetricCard
                     title="Speaking Speed"
-                    value={`${analysis.fluency.speakingSpeed.wordsPerMinute.toFixed(0)} WPM`}
-                    rating={analysis.fluency.speakingSpeed.rating}
+                    value={`${currentAnalysis.fluency.speakingSpeed.wordsPerMinute.toFixed(0)} WPM`}
+                    rating={currentAnalysis.fluency.speakingSpeed.rating}
                     description="Words per minute"
                   />
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium">Common Filler Words</h4>
                     <div className="flex flex-wrap gap-2">
-                      {analysis.fluency.fillerWords.examples.map(
-                        (word, index) => (
+                      {currentAnalysis.fluency.fillerWords.examples.map(
+                        (word: string, index: number) => (
                           <span
                             key={index}
                             className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs"
@@ -387,29 +403,34 @@ export function AnalysisTab() {
                 <div className="space-y-4">
                   <MetricCard
                     title="Sentence Complexity"
-                    value={`${(analysis.sentenceComplexity.complexityRatio * 100).toFixed(0)}%`}
-                    rating={analysis.sentenceComplexity.rating}
+                    value={`${(currentAnalysis.sentenceComplexity.complexityRatio * 100).toFixed(0)}%`}
+                    rating={currentAnalysis.sentenceComplexity.rating}
                     description="Complex sentence ratio"
                   />
                   <MetricCard
                     title="Vocabulary Variety"
-                    value={`${(analysis.repetition.repetitionScore * 100).toFixed(0)}%`}
-                    rating={analysis.repetition.rating}
+                    value={`${(currentAnalysis.repetition.repetitionScore * 100).toFixed(0)}%`}
+                    rating={currentAnalysis.repetition.rating}
                     description="Unique word ratio"
                   />
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium">Most Repeated Words</h4>
                     <div className="flex flex-wrap gap-2">
-                      {analysis.repetition.wordFrequency
+                      {currentAnalysis.repetition.wordFrequency
                         .slice(0, 5)
-                        .map((word, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
-                          >
-                            {word.word} ({word.count})
-                          </span>
-                        ))}
+                        .map(
+                          (
+                            word: { word: string; count: number },
+                            index: number
+                          ) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
+                            >
+                              {word.word} ({word.count})
+                            </span>
+                          )
+                        )}
                     </div>
                   </div>
                 </div>
@@ -444,15 +465,25 @@ export function AnalysisTab() {
               <CardTitle>Transcription</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[300px] pr-4">
+              <ScrollArea className="max-h-[300px] pr-4">
                 <div className="space-y-4">
-                  <div className="prose prose-sm max-w-none rounded-lg">
-                    {transcription?.split(". ").map((sentence, index) => (
-                      <p key={index} className="mb-2">
-                        {sentence.trim()}.
+                  {currentTranscription ? (
+                    <div className="prose prose-sm max-w-none rounded-lg">
+                      {currentTranscription
+                        .split(". ")
+                        .map((sentence: string, index: number) => (
+                          <p key={index} className="mb-2">
+                            {sentence.trim()}.
+                          </p>
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400">
+                        Transcription not available
                       </p>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </ScrollArea>
             </CardContent>
@@ -461,21 +492,23 @@ export function AnalysisTab() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-center gap-4">
-        <Button
-          onClick={() => dispatch(setCurrentTab("recording"))}
-          className="flex items-center gap-2"
-        >
-          Record Again
-        </Button>
-        <Button
-          onClick={() => dispatch(setCurrentTab("prompt"))}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          Start Over
-        </Button>
-      </div>
+      {!isReviewMode && (
+        <div className="flex justify-center gap-4">
+          <Button
+            onClick={() => dispatch(setCurrentTab("recording"))}
+            className="flex items-center gap-2"
+          >
+            Record Again
+          </Button>
+          <Button
+            onClick={() => dispatch(setCurrentTab("prompt"))}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            Start Over
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
