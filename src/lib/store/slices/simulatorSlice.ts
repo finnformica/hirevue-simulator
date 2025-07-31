@@ -87,8 +87,6 @@ export const processRecording = createAsyncThunk(
         body: formData,
       });
 
-      console.log("response", transcriptionResponse.text());
-
       if (!transcriptionResponse.ok) {
         throw new Error("Transcription failed");
       }

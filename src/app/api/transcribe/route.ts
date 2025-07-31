@@ -51,10 +51,8 @@ export async function POST(request: Request) {
       throw new Error(error.error || "Failed to transcribe audio");
     }
 
-    console.log("response", response.text());
-
     const result = await response.json();
-    const text = result.text;
+    const text: string = result.text.trim();
 
     const records: TranscriptionSchemaInsert[] = [
       {

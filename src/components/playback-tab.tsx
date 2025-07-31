@@ -128,6 +128,18 @@ const PlaybackTab = () => {
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
+  const renderTranscription = () => {
+    if (isTranscribing) {
+      return "Transcribing your response...";
+    }
+
+    if (transcription) {
+      return transcription;
+    }
+
+    return "No transcription available";
+  };
+
   return (
     <>
       <Card>
@@ -238,13 +250,11 @@ const PlaybackTab = () => {
       {/* Transcription */}
       <div className="mt-2 p-4 bg-muted/50 rounded-lg">
         <h3 className="text-lg font-semibold mb-2">Transcription</h3>
-        {isTranscribing ? (
-          <p className="text-muted-foreground">Transcribing your response...</p>
-        ) : transcription ? (
-          <p className="whitespace-pre-wrap break-words">{transcription}</p>
-        ) : (
-          <p className="text-muted-foreground">No transcription available</p>
-        )}
+        <p
+          className={`whitespace-pre-wrap break-words ${!transcription && !isTranscribing ? "text-muted-foreground" : ""}`}
+        >
+          {renderTranscription()}
+        </p>
       </div>
     </>
   );
