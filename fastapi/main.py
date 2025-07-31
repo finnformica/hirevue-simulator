@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 import shutil
 import os
@@ -33,7 +34,7 @@ class AnalyseRequest(BaseModel):
 
 @app.get("/")
 def index():
-    return "Hello world"
+    return RedirectResponse(url="/docs")
 
 
 @app.post("/transcribe")
