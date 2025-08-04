@@ -211,20 +211,6 @@ export function AnalysisTab() {
     );
   }
 
-  if (error && !isReviewMode) {
-    return (
-      <div className="text-red-500 text-center p-8">
-        <p className="text-lg">{error}</p>
-        <Button
-          onClick={() => dispatch(setCurrentTab("recording"))}
-          className="mt-4"
-        >
-          Try Again
-        </Button>
-      </div>
-    );
-  }
-
   if (!currentAnalysis) {
     return (
       <div className="text-center p-8">
