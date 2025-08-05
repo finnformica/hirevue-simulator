@@ -1,18 +1,15 @@
-import { NextResponse } from "next/server";
 import { insertRecords } from "@/lib/supabase/server";
-import { AnalysisSchemaInsert } from "@/lib/types/schemas";
+import { StructuredAnalysis } from "@/lib/types/analysis";
+import { AnalysisGrade, AnalysisSchemaInsert } from "@/lib/types/schemas";
+import { structuredAnalysisPrompt } from "@/utils/prompts";
+import { NextResponse } from "next/server";
 
-const FASTAPI_URL = process.env.FASTAPI_URL;
+const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
+
+const BASE_URL = "https://router.huggingface.co/v1/chat/completions";
 
 export async function POST(request: Request) {
   try {
-    if (!FASTAPI_URL) {
-      return NextResponse.json(
-        { error: "FASTAPI_URL not configured" },
-        { status: 500 }
-      );
-    }
-
     const body = await request.json();
     const {
       interviewId,
@@ -38,35 +35,90 @@ export async function POST(request: Request) {
       );
     }
 
-    // Call FastAPI /analyse endpoint
-    const response = await fetch(`${FASTAPI_URL}/analyse`, {
+    // Check if API key is available
+    if (!HUGGINGFACE_API_KEY) {
+      console.error("HUGGINGFACE_API_KEY is not set");
+      return NextResponse.json(
+        { error: "Hugging Face API key is not configured" },
+        { status: 500 }
+      );
+    }
+
+    // Generate structured analysis
+    const analysisResponse = await fetch(BASE_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${HUGGINGFACE_API_KEY}`,
+      },
       body: JSON.stringify({
-        transcription,
-        required_keywords: required_keywords,
-        duration_seconds: duration_seconds,
-        prompt: prompt,
+        model: "meta-llama/Llama-3.1-8B-Instruct",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert interview coach. Return only valid JSON, no explanations or additional text.",
+          },
+          {
+            role: "user",
+            content: structuredAnalysisPrompt(transcription, prompt),
+          },
+        ],
       }),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to analyse transcription");
+    if (!analysisResponse.ok) {
+      const error = await analysisResponse.json();
+      throw new Error(error.error || "Failed to generate analysis");
     }
 
-    const result = await response.json();
+    const analysisJSON = await analysisResponse.json();
+    const structuredAnalysisContent = analysisJSON.choices[0].message.content;
 
+    if (!structuredAnalysisContent) {
+      console.error("No structured analysis content in response");
+      return NextResponse.json(
+        {
+          error:
+            "Failed to generate structured analysis - no content in response",
+        },
+        { status: 500 }
+      );
+    }
+
+    // Parse the structured analysis
+    let structuredAnalysis: StructuredAnalysis;
+    try {
+      structuredAnalysis = JSON.parse(structuredAnalysisContent);
+    } catch (parseError) {
+      console.error("Failed to parse structured analysis:", parseError);
+      return NextResponse.json(
+        { error: "Failed to parse structured analysis response" },
+        { status: 500 }
+      );
+    }
+
+    // Validate the structure
+    if (
+      !structuredAnalysis.overallScore ||
+      !structuredAnalysis.metrics ||
+      !structuredAnalysis.feedback
+    ) {
+      return NextResponse.json(
+        { error: "Invalid structured analysis format" },
+        { status: 500 }
+      );
+    }
+
+    // Save to database with the new structure
     const records: AnalysisSchemaInsert[] = [
       {
         interview_id: interviewId,
-        grammar: result?.grammar ?? {},
-        sentence_complexity: result?.sentenceComplexity ?? {},
-        keywords: result?.keywords ?? {},
-        fluency: result?.fluency ?? {},
-        repetition: result?.repetition ?? {},
-        feedback: result?.feedback ?? {},
-        ai_coach_summary: result?.aiAnalysis ?? "",
+        grade: structuredAnalysis.grade as AnalysisGrade,
+        overall_score: structuredAnalysis.overallScore,
+        summary: structuredAnalysis.overallStatement,
+        metrics: structuredAnalysis.metrics,
+        feedback: structuredAnalysis.feedback,
       },
     ];
 
@@ -86,15 +138,16 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json(result);
+    // Return the structured analysis
+    return NextResponse.json({
+      structuredAnalysis,
+      rawAnalysis: structuredAnalysisContent,
+    });
   } catch (error) {
     console.error("Analysis error:", error);
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to analyze transcription",
+        error: `Analysis Error: ${error instanceof Error ? error.message : "Unknown error"}`,
       },
       { status: 500 }
     );

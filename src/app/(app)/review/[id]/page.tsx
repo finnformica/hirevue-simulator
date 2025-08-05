@@ -31,15 +31,17 @@ export default function ReviewPage() {
   // Update Redux state when data is available and not loading
   useEffect(() => {
     if (!isLoading && data && !reviewData) {
+      // Transform the new analysis structure to match the expected format
       const transformedAnalysis = data.analysis
         ? {
-            fluency: data.analysis.fluency,
-            keywords: data.analysis.keywords,
-            grammar: data.analysis.grammar,
-            sentenceComplexity: data.analysis.sentence_complexity,
-            repetition: data.analysis.repetition,
-            feedback: data.analysis.feedback,
-            aiAnalysis: data.analysis.ai_coach_summary,
+            structuredAnalysis: {
+              overallScore: data.analysis.overall_score,
+              overallStatement: data.analysis.summary,
+              grade: data.analysis.grade,
+              metrics: data.analysis.metrics,
+              feedback: data.analysis.feedback,
+            },
+            rawAnalysis: data.analysis.summary, // Use summary as raw analysis for fallback
           }
         : null;
 

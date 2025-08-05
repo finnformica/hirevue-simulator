@@ -1,5 +1,6 @@
 "use client";
 
+import _ from "lodash";
 import { Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,9 @@ interface QuestionFiltersProps {
   onCategoryChange: (value: string) => void;
 }
 
+const categories = ["general", "finance", "consulting", "software"];
+const difficulties = ["easy", "medium", "hard"];
+
 export function QuestionFilters({
   searchQuery,
   difficultyFilter,
@@ -39,26 +43,32 @@ export function QuestionFilters({
           className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400"
         />
       </div>
+
       <Select value={difficultyFilter} onValueChange={onDifficultyChange}>
         <SelectTrigger className="w-full sm:w-40 bg-gray-900 border-gray-700 text-white">
           <SelectValue placeholder="Difficulty" />
         </SelectTrigger>
         <SelectContent className="bg-gray-900 border-gray-700">
           <SelectItem value="all">All Difficulties</SelectItem>
-          <SelectItem value="easy">Easy</SelectItem>
-          <SelectItem value="medium">Medium</SelectItem>
-          <SelectItem value="hard">Hard</SelectItem>
+          {difficulties.map((difficulty) => (
+            <SelectItem key={difficulty} value={difficulty}>
+              {_.startCase(difficulty)}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
+
       <Select value={categoryFilter} onValueChange={onCategoryChange}>
         <SelectTrigger className="w-full sm:w-40 bg-gray-900 border-gray-700 text-white">
           <SelectValue placeholder="Category" />
         </SelectTrigger>
         <SelectContent className="bg-gray-900 border-gray-700">
           <SelectItem value="all">All Categories</SelectItem>
-          <SelectItem value="general">General</SelectItem>
-          <SelectItem value="behavioral">Behavioral</SelectItem>
-          <SelectItem value="technical">Technical</SelectItem>
+          {categories.map((category) => (
+            <SelectItem key={category} value={category}>
+              {_.startCase(category)}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>

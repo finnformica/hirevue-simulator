@@ -1,88 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { setCurrentTab } from "@/lib/store/slices/simulatorSlice";
+import { MetricDetail, StructuredAnalysis } from "@/lib/types/analysis";
 import { cn } from "@/lib/utils";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
-import Markdown from "react-markdown";
+import {
+  AlertCircle,
+  CheckCircle2,
+  FileText,
+  Lightbulb,
+  MessageSquare,
+  Minus,
+  TrendingUp,
+  X,
+} from "lucide-react";
+import { useState } from "react";
 import { Button } from "./ui/button";
-import { ScrollArea } from "./ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-
-function RatingBadge({ rating }: { rating: string }) {
-  const getRatingColor = (rating: string) => {
-    switch (rating) {
-      case "Excellent":
-      case "Ideal":
-      case "Good":
-      case "Balanced":
-        return "text-green-500";
-      case "Acceptable":
-      case "Moderate":
-        return "text-yellow-500";
-      case "Needs Improvement":
-      case "Risk":
-      case "High":
-      case "Too Simple":
-      case "Too Complex":
-      case "Too Slow":
-      case "Too Fast":
-        return "text-red-500";
-      default:
-        return "text-gray-500";
-    }
-  };
-
-  return (
-    <span className={cn("text-sm font-medium", getRatingColor(rating))}>
-      {rating}
-    </span>
-  );
-}
-
-function MetricCard({
-  title,
-  value,
-  rating,
-  description,
-  trend,
-}: {
-  title: string;
-  value: number | string;
-  rating: string;
-  description: string;
-  trend?: "up" | "down" | "neutral";
-}) {
-  const getTrendColor = (trend?: "up" | "down" | "neutral") => {
-    switch (trend) {
-      case "up":
-        return "text-green-500";
-      case "down":
-        return "text-red-500";
-      default:
-        return "text-gray-500";
-    }
-  };
-
-  return (
-    <div className="flex-1 bg-muted/50 rounded-lg p-4">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium">{title}</h3>
-          <RatingBadge rating={rating} />
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-2xl font-bold">{value}</span>
-          {trend && (
-            <span className={cn("text-sm", getTrendColor(trend))}>
-              {trend === "up" ? "↑" : trend === "down" ? "↓" : "→"}
-            </span>
-          )}
-        </div>
-        <p className="text-xs text-muted-foreground">{description}</p>
-      </div>
-    </div>
-  );
-}
 
 function FeedbackSection({
   title,
@@ -98,26 +30,28 @@ function FeedbackSection({
   const getIcon = (type: string) => {
     switch (type) {
       case "strength":
-        return <CheckCircle2 className="w-4 h-4 text-green-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case "improvement":
-        return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
       case "recommendation":
-        return <AlertCircle className="w-4 h-4 text-blue-500" />;
+        return <TrendingUp className="h-4 w-4 text-blue-500" />;
       case "exercise":
-        return <CheckCircle2 className="w-4 h-4 text-purple-500" />;
+        return <Minus className="h-4 w-4 text-purple-500" />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="space-y-2">
-      <h4 className="text-sm font-medium">{title}</h4>
+    <div className="space-y-3">
+      <h3 className="text-lg font-semibold flex items-center gap-2">
+        {getIcon(type)}
+        {title}
+      </h3>
       <ul className="space-y-2">
         {items.map((item, index) => (
-          <li key={index} className="flex items-start gap-2 text-sm">
-            {getIcon(type)}
-            <span>{item}</span>
+          <li key={index} className="text-sm text-muted-foreground">
+            • {item}
           </li>
         ))}
       </ul>
@@ -135,11 +69,9 @@ function AnalysisSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">{title}</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">{children}</div>
-      </CardContent>
+      <CardContent>{children}</CardContent>
     </Card>
   );
 }
@@ -156,51 +88,343 @@ function MetricFeedbackSection({
     practiceExercises: string[];
   };
 }) {
-  if (!feedback) return null;
   return (
-    <Card className="mb-4">
-      <CardHeader>
-        <CardTitle className="text-base capitalize">
-          {metric.replace(/([A-Z])/g, " $1")}
+    <div className="space-y-4">
+      <FeedbackSection
+        title="Strengths"
+        items={feedback.strengths}
+        type="strength"
+      />
+      <FeedbackSection
+        title="Areas for Improvement"
+        items={feedback.areasForImprovement}
+        type="improvement"
+      />
+      <FeedbackSection
+        title="Specific Recommendations"
+        items={feedback.specificRecommendations}
+        type="recommendation"
+      />
+      <FeedbackSection
+        title="Practice Exercises"
+        items={feedback.practiceExercises}
+        type="exercise"
+      />
+    </div>
+  );
+}
+
+// New structured analysis components
+function MetricBentoCard({
+  metric,
+  detail,
+}: {
+  metric: string;
+  detail: MetricDetail;
+}) {
+  const getScoreColor = (score: number) => {
+    if (score >= 8) return "text-green-500";
+    if (score >= 6) return "text-yellow-500";
+    if (score >= 4) return "text-orange-500";
+    return "text-red-500";
+  };
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 8) return "Excellent";
+    if (score >= 6) return "Good";
+    if (score >= 4) return "Average";
+    if (score >= 2) return "Poor";
+    return "Failed";
+  };
+
+  return (
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium capitalize">
+          {metric.replace(/([A-Z])/g, " $1").trim()}
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <FeedbackSection
-            title="Strengths"
-            items={feedback.strengths}
-            type="strength"
-          />
-          <FeedbackSection
-            title="Areas for Improvement"
-            items={feedback.areasForImprovement}
-            type="improvement"
-          />
-          <FeedbackSection
-            title="Recommendations"
-            items={feedback.specificRecommendations}
-            type="recommendation"
-          />
-          <FeedbackSection
-            title="Practice Exercises"
-            items={feedback.practiceExercises}
-            type="exercise"
-          />
+      <CardContent className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span
+            className={cn("text-2xl font-bold", getScoreColor(detail.score))}
+          >
+            {detail.score}/10
+          </span>
+          <span
+            className={cn("text-xs font-medium", getScoreColor(detail.score))}
+          >
+            {getScoreLabel(detail.score)}
+          </span>
         </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {detail.feedback}
+        </p>
       </CardContent>
     </Card>
   );
 }
 
+function ContextDrawer({
+  isOpen,
+  onClose,
+  prompt,
+  response,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  prompt: string;
+  response: string;
+}) {
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={cn(
+          "fixed inset-0 bg-black/80 z-40 transition-opacity duration-300",
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={onClose}
+      />
+
+      {/* Drawer */}
+      <div
+        className={cn(
+          "fixed top-0 right-0 h-screen w-80 md:w-96 lg:w-[420px] bg-background border-l shadow-lg z-50 transform transition-transform duration-300 ease-in-out",
+          isOpen ? "translate-x-0" : "translate-x-full"
+        )}
+        style={{ top: 0 }}
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b">
+            <h3 className="text-lg font-semibold">Context</h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            {/* Original Question */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <FileText className="h-4 w-4 text-blue-500" />
+                  Original Question
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {prompt}
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Your Response */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <MessageSquare className="h-4 w-4 text-green-500" />
+                  Your Response
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-sm text-muted-foreground leading-relaxed">
+                  {response.split(". ").map((sentence, index) => (
+                    <p key={index} className="mb-2">
+                      {sentence.trim()}.
+                    </p>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function StructuredAnalysisDisplay({
+  analysis,
+  prompt,
+  response,
+}: {
+  analysis: StructuredAnalysis;
+  prompt: string;
+  response: string;
+}) {
+  const [isContextOpen, setIsContextOpen] = useState(false);
+  const metricEntries = Object.entries(analysis.metrics);
+
+  return (
+    <>
+      <div className="space-y-6">
+        {/* Header with Context Toggle */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Analysis Results</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsContextOpen(!isContextOpen)}
+            className="flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            {isContextOpen ? "Hide Context" : "Show Context"}
+          </Button>
+        </div>
+
+        {/* Overall Summary */}
+        <Card className="border-2 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Overall Performance</span>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold text-primary">
+                  {analysis.overallScore}/10
+                </span>
+                <span
+                  className={cn(
+                    "text-sm font-medium px-2 py-1 rounded-full",
+                    analysis.overallScore >= 8
+                      ? "bg-green-100 text-green-700"
+                      : analysis.overallScore >= 6
+                        ? "bg-yellow-100 text-yellow-700"
+                        : analysis.overallScore >= 4
+                          ? "bg-orange-100 text-orange-700"
+                          : "bg-red-100 text-red-700"
+                  )}
+                >
+                  {analysis.grade}
+                </span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground leading-relaxed">
+              {analysis.overallStatement}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Metrics Bento Grid */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Communication Skills Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {metricEntries.map(([metric, detail]) => (
+                <MetricBentoCard key={metric} metric={metric} detail={detail} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Feedback Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                Strengths
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 list-disc list-inside [&>li::marker]:text-green-500">
+                {analysis.feedback.strengths.map((strength, index) => (
+                  <li key={index} className="text-sm text-muted-foreground">
+                    {strength}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-yellow-500" />
+                Areas for Improvement
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 list-disc list-inside [&>li::marker]:text-yellow-500">
+                {analysis.feedback.areasForImprovement.map((area, index) => (
+                  <li key={index} className="text-sm text-muted-foreground">
+                    {area}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Specific Suggestions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-blue-500" />
+              Specific Suggestions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3 list-disc list-inside [&>li::marker]:text-blue-500">
+              {analysis.feedback.specificSuggestions.map(
+                (suggestion, index) => (
+                  <li key={index} className="text-sm text-muted-foreground">
+                    {suggestion}
+                  </li>
+                )
+              )}
+            </ul>
+          </CardContent>
+        </Card>
+
+        {/* Key Advice */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lightbulb className="h-5 w-5 text-purple-500" />
+              Key Advice
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground leading-relaxed">
+              {analysis.feedback.keyAdvice}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Context Drawer */}
+      <ContextDrawer
+        isOpen={isContextOpen}
+        onClose={() => setIsContextOpen(false)}
+        prompt={prompt}
+        response={response}
+      />
+    </>
+  );
+}
+
 export function AnalysisTab() {
   const dispatch = useAppDispatch();
-  const { analysis, isAnalysing, error, transcription, reviewData } =
+  const { analysis, isAnalysing, error, transcription, reviewData, prompt } =
     useAppSelector((state) => state.simulator);
 
   // Use review data if available, otherwise use simulator data
   const currentAnalysis = reviewData?.analysis || analysis;
   const currentTranscription =
     reviewData?.transcription?.text_content || transcription;
+  const currentPrompt =
+    reviewData?.prompt?.question || prompt?.question || "No prompt available";
   const isReviewMode = !!reviewData;
 
   if (isAnalysing && !isReviewMode) {
@@ -211,7 +435,7 @@ export function AnalysisTab() {
     );
   }
 
-  if (!currentAnalysis) {
+  if (!currentAnalysis?.structuredAnalysis) {
     return (
       <div className="text-center p-8">
         <p className="text-lg">No analysis available</p>
@@ -227,274 +451,11 @@ export function AnalysisTab() {
     );
   }
 
-  // Render OpenAI feedback if available
-  const renderAnalysis = (
-    <Card>
-      <CardHeader>
-        <CardTitle>AI Interview Coach Feedback</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {currentAnalysis.aiAnalysis ? (
-          <Markdown>{currentAnalysis.aiAnalysis}</Markdown>
-        ) : (
-          <p>AI analysis is not available</p>
-        )}
-      </CardContent>
-    </Card>
-  );
-
-  // Render grouped feedback for each metric
-  const feedback: Record<string, any> = currentAnalysis.feedback || {};
-  const feedbackMetrics = [
-    "grammar",
-    "keywords",
-    "sentenceComplexity",
-    "fluency",
-    "repetition",
-  ];
-
   return (
-    <div className="mx-auto space-y-4">
-      {/*  Feedback */}
-      {renderAnalysis}
-      {/* Overall Performance Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Overall Performance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <MetricCard
-              title="Fluency"
-              value={`${currentAnalysis.fluency.fillerWords.perMinute.toFixed(1)}/min`}
-              rating={currentAnalysis.fluency.fillerWords.rating}
-              description="Filler words per minute"
-              trend={
-                currentAnalysis.fluency.fillerWords.rating === "Ideal"
-                  ? "up"
-                  : "down"
-              }
-            />
-            <MetricCard
-              title="Speaking Speed"
-              value={`${currentAnalysis.fluency.speakingSpeed.wordsPerMinute.toFixed(0)} WPM`}
-              rating={currentAnalysis.fluency.speakingSpeed.rating}
-              description="Words per minute"
-              trend={
-                currentAnalysis.fluency.speakingSpeed.rating === "Good"
-                  ? "up"
-                  : "down"
-              }
-            />
-            <MetricCard
-              title="Grammar"
-              value={`${currentAnalysis.grammar.errorRate.toFixed(1)}%`}
-              rating={currentAnalysis.grammar.rating}
-              description="Error rate"
-              trend={
-                currentAnalysis.grammar.rating === "Excellent" ? "up" : "down"
-              }
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Main Content Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Left Column - Analysis Dashboard */}
-        <div className="space-y-4">
-          <Tabs defaultValue="technical" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="technical">Technical</TabsTrigger>
-              <TabsTrigger value="delivery">Delivery</TabsTrigger>
-              <TabsTrigger value="content">Content</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="technical">
-              <AnalysisSection title="Technical Performance">
-                <div className="space-y-4">
-                  <MetricCard
-                    title="Keyword Coverage"
-                    value={`${currentAnalysis.keywords.coverage.toFixed(0)}%`}
-                    rating={
-                      currentAnalysis.keywords.coverage >= 80
-                        ? "Good"
-                        : currentAnalysis.keywords.coverage >= 50
-                          ? "Moderate"
-                          : "Needs Improvement"
-                    }
-                    description="Required keywords used"
-                  />
-                  <MetricCard
-                    title="Grammar Accuracy"
-                    value={`${(100 - currentAnalysis.grammar.errorRate).toFixed(1)}%`}
-                    rating={currentAnalysis.grammar.rating}
-                    description="Grammatical accuracy"
-                  />
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium">Missed Keywords</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {currentAnalysis.keywords.missed.map(
-                        (keyword: string, index: number) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs"
-                          >
-                            {keyword}
-                          </span>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </AnalysisSection>
-            </TabsContent>
-
-            <TabsContent value="delivery">
-              <AnalysisSection title="Delivery Metrics">
-                <div className="space-y-4">
-                  <MetricCard
-                    title="Filler Words"
-                    value={currentAnalysis.fluency.fillerWords.count}
-                    rating={currentAnalysis.fluency.fillerWords.rating}
-                    description={`${currentAnalysis.fluency.fillerWords.perMinute.toFixed(1)} per minute`}
-                  />
-                  <MetricCard
-                    title="Speaking Speed"
-                    value={`${currentAnalysis.fluency.speakingSpeed.wordsPerMinute.toFixed(0)} WPM`}
-                    rating={currentAnalysis.fluency.speakingSpeed.rating}
-                    description="Words per minute"
-                  />
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium">Common Filler Words</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {currentAnalysis.fluency.fillerWords.examples.map(
-                        (word: string, index: number) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs"
-                          >
-                            {word}
-                          </span>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </AnalysisSection>
-            </TabsContent>
-
-            <TabsContent value="content">
-              <AnalysisSection title="Content Quality">
-                <div className="space-y-4">
-                  <MetricCard
-                    title="Sentence Complexity"
-                    value={`${(currentAnalysis.sentenceComplexity.complexityRatio * 100).toFixed(0)}%`}
-                    rating={currentAnalysis.sentenceComplexity.rating}
-                    description="Complex sentence ratio"
-                  />
-                  <MetricCard
-                    title="Vocabulary Variety"
-                    value={`${(currentAnalysis.repetition.repetitionScore * 100).toFixed(0)}%`}
-                    rating={currentAnalysis.repetition.rating}
-                    description="Unique word ratio"
-                  />
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium">Most Repeated Words</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {currentAnalysis.repetition.wordFrequency
-                        .slice(0, 5)
-                        .map(
-                          (
-                            word: { word: string; count: number },
-                            index: number
-                          ) => (
-                            <span
-                              key={index}
-                              className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs"
-                            >
-                              {word.word} ({word.count})
-                            </span>
-                          )
-                        )}
-                    </div>
-                  </div>
-                </div>
-              </AnalysisSection>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Right Column - Feedback and Transcription */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Personalized Feedback</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[600px] pr-4">
-                <div className="space-y-6">
-                  {feedbackMetrics.map((metric) => (
-                    <MetricFeedbackSection
-                      key={metric}
-                      metric={metric}
-                      feedback={(feedback as Record<string, any>)[metric]}
-                    />
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-muted/50 border-none">
-            <CardHeader>
-              <CardTitle>Transcription</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="max-h-[300px] pr-4">
-                <div className="space-y-4">
-                  {currentTranscription ? (
-                    <div className="prose prose-sm max-w-none rounded-lg">
-                      {currentTranscription
-                        .split(". ")
-                        .map((sentence: string, index: number) => (
-                          <p key={index} className="mb-2">
-                            {sentence.trim()}.
-                          </p>
-                        ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400">
-                        Transcription not available
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      {!isReviewMode && (
-        <div className="flex justify-center gap-4">
-          <Button
-            onClick={() => dispatch(setCurrentTab("recording"))}
-            className="flex items-center gap-2"
-          >
-            Record Again
-          </Button>
-          <Button
-            onClick={() => dispatch(setCurrentTab("prompt"))}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            Start Over
-          </Button>
-        </div>
-      )}
-    </div>
+    <StructuredAnalysisDisplay
+      analysis={currentAnalysis.structuredAnalysis}
+      prompt={currentPrompt}
+      response={currentTranscription || "No response available"}
+    />
   );
 }

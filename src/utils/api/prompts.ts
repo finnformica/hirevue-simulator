@@ -191,14 +191,11 @@ export async function fetchInterviewById(interviewId: string): Promise<{
     status: string;
   } | null;
   analysis: {
-    grammar: any;
-    sentence_complexity: any;
-    keywords: any;
-    fluency: any;
-    repetition: any;
-    feedback: any;
-    ai_coach_summary: string;
     grade: string;
+    overall_score: number;
+    summary: string;
+    metrics: Record<string, any>;
+    feedback: Record<string, any>;
   } | null;
   transcription: {
     text_content: string;
@@ -221,14 +218,11 @@ export async function fetchInterviewById(interviewId: string): Promise<{
       storage_path,
       status,
       analysis:analysis(
-        grammar,
-        sentence_complexity,
-        keywords,
-        fluency,
-        repetition,
-        feedback,
-        ai_coach_summary,
-        grade
+        grade,
+        overall_score,
+        summary,
+        metrics,
+        feedback
       ),
       transcription:transcriptions(
         text_content
