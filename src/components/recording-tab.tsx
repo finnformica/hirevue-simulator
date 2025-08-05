@@ -14,7 +14,6 @@ import {
   setCurrentTab,
 } from "@/lib/store/slices/simulatorSlice";
 import { useAuth } from "@/providers/auth-provider";
-import { uploadInterview } from "@/utils/api/interview";
 import { extractMediaElements } from "@/utils/extractMediaElements";
 
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
@@ -148,17 +147,17 @@ export const RecordingTab = () => {
       };
 
       // upload the video blob and insert the interview record
-      const { error: uploadError } = await uploadInterview(payload);
+      // const { error: uploadError } = await uploadInterview(payload);
 
-      if (uploadError) {
-        setError(
-          "Failed to upload recording: " +
-            uploadError.message +
-            "\nPlease try again."
-        );
-        setLoading(false);
-        return;
-      }
+      // if (uploadError) {
+      //   setError(
+      //     "Failed to upload recording: " +
+      //       uploadError.message +
+      //       "\nPlease try again."
+      //   );
+      //   setLoading(false);
+      //   return;
+      // }
 
       dispatch(
         processRecording({
