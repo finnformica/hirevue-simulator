@@ -32,12 +32,16 @@ export interface AnalysisSchema {
   id: string;
   created_at: string;
   interview_id: string;
-  grammar: JSON;
-  sentence_complexity: JSON;
-  keywords: JSON;
-  fluency: JSON;
-  repetition: JSON;
-  feedback: JSON;
+  grammar: number;
+  sentence_complexity: number;
+  keywords: number;
+  filler_words_used: number;
+  repetition: number;
+  clarity: number;
+  confidence: number;
+  structure: number;
+  vocabulary: number;
+  overall_score: number;
   ai_coach_summary: string;
   grade?: AnalysisGrade;
 }

@@ -118,7 +118,7 @@ export const processRecording = createAsyncThunk(
       };
 
       // Old analysis
-      const analysisResponse = await fetch(endpoints.analyse, {
+      const analysisResponse = await fetch(endpoints.analyse2, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-transformers
-sentence-transformers
-pydantic
-soundfile
-numpy
-python-dotenv
-python-multipart # required for fastapi
