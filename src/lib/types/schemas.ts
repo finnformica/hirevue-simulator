@@ -32,18 +32,11 @@ export interface AnalysisSchema {
   id: string;
   created_at: string;
   interview_id: string;
-  grammar: number;
-  sentence_complexity: number;
-  keywords: number;
-  filler_words_used: number;
-  repetition: number;
-  clarity: number;
-  confidence: number;
-  structure: number;
-  vocabulary: number;
+  grade: AnalysisGrade;
   overall_score: number;
-  ai_coach_summary: string;
-  grade?: AnalysisGrade;
+  summary: string;
+  metrics: Record<string, any>;
+  feedback: Record<string, any>;
 }
 
 export type AnalysisSchemaInsert = Omit<AnalysisSchema, "id" | "created_at">;

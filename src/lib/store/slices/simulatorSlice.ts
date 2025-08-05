@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { RootState } from "@/lib/store";
-import { AnalysisResult } from "@/lib/types/analysis";
+import { AnalysisResponse } from "@/lib/types/analysis";
 import { endpoints } from "@/utils/endpoints";
 
 export type TabValue = "prompt" | "recording" | "playback" | "analysis";
@@ -19,7 +19,7 @@ export interface SimulatorState {
   prompt: Prompt | null;
   videoUrl: string | null;
   transcription: string | null;
-  analysis: AnalysisResult | null;
+  analysis: AnalysisResponse | null;
   openaiAnalysis: string | null;
   isTranscribing: boolean;
   isAnalysing: boolean;

@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
 import { insertRecords } from "@/lib/supabase/server";
-import { AnalysisSchemaInsert } from "@/lib/types/schemas";
-import { aiCoachPrompt, aiStucturedSummaryPrompt } from "@/utils/prompts";
+import { StructuredAnalysis } from "@/lib/types/analysis";
+import { AnalysisGrade, AnalysisSchemaInsert } from "@/lib/types/schemas";
+import { structuredAnalysisPrompt } from "@/utils/prompts";
+import { NextResponse } from "next/server";
 
 const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
 
@@ -38,45 +39,13 @@ export async function POST(request: Request) {
     if (!HUGGINGFACE_API_KEY) {
       console.error("HUGGINGFACE_API_KEY is not set");
       return NextResponse.json(
-        {
-          error: "Hugging Face API key is not configured",
-        },
+        { error: "Hugging Face API key is not configured" },
         { status: 500 }
       );
     }
 
+    // Generate structured analysis
     const analysisResponse = await fetch(BASE_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${HUGGINGFACE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "meta-llama/Llama-3.1-8B-Instruct",
-        messages: [
-          {
-            role: "user",
-            content: aiCoachPrompt(transcription, prompt),
-          },
-        ],
-      }),
-    });
-
-    const aiAnalysisJSON = await analysisResponse.json();
-
-    const aiAnalysis = aiAnalysisJSON.choices[0].message.content;
-
-    if (!aiAnalysis) {
-      console.error("No AI analysis content in response");
-      return NextResponse.json(
-        {
-          error: "Failed to generate AI analysis - no content in response",
-        },
-        { status: 500 }
-      );
-    }
-
-    const summaryResponse = await fetch(BASE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -88,54 +57,68 @@ export async function POST(request: Request) {
           {
             role: "system",
             content:
-              "Return only a JSON object, No explanations, no markdown, no additional text.",
+              "You are an expert interview coach. Return only valid JSON, no explanations or additional text.",
           },
           {
             role: "user",
-            content: aiStucturedSummaryPrompt(aiAnalysis),
+            content: structuredAnalysisPrompt(transcription, prompt),
           },
         ],
       }),
     });
 
-    const summaryJSON = await summaryResponse.json();
+    if (!analysisResponse.ok) {
+      const error = await analysisResponse.json();
+      throw new Error(error.error || "Failed to generate analysis");
+    }
 
-    const summary = summaryJSON.choices[0].message.content;
+    const analysisJSON = await analysisResponse.json();
+    const structuredAnalysisContent = analysisJSON.choices[0].message.content;
 
-    const summaryObject = JSON.parse(summary);
-
-    if (!summaryObject) {
-      console.error("Summary object not generated");
+    if (!structuredAnalysisContent) {
+      console.error("No structured analysis content in response");
       return NextResponse.json(
         {
-          error: "Failed to generate structured summary",
+          error:
+            "Failed to generate structured analysis - no content in response",
         },
         { status: 500 }
       );
     }
 
+    // Parse the structured analysis
+    let structuredAnalysis: StructuredAnalysis;
+    try {
+      structuredAnalysis = JSON.parse(structuredAnalysisContent);
+    } catch (parseError) {
+      console.error("Failed to parse structured analysis:", parseError);
+      return NextResponse.json(
+        { error: "Failed to parse structured analysis response" },
+        { status: 500 }
+      );
+    }
+
+    // Validate the structure
+    if (
+      !structuredAnalysis.overallScore ||
+      !structuredAnalysis.metrics ||
+      !structuredAnalysis.feedback
+    ) {
+      return NextResponse.json(
+        { error: "Invalid structured analysis format" },
+        { status: 500 }
+      );
+    }
+
+    // Save to database with the new structure
     const records: AnalysisSchemaInsert[] = [
       {
         interview_id: interviewId,
-        grammar: summaryObject?.Grammar,
-        sentence_complexity: summaryObject?.["Sentence Complexity"],
-        keywords: summaryObject?.Keywords,
-        filler_words_used: summaryObject?.["Filler Words Used"],
-        repetition: summaryObject?.Repetition,
-        clarity: summaryObject?.Clarity,
-        confidence: summaryObject?.Confidence,
-        structure: summaryObject?.Structure,
-        vocabulary: summaryObject?.Vocabulary,
-        overall_score: summaryObject?.Overall,
-        grade: (() => {
-          const overall = summaryObject?.Overall;
-          if (overall >= 8) return "Excellent";
-          if (overall >= 6) return "Good";
-          if (overall >= 4) return "Average";
-          if (overall >= 2) return "Poor";
-          return "Failed";
-        })(),
-        ai_coach_summary: aiAnalysis ?? "",
+        grade: structuredAnalysis.grade as AnalysisGrade,
+        overall_score: structuredAnalysis.overallScore,
+        summary: structuredAnalysis.overallStatement,
+        metrics: structuredAnalysis.metrics,
+        feedback: structuredAnalysis.feedback,
       },
     ];
 
@@ -155,22 +138,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const combinedResponse = {
-      grammar: summaryObject?.Grammar,
-      sentenceComplexity: summaryObject?.["Sentence Complexity"],
-      keywords: summaryObject?.Keywords,
-      fillerWordsUsed: summaryObject?.["Filler Words Used"],
-      repetition: summaryObject?.Repetition,
-      clarity: summaryObject?.Clarity,
-      confidence: summaryObject?.Confidence,
-      structure: summaryObject?.Structure,
-      vocabulary: summaryObject?.Vocabulary,
-      overallScore: summaryObject?.Overall,
-      aiAnalysis: aiAnalysis,
-    };
-
-    return NextResponse.json(combinedResponse);
+    // Return the structured analysis
+    return NextResponse.json({
+      structuredAnalysis,
+      rawAnalysis: structuredAnalysisContent,
+    });
   } catch (error) {
+    console.error("Analysis error:", error);
     return NextResponse.json(
       {
         error: `Analysis Error: ${error instanceof Error ? error.message : "Unknown error"}`,
