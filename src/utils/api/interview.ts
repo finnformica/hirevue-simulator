@@ -1,4 +1,4 @@
-import { insertRecords, uploadBlob } from "@/lib/supabase/server";
+import { insertRecords } from "@/lib/supabase/server";
 import { InterviewAttempt, InterviewSchemaInsert } from "@/lib/types/schemas";
 import useSWR from "swr";
 import { fetchInterviewAttempts } from "./prompts";
@@ -46,19 +46,19 @@ export async function uploadInterview({
   const filePath = `${userId}/${fileName}`;
 
   // Upload the video blob
-  const data = new FormData();
-  data.append("blob", videoBlob);
+  // const data = new FormData();
+  // data.append("blob", videoBlob);
 
-  const { error: uploadError } = await uploadBlob({
-    bucket: "interviews",
-    filePath,
-    data,
-    contentType: "video/webm",
-  });
+  // const { error: uploadError } = await uploadBlob({
+  //   bucket: "interviews",
+  //   filePath,
+  //   data,
+  //   contentType: "video/webm",
+  // });
 
-  if (uploadError) {
-    return { error: uploadError, data: null };
-  }
+  // if (uploadError) {
+  //   return { error: uploadError, data: null };
+  // }
 
   // Insert interview record with the client-generated interviewId
   const records: InterviewSchemaInsert[] = [
