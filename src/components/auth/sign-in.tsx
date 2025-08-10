@@ -22,6 +22,8 @@ export function SignIn() {
     handleSubmit,
   } = useForm<SignInForm>();
 
+  console.log(process.env.NEXT_PUBLIC_BASE_URL);
+
   const onSubmit = async (formData: SignInForm) => {
     setIsLoading(true);
     setErrorMsg(null);
