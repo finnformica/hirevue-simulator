@@ -1,4 +1,8 @@
 export const endpoints = {
-  transcribe: "/api/transcribe",
   analyse: "/api/analyse",
+  stripe: {
+    checkout: "/api/stripe/checkout",
+  },
+  transcribe: "/api/transcribe",
+  user: "/api/user",
 };

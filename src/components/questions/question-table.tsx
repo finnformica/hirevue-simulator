@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PromptWithLastAttempt } from "@/utils/api/prompts";
+import { useGetUser } from "@/utils/api/user";
 
 interface QuestionTableProps {
   questions: PromptWithLastAttempt[];
@@ -21,12 +22,15 @@ export function QuestionTable({
   expandedRows,
   onToggleRow,
 }: QuestionTableProps) {
+  const { isProUser } = useGetUser();
   return (
     <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow className="border-gray-800 hover:bg-gray-800/50">
-            <TableHead className="text-gray-300 font-semibold w-12" />
+            {isProUser && (
+              <TableHead className="text-gray-300 font-semibold w-12" />
+            )}
             <TableHead className="text-gray-300 font-semibold">
               Question
             </TableHead>

@@ -7,10 +7,10 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { useAppDispatch } from "@/lib/store/hooks";
 import { AnalysisGrade, InterviewAttempt } from "@/lib/types/schemas";
 import { useInterviewAttempts } from "@/utils/api/interview";
 import { PromptWithLastAttempt } from "@/utils/api/prompts";
+import { useGetUser } from "@/utils/api/user";
 import { paths } from "@/utils/paths";
 
 const difficultyColors = {
@@ -64,7 +64,7 @@ export function QuestionRow({
 }: QuestionRowProps) {
   const [displayedCount, setDisplayedCount] = useState(5);
   const router = useRouter();
-  const dispatch = useAppDispatch();
+  const { isProUser } = useGetUser();
 
   // Fetch attempts only when expanded, with increasing page size
   const { attempts, totalCount, isLoading } = useInterviewAttempts(
@@ -105,20 +105,22 @@ export function QuestionRow({
   return (
     <>
       <TableRow className="border-gray-800 hover:bg-gray-800/30">
-        <TableCell className="w-12">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleToggle}
-            className="p-1 h-6 w-6 text-gray-400 hover:text-white"
-          >
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4" />
-            ) : (
-              <ChevronRight className="w-4 h-4" />
-            )}
-          </Button>
-        </TableCell>
+        {isProUser && (
+          <TableCell className="w-12">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleToggle}
+              className="p-1 h-6 w-6 text-gray-400 hover:text-white"
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
+            </Button>
+          </TableCell>
+        )}
         <TableCell className="text-gray-200 max-w-0">
           <div className="line-clamp-4 sm:line-clamp-3 md:line-clamp-3 lg:line-clamp-2 overflow-hidden text-ellipsis">
             {question.question}
@@ -205,6 +207,7 @@ export function QuestionRow({
                             </Badge>
                           </div>
                           <Button
+                            disabled={!isProUser}
                             variant="outline"
                             size="sm"
                             className="border-gray-600 text-gray-300 hover:bg-gray-700 bg-transparent"

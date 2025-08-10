@@ -32,8 +32,51 @@ export function usePrompts() {
 }
 
 export async function fetchPrompts(): Promise<PromptWithLastAttempt[]> {
-  // Get all prompts with their last attempt data in a single query
-  const { data: prompts, error: promptsError } = await supabaseClientForBrowser
+  // First, get the current user and their subscription status
+  const {
+    data: { user },
+    error: userError,
+  } = await supabaseClientForBrowser.auth.getUser();
+
+  if (userError) {
+    throw new Error(`Failed to get user: ${userError.message}`);
+  }
+
+  let isProUser = false;
+
+  if (user) {
+    // Get user's subscription status from Stripe tables
+    try {
+      const { data: customerData, error: customerError } =
+        await supabaseClientForBrowser
+          .schema("stripe")
+          .from("customers")
+          .select("id")
+          .eq("metadata->>supabase_user_id", user.id)
+          .eq("deleted", false)
+          .single();
+
+      if (!customerError && customerData) {
+        const { data: subscriptionData, error: subscriptionError } =
+          await supabaseClientForBrowser
+            .schema("stripe")
+            .from("subscriptions")
+            .select("status")
+            .eq("customer", customerData.id)
+            .in("status", ["active", "trialing"])
+            .single();
+
+        if (!subscriptionError && subscriptionData) {
+          isProUser = true;
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to fetch subscription status:", error);
+    }
+  }
+
+  // Build the query
+  let query = supabaseClientForBrowser
     .from("prompts")
     .select(
       `
@@ -53,6 +96,13 @@ export async function fetchPrompts(): Promise<PromptWithLastAttempt[]> {
     `
     )
     .order("created_at", { ascending: false });
+
+  // If user is not Pro, restrict to basic category only
+  if (!isProUser) {
+    query = query.eq("category", "basic");
+  }
+
+  const { data: prompts, error: promptsError } = await query;
 
   if (promptsError) {
     throw new Error(`Failed to fetch prompts: ${promptsError.message}`);
