@@ -1,34 +1,24 @@
-import { getStripePrices, getStripeProducts } from "@/lib/payments/stripe";
-import { getUserSubscriptionInfo } from "@/lib/stripe-tables";
-import { createClientForServer } from "@/utils/supabase/server";
-import { PricingDisplay } from "./pricing-display";
-
-// Prices are fresh for one hour max
-export const revalidate = 3600;
+import { PricingCards } from "@/components/pricing/pricing-cards";
+import { getPricingData } from "@/lib/payments/fetch";
 
 export default async function PricingPage() {
-  const [prices, products] = await Promise.all([
-    getStripePrices(),
-    getStripeProducts(),
-  ]);
+  const { proPrices, currentPlan } = await getPricingData();
 
-  const proPlan = products.find((product) => product.name === "Pro");
-  const proPrices = prices.filter((price) => price.productId === proPlan?.id);
+  return (
+    <>
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
+        <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+          Start practicing for free or upgrade to Pro for unlimited access to
+          all features and advanced analytics
+        </p>
+      </div>
 
-  // Get user's current subscription status
-  const supabase = await createClientForServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let currentPlan = "Free";
-
-  if (user) {
-    const subscriptionInfo = await getUserSubscriptionInfo(user.id);
-    if (subscriptionInfo?.isProUser) {
-      currentPlan = "Pro";
-    }
-  }
-
-  return <PricingDisplay proPrices={proPrices} currentPlan={currentPlan} />;
+      <PricingCards
+        proPrices={proPrices}
+        currentPlan={currentPlan}
+        variant="pricing"
+      />
+    </>
+  );
 }
