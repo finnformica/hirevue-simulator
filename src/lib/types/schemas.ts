@@ -46,7 +46,7 @@ export interface PromptSchema {
   question: string;
   duration: number; // smallint
   difficulty: "easy" | "medium" | "hard"; // difficulty_level enum
-  category: "general" | "behavioral" | "technical"; // prompt_category enum
+  category: "general" | "consulting" | "finance" | "basic"; // prompt_category enum
 }
 
 export type PromptSchemaInsert = Omit<PromptSchema, "id" | "created_at">;

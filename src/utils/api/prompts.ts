@@ -32,8 +32,39 @@ export function usePrompts() {
 }
 
 export async function fetchPrompts(): Promise<PromptWithLastAttempt[]> {
-  // Get all prompts with their last attempt data in a single query
-  const { data: prompts, error: promptsError } = await supabaseClientForBrowser
+  // First, get the current user and their subscription status
+  const {
+    data: { user },
+    error: userError,
+  } = await supabaseClientForBrowser.auth.getUser();
+
+  if (userError) {
+    throw new Error(`Failed to get user: ${userError.message}`);
+  }
+
+  let isProUser = false;
+
+  if (user) {
+    // Get user's subscription status from profiles table
+    const { data: userData, error: profileError } =
+      await supabaseClientForBrowser
+        .from("profiles")
+        .select("subscription_status")
+        .eq("id", user.id)
+        .single();
+
+    if (profileError) {
+      console.warn("Failed to fetch user profile:", profileError.message);
+    } else {
+      // Check if user has active subscription (Pro user)
+      isProUser =
+        userData?.subscription_status === "active" ||
+        userData?.subscription_status === "trialing";
+    }
+  }
+
+  // Build the query
+  let query = supabaseClientForBrowser
     .from("prompts")
     .select(
       `
@@ -53,6 +84,13 @@ export async function fetchPrompts(): Promise<PromptWithLastAttempt[]> {
     `
     )
     .order("created_at", { ascending: false });
+
+  // If user is not Pro, restrict to basic category only
+  if (!isProUser) {
+    query = query.eq("category", "basic");
+  }
+
+  const { data: prompts, error: promptsError } = await query;
 
   if (promptsError) {
     throw new Error(`Failed to fetch prompts: ${promptsError.message}`);

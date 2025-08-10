@@ -21,7 +21,7 @@ interface QuestionFiltersProps {
   onCategoryChange: (value: string) => void;
 }
 
-const categories = ["general", "finance", "consulting", "software"];
+const categories = ["basic", "general", "finance", "consulting", "software"];
 const difficulties = ["easy", "medium", "hard"];
 
 export function QuestionFilters({

@@ -1,22 +1,26 @@
+import { Button } from "@/components/ui/button";
+import { customerPortalAction } from "@/lib/payments/actions";
 import { paths } from "@/utils/paths";
 import { createClientForServer } from "@/utils/supabase/server";
-import {
-  BarChart2,
-  Bell,
-  Calendar,
-  ChevronRight,
-  Clock,
-  Shield,
-  Trophy,
-  User,
-  Video,
-} from "lucide-react";
+import { BarChart2, Clock, Trophy, User, Video } from "lucide-react";
 import Link from "next/link";
+import { UpgradeButton } from "./upgrade-button";
 
 export default async function Profile() {
   const supabase = await createClientForServer();
   const session = await supabase.auth.getUser();
   const { user } = session.data;
+
+  // Fetch user profile data including subscription info
+  let userData = null;
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("plan_name, subscription_status, billing_period")
+      .eq("id", user.id)
+      .single();
+    userData = data;
+  }
 
   const stats = [
     {
@@ -127,52 +131,41 @@ export default async function Profile() {
         </div>
         {/* Settings Panel */}
         <div className="lg:col-span-1">
-          <h2 className="text-xl font-bold mb-4">Settings</h2>
+          <h2 className="text-xl font-bold mb-4">Subscription</h2>
+
+          {/* Subscription Management */}
           <div className="bg-gray-900 border border-gray-800 rounded-lg">
-            <Link
-              href="/profile/edit"
-              className="flex items-center justify-between p-4 hover:bg-gray-800/50 transition-colors"
-            >
-              <div className="flex items-center">
-                <User className="h-5 w-5 text-gray-400 mr-3" />
-                <span>Edit Profile</span>
+            <div className="p-4">
+              <div className="space-y-4">
+                <div className="flex flex-col space-y-4">
+                  <div>
+                    <p className="font-medium text-gray-100">
+                      Current Plan:{" "}
+                      {userData?.subscription_status === "active"
+                        ? "Pro"
+                        : "Free"}
+                    </p>
+                    <p className="text-sm text-gray-400">
+                      {userData?.subscription_status === "active"
+                        ? `Billed ${userData?.billing_period}`
+                        : "No active subscription"}
+                    </p>
+                  </div>
+                  {userData?.subscription_status === "active" ? (
+                    <form action={customerPortalAction}>
+                      <Button
+                        type="submit"
+                        variant="outline"
+                        className="bg-gray-800 hover:bg-gray-700 text-white border-gray-700 w-full"
+                      >
+                        Manage Subscription
+                      </Button>
+                    </form>
+                  ) : (
+                    <UpgradeButton />
+                  )}
+                </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-gray-400" />
-            </Link>
-            <Link
-              href="/profile/notifications"
-              className="flex items-center justify-between p-4 hover:bg-gray-800/50 transition-colors border-t border-gray-800"
-            >
-              <div className="flex items-center">
-                <Bell className="h-5 w-5 text-gray-400 mr-3" />
-                <span>Notifications</span>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-400" />
-            </Link>
-            <Link
-              href="/profile/privacy"
-              className="flex items-center justify-between p-4 hover:bg-gray-800/50 transition-colors border-t border-gray-800"
-            >
-              <div className="flex items-center">
-                <Shield className="h-5 w-5 text-gray-400 mr-3" />
-                <span>Privacy & Security</span>
-              </div>
-              <ChevronRight className="h-5 w-5 text-gray-400" />
-            </Link>
-          </div>
-          {/* Calendar */}
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">Upcoming Sessions</h2>
-              <Calendar className="h-5 w-5 text-gray-400" />
-            </div>
-            <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
-              <p className="text-gray-400 text-sm text-center">
-                No upcoming practice sessions scheduled
-              </p>
-              <button className="w-full mt-4 bg-gray-800 hover:bg-gray-700 text-white font-medium px-4 py-2 rounded-md transition-colors">
-                Schedule Practice
-              </button>
             </div>
           </div>
         </div>
