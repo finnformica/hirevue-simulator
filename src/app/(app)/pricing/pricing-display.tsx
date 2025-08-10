@@ -51,15 +51,23 @@ export function PricingDisplay({
       period: isQuarterly ? "quarter" : "month",
       description: "Perfect for getting started with interview practice",
       features: [
-        { text: "3 interview attempts per month", included: true, icon: Clock },
+        { text: "Unlimited interview attempts", included: true, icon: Clock },
         {
-          text: "Access to general questions only",
+          text: "Detailed personalised feedback and scoring",
+          included: true,
+          icon: Target,
+        },
+        {
+          text: "Access to 3 basic questions only",
           included: true,
           icon: BookOpen,
         },
-        { text: "Basic feedback and scoring", included: true, icon: Target },
         { text: "Industry-specific questions", included: false, icon: Users },
-        { text: "Review past attempts", included: false, icon: BarChart3 },
+        {
+          text: "Review and track past interview attempts",
+          included: false,
+          icon: BarChart3,
+        },
         {
           text: "Advanced analytics & insights",
           included: false,
@@ -85,17 +93,21 @@ export function PricingDisplay({
       features: [
         { text: "Unlimited interview attempts", included: true, icon: Clock },
         {
+          text: "Detailed personalised feedback and scoring",
+          included: true,
+          icon: Target,
+        },
+        {
           text: "All question categories & difficulties",
           included: true,
           icon: BookOpen,
         },
-        {
-          text: "AI-powered feedback and scoring",
-          included: true,
-          icon: Target,
-        },
         { text: "Industry-specific questions", included: true, icon: Users },
-        { text: "Review past attempts", included: true, icon: BarChart3 },
+        {
+          text: "Review and track past interview attempts",
+          included: true,
+          icon: BarChart3,
+        },
         {
           text: "Advanced analytics & insights",
           included: true,
