@@ -64,9 +64,9 @@ export async function fetchPrompts(): Promise<PromptWithLastAttempt[]> {
             .select("status")
             .eq("customer", customerData.id)
             .in("status", ["active", "trialing"])
-            .single();
+            .limit(1);
 
-        if (!subscriptionError && subscriptionData) {
+        if (!subscriptionError && subscriptionData && subscriptionData.length > 0) {
           isProUser = true;
         }
       }
