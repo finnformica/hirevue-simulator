@@ -46,7 +46,7 @@ cp .env.example .env.local
 Update the environment variables as needed:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
 ### 3. Run the development server

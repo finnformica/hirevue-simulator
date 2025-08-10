@@ -62,8 +62,8 @@ export async function createCheckoutSession({ priceId }: { priceId: string }) {
   const customerId = await getOrCreateStripeCustomer(user);
 
   // Construct URLs with proper scheme
-  const successUrl = `${process.env.BASE_URL}${endpoints.stripe.checkout}?session_id={CHECKOUT_SESSION_ID}`;
-  const cancelUrl = `${process.env.BASE_URL}${paths.pricing}`;
+  const successUrl = `${process.env.NEXT_PUBLIC_BASE_URL}${endpoints.stripe.checkout}?session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `${process.env.NEXT_PUBLIC_BASE_URL}${paths.pricing}`;
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -183,7 +183,7 @@ export async function createCustomerPortalSession(user: User) {
 
   return stripe.billingPortal.sessions.create({
     customer: customerId,
-    return_url: `${process.env.BASE_URL}${paths.profile}`,
+    return_url: `${process.env.NEXT_PUBLIC_BASE_URL}${paths.profile}`,
     configuration: configuration.id,
   });
 }

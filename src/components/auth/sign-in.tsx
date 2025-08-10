@@ -27,9 +27,7 @@ export function SignIn() {
     setErrorMsg(null);
 
     const emailRedirectTo =
-      process?.env?.NEXT_PUBLIC_SITE_URL ??
-      process?.env?.NEXT_PUBLIC_VERCEL_URL ??
-      "http://localhost:3000";
+      process?.env?.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
     const { error } = await supabase.auth.signInWithOtp({
       email: formData.email,

@@ -205,7 +205,10 @@ export function PricingCards({
     return (
       <form action={checkoutAction}>
         <input type="hidden" name="priceId" value={plan.priceId || ""} />
-        <Button type="submit" className="w-full">
+        <Button
+          type="submit"
+          className="w-full bg-green-500 hover:bg-green-600"
+        >
           {plan.buttonText}
         </Button>
       </form>

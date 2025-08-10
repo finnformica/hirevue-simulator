@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 
 const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
 
-const BASE_URL = "https://router.huggingface.co/v1/chat/completions";
+const HUGGING_FACE_BASE_URL = "https://router.huggingface.co/v1/chat/completions";
 
 export async function POST(request: Request) {
   try {
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     }
 
     // Generate structured analysis
-    const analysisResponse = await fetch(BASE_URL, {
+    const analysisResponse = await fetch(HUGGING_FACE_BASE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
