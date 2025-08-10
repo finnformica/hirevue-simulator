@@ -22,16 +22,12 @@ export function SignIn() {
     handleSubmit,
   } = useForm<SignInForm>();
 
-  console.log(process.env.NEXT_PUBLIC_BASE_URL);
-
   const onSubmit = async (formData: SignInForm) => {
     setIsLoading(true);
     setErrorMsg(null);
 
     const emailRedirectTo =
-      process?.env?.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-
-    console.log(emailRedirectTo);
+      process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
     const { error } = await supabase.auth.signInWithOtp({
       email: formData.email,
@@ -47,7 +43,7 @@ export function SignIn() {
           "No account found for this email. You may need to create an account."
         );
       } else {
-        setErrorMsg(error.message || "An error occurred. Please try again.");
+        setErrorMsg(error?.message ?? "An error occurred. Please try again.");
       }
       setIsLoading(false);
       return;
