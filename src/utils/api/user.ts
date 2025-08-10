@@ -3,14 +3,13 @@ import useSWR from "swr";
 import { getFetcher } from "./fetchers";
 
 export const useGetUser = () => {
-  const { data, error, isLoading } = useSWR(endpoints.user, getFetcher);
-
-  const isProUser = data?.subscription_status === "active";
+  const { data, error, isLoading, mutate } = useSWR(endpoints.user, getFetcher);
 
   return {
     user: data,
-    isProUser,
+    isProUser: data?.isProUser ?? false,
     error,
     isLoading,
+    mutate,
   };
 };

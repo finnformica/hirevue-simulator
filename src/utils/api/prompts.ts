@@ -45,21 +45,33 @@ export async function fetchPrompts(): Promise<PromptWithLastAttempt[]> {
   let isProUser = false;
 
   if (user) {
-    // Get user's subscription status from profiles table
-    const { data: userData, error: profileError } =
-      await supabaseClientForBrowser
-        .from("profiles")
-        .select("subscription_status")
-        .eq("id", user.id)
-        .single();
+    // Get user's subscription status from Stripe tables
+    try {
+      const { data: customerData, error: customerError } =
+        await supabaseClientForBrowser
+          .schema("stripe")
+          .from("customers")
+          .select("id")
+          .eq("metadata->>supabase_user_id", user.id)
+          .eq("deleted", false)
+          .single();
 
-    if (profileError) {
-      console.warn("Failed to fetch user profile:", profileError.message);
-    } else {
-      // Check if user has active subscription (Pro user)
-      isProUser =
-        userData?.subscription_status === "active" ||
-        userData?.subscription_status === "trialing";
+      if (!customerError && customerData) {
+        const { data: subscriptionData, error: subscriptionError } =
+          await supabaseClientForBrowser
+            .schema("stripe")
+            .from("subscriptions")
+            .select("status")
+            .eq("customer", customerData.id)
+            .in("status", ["active", "trialing"])
+            .single();
+
+        if (!subscriptionError && subscriptionData) {
+          isProUser = true;
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to fetch subscription status:", error);
     }
   }
 

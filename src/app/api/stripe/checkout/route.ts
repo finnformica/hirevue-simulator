@@ -52,33 +52,13 @@ export async function GET(request: NextRequest) {
       throw new Error("No user ID found in session's metadata.");
     }
 
-    // Update user profile with subscription data
-    const supabase = await createClientForServer();
-
-    const interval = subscription.items.data[0]?.price.recurring?.interval;
-    const intervalCount =
-      subscription.items.data[0]?.price.recurring?.interval_count;
-    const billingPeriod =
-      interval === "month" && intervalCount === 3 ? "quarterly" : "monthly";
-
-    const payload = {
-      stripe_customer_id: customerId,
-      stripe_subscription_id: subscriptionId,
-      stripe_product_id: productId,
-      plan_name: (plan.product as Stripe.Product).name,
-      subscription_status: subscription.status,
-      billing_period: billingPeriod,
-    };
-
-    const { error: updateError } = await supabase
+    // Update profiles table with stripe_customer_id for direct user lookup
+    const supabase = await createClientForServer();    
+    await supabase
       .from("profiles")
-      .update(payload)
+      .update({ stripe_customer_id: customerId })
       .eq("id", userId);
 
-    if (updateError) {
-      console.error("Error updating user profile:", updateError);
-      throw new Error("Failed to update user subscription data.");
-    }
 
     // Redirect to success page
     return NextResponse.redirect(new URL(paths.profile, request.url));

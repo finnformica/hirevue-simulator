@@ -30,14 +30,17 @@ const getBaseUrl = () => {
 async function getOrCreateStripeCustomer(user: User) {
   const supabase = await createClientForServer();
 
-  const { data: userData } = await supabase
-    .from("profiles")
-    .select("stripe_customer_id")
-    .eq("id", user.id)
+  // First check if customer exists in Stripe tables
+  const { data: customerData } = await supabase
+    .schema("stripe")
+    .from("customers")
+    .select("id")
+    .eq("metadata->>supabase_user_id", user.id)
+    .eq("deleted", false)
     .single();
 
-  if (userData?.stripe_customer_id) {
-    return userData.stripe_customer_id;
+  if (customerData?.id) {
+    return customerData.id;
   }
 
   // Create new Stripe customer
@@ -48,41 +51,10 @@ async function getOrCreateStripeCustomer(user: User) {
     },
   });
 
-  // Store the Stripe customer ID in the database
-  await supabase
-    .from("profiles")
-    .update({ stripe_customer_id: customer.id })
-    .eq("id", user.id);
+  // Note: The customer will be automatically added to stripe.customers table by the edge function
+  // No need to manually store it in profiles table anymore
 
   return customer.id;
-}
-
-// Helper function to get user by Stripe customer ID
-async function getUserByStripeCustomerId(customerId: string) {
-  const supabase = await createClientForServer();
-
-  const { data: user } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("stripe_customer_id", customerId)
-    .single();
-
-  return user;
-}
-
-// Helper function to update user subscription
-async function updateUserSubscription(
-  userId: string,
-  subscriptionData: {
-    stripe_subscription_id?: string | null;
-    stripe_product_id?: string | null;
-    plan_name?: string | null;
-    subscription_status?: string | null;
-  }
-) {
-  const supabase = await createClientForServer();
-
-  await supabase.from("profiles").update(subscriptionData).eq("id", userId);
 }
 
 export async function createCheckoutSession({ priceId }: { priceId: string }) {
@@ -131,13 +103,38 @@ export async function createCustomerPortalSession(user: User) {
   } else {
     // Get the user's current subscription to determine the product
     const supabase = await createClientForServer();
-    const { data: userData } = await supabase
-      .from("profiles")
-      .select("stripe_product_id")
-      .eq("id", user.id)
+    
+    // Get customer from Stripe tables
+    const { data: customerData } = await supabase
+      .schema("stripe")
+      .from("customers")
+      .select("id")
+      .eq("metadata->>supabase_user_id", user.id)
+      .eq("deleted", false)
       .single();
 
-    const productId = userData?.stripe_product_id;
+    if (!customerData) {
+      throw new Error("User has no Stripe customer record");
+    }
+
+    // Get active subscription
+    const { data: subscriptionData } = await supabase
+      .schema("stripe")
+      .from("subscriptions")
+      .select("items")
+      .eq("customer", customerData.id)
+      .in("status", ["active", "trialing"])
+      .single();
+
+    if (!subscriptionData) {
+      throw new Error("User has no active subscription");
+    }
+
+    // Extract product ID from subscription items
+    const items = subscriptionData.items as any;
+    const firstItem = items?.data?.[0];
+    const price = firstItem?.price;
+    const productId = price?.product;
 
     if (!productId) {
       throw new Error("User has no active product subscription");
@@ -204,37 +201,6 @@ export async function createCustomerPortalSession(user: User) {
   });
 }
 
-export async function handleSubscriptionChange(
-  subscription: Stripe.Subscription
-) {
-  const customerId = subscription.customer as string;
-  const subscriptionId = subscription.id;
-  const status = subscription.status;
-
-  const user = await getUserByStripeCustomerId(customerId);
-
-  if (!user) {
-    console.error("User not found for Stripe customer:", customerId);
-    return;
-  }
-
-  if (status === "active" || status === "trialing") {
-    const plan = subscription.items.data[0]?.plan;
-    await updateUserSubscription(user.id, {
-      stripe_subscription_id: subscriptionId,
-      stripe_product_id: plan?.product as string,
-      plan_name: (plan?.product as Stripe.Product).name,
-      subscription_status: status,
-    });
-  } else if (status === "canceled" || status === "unpaid") {
-    await updateUserSubscription(user.id, {
-      stripe_subscription_id: null,
-      stripe_product_id: null,
-      plan_name: null,
-      subscription_status: status,
-    });
-  }
-}
 
 export async function getStripePrices() {
   const prices = await stripe.prices.list({

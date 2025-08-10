@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { customerPortalAction } from "@/lib/payments/actions";
+import { getUserSubscriptionInfo } from "@/lib/stripe-tables";
 import { paths } from "@/utils/paths";
 import { createClientForServer } from "@/utils/supabase/server";
 import { BarChart2, Clock, Trophy, User, Video } from "lucide-react";
@@ -12,14 +13,9 @@ export default async function Profile() {
   const { user } = session.data;
 
   // Fetch user profile data including subscription info
-  let userData = null;
+  let subscriptionInfo = null;
   if (user) {
-    const { data } = await supabase
-      .from("profiles")
-      .select("plan_name, subscription_status, billing_period")
-      .eq("id", user.id)
-      .single();
-    userData = data;
+    subscriptionInfo = await getUserSubscriptionInfo(user.id);
   }
 
   const stats = [
@@ -141,17 +137,15 @@ export default async function Profile() {
                   <div>
                     <p className="font-medium text-gray-100">
                       Current Plan:{" "}
-                      {userData?.subscription_status === "active"
-                        ? "Pro"
-                        : "Free"}
+                      {subscriptionInfo?.isProUser ? "Pro" : "Free"}
                     </p>
                     <p className="text-sm text-gray-400">
-                      {userData?.subscription_status === "active"
-                        ? `Billed ${userData?.billing_period}`
+                      {subscriptionInfo?.isProUser
+                        ? `Billed ${subscriptionInfo?.billingPeriod}`
                         : "No active subscription"}
                     </p>
                   </div>
-                  {userData?.subscription_status === "active" ? (
+                  {subscriptionInfo?.isProUser ? (
                     <form action={customerPortalAction}>
                       <Button
                         type="submit"

@@ -1,4 +1,5 @@
 import { getStripePrices, getStripeProducts } from "@/lib/payments/stripe";
+import { getUserSubscriptionInfo } from "@/lib/stripe-tables";
 import { createClientForServer } from "@/utils/supabase/server";
 import { PricingDisplay } from "./pricing-display";
 
@@ -23,16 +24,8 @@ export default async function PricingPage() {
   let currentPlan = "Free";
 
   if (user) {
-    const { data: userData } = await supabase
-      .from("profiles")
-      .select("subscription_status, plan_name")
-      .eq("id", user.id)
-      .single();
-
-    if (
-      userData?.subscription_status === "active" ||
-      userData?.subscription_status === "trialing"
-    ) {
+    const subscriptionInfo = await getUserSubscriptionInfo(user.id);
+    if (subscriptionInfo?.isProUser) {
       currentPlan = "Pro";
     }
   }
