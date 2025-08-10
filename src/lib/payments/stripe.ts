@@ -1,3 +1,4 @@
+import { endpoints } from "@/utils/endpoints";
 import { paths } from "@/utils/paths";
 import { createClientForServer } from "@/utils/supabase/server";
 import { User } from "@supabase/supabase-js";
@@ -16,15 +17,6 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-06-30.basil",
   typescript: true,
 });
-
-// Global base URL for Stripe redirects
-const getBaseUrl = () => {
-  return (
-    process.env.BASE_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000"
-  );
-};
 
 // Helper function to get or create Stripe customer for user
 async function getOrCreateStripeCustomer(user: User) {
@@ -70,9 +62,8 @@ export async function createCheckoutSession({ priceId }: { priceId: string }) {
   const customerId = await getOrCreateStripeCustomer(user);
 
   // Construct URLs with proper scheme
-  const baseUrl = getBaseUrl();
-  const successUrl = `${baseUrl}/api/stripe/checkout?session_id={CHECKOUT_SESSION_ID}`;
-  const cancelUrl = `${baseUrl}/pricing`;
+  const successUrl = `${process.env.BASE_URL}${endpoints.stripe.checkout}?session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `${process.env.BASE_URL}${paths.pricing}`;
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -190,13 +181,9 @@ export async function createCustomerPortalSession(user: User) {
     });
   }
 
-  // Construct return URL with proper scheme
-  const baseUrl = getBaseUrl();
-  const returnUrl = `${baseUrl}/profile`;
-
   return stripe.billingPortal.sessions.create({
     customer: customerId,
-    return_url: returnUrl,
+    return_url: `${process.env.BASE_URL}${paths.profile}`,
     configuration: configuration.id,
   });
 }
