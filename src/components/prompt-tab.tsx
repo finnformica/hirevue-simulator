@@ -50,13 +50,7 @@ export function PromptTab() {
           <p className="text-gray-300 leading-relaxed">{prompt.question}</p>
         </CardContent>
       </Card>
-      <div className="flex justify-center gap-4">
-        <Link href={paths.questions}>
-          <Button variant="outline" className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Questions
-          </Button>
-        </Link>
+      <div className="flex justify-center">
         <Button onClick={handleStart}>
           <Video className="w-4 h-4 mr-2" /> Start Recording
         </Button>
