@@ -52,7 +52,7 @@ export async function POST(request: Request) {
         Authorization: `Bearer ${HUGGINGFACE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "meta-llama/Llama-3.1-8B-Instruct",
+        model: "meta-llama/Llama-3.3-70B-Instruct",
         messages: [
           {
             role: "system",
