@@ -10,10 +10,10 @@ export const paths = {
     404: "/error/404",
   },
   auth: {
-    authCodeError: "/auth/auth-code-error",
     confirm: "/auth/confirm",
     confirmationSuccess: "/auth/confirmation-success",
     createAccount: "/auth/create-account",
+    error: "/auth/error",
     signIn: "/auth/sign-in",
   }
 };
