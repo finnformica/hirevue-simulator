@@ -5,6 +5,8 @@ import {
 } from "@/lib/types/schemas";
 import { supabaseClientForBrowser } from "@/utils/supabase/client";
 import useSWR from "swr";
+import { endpoints } from "../endpoints";
+import { getFetcher } from "./fetchers";
 
 // Extended prompt schema with last attempt info
 export interface PromptWithLastAttempt extends PromptSchema {
@@ -17,10 +19,8 @@ export interface PromptWithLastAttempt extends PromptSchema {
 // Custom hook for fetching prompts
 export function usePrompts() {
   const { data, error, isLoading, mutate } = useSWR<PromptWithLastAttempt[]>(
-    "prompts",
-    async () => {
-      return await fetchPrompts();
-    }
+    endpoints.prompts,
+    getFetcher
   );
 
   return {
@@ -29,106 +29,6 @@ export function usePrompts() {
     error,
     refresh: mutate,
   };
-}
-
-export async function fetchPrompts(): Promise<PromptWithLastAttempt[]> {
-  // First, get the current user and their subscription status
-  const {
-    data: { user },
-    error: userError,
-  } = await supabaseClientForBrowser.auth.getUser();
-
-  if (userError) {
-    throw new Error(`Failed to get user: ${userError.message}`);
-  }
-
-  let isProUser = false;
-
-  if (user) {
-    // Get user's subscription status from Stripe tables
-    try {
-      const { data: customerData, error: customerError } =
-        await supabaseClientForBrowser
-          .schema("stripe")
-          .from("customers")
-          .select("id")
-          .eq("metadata->>supabase_user_id", user.id)
-          .eq("deleted", false)
-          .single();
-
-      if (!customerError && customerData) {
-        const { data: subscriptionData, error: subscriptionError } =
-          await supabaseClientForBrowser
-            .schema("stripe")
-            .from("subscriptions")
-            .select("status")
-            .eq("customer", customerData.id)
-            .in("status", ["active", "trialing"])
-            .limit(1);
-
-        if (!subscriptionError && subscriptionData && subscriptionData.length > 0) {
-          isProUser = true;
-        }
-      }
-    } catch (error) {
-      console.warn("Failed to fetch subscription status:", error);
-    }
-  }
-
-  // Build the query
-  let query = supabaseClientForBrowser
-    .from("prompts")
-    .select(
-      `
-      id,
-      created_at,
-      question,
-      duration,
-      difficulty,
-      category,
-      last_attempt:interviews(
-        id,
-        created_at,
-        analysis:analysis(
-          grade
-        )
-      )
-    `
-    )
-    .order("created_at", { ascending: false });
-
-  // If user is not Pro, restrict to basic category only
-  if (!isProUser) {
-    query = query.eq("category", "basic");
-  }
-
-  const { data: prompts, error: promptsError } = await query;
-
-  if (promptsError) {
-    throw new Error(`Failed to fetch prompts: ${promptsError.message}`);
-  }
-
-  // Transform the data to match the PromptWithLastAttempt interface
-  const promptsWithAttempts: PromptWithLastAttempt[] = prompts.map((prompt) => {
-    // Get the most recent interview (last in the array due to ordering)
-    const interviews = prompt.last_attempt || [];
-    const lastInterview =
-      interviews.length > 0 ? interviews[interviews.length - 1] : null;
-    const grade = lastInterview?.analysis[0]?.grade;
-    const date = new Date(lastInterview?.created_at).toLocaleDateString();
-
-    return {
-      id: prompt.id,
-      created_at: prompt.created_at,
-      question: prompt.question,
-      duration: prompt.duration,
-      difficulty: prompt.difficulty,
-      category: prompt.category,
-      lastAttempt: lastInterview ? { grade, date } : null,
-    };
-  });
-
-  return promptsWithAttempts;
 }
 
 export async function fetchPromptById(
