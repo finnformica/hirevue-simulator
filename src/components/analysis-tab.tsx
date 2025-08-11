@@ -1,19 +1,25 @@
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  FileText,
+  Lightbulb,
+  MessageSquare,
+  RefreshCw,
+  TrendingUp,
+  X,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { setCurrentTab } from "@/lib/store/slices/simulatorSlice";
 import { MetricDetail, StructuredAnalysis } from "@/lib/types/analysis";
 import { cn } from "@/lib/utils";
 import { useGetUser } from "@/utils/api/user";
-import {
-  AlertCircle,
-  CheckCircle2,
-  FileText,
-  Lightbulb,
-  MessageSquare,
-  TrendingUp,
-  X,
-} from "lucide-react";
-import { useState } from "react";
+import { paths } from "@/utils/paths";
+
 import { Button } from "./ui/button";
 
 function MetricBentoCard({
@@ -156,23 +162,54 @@ function StructuredAnalysisDisplay({
   analysis,
   prompt,
   response,
+  isReviewMode = false,
 }: {
   analysis: StructuredAnalysis;
-  prompt: string;
+  prompt: { id: string; question: string };
   response: string;
+  isReviewMode?: boolean;
 }) {
+  const router = useRouter();
   const { isProUser } = useGetUser();
   const [isContextOpen, setIsContextOpen] = useState(false);
   const metricEntries = Object.entries(analysis.metrics);
+  const dispatch = useAppDispatch();
+
+  const handleTryAgain = () => {
+    if (isReviewMode && prompt?.id) {
+      router.push(paths.simulator(prompt.id));
+    } else {
+      dispatch(setCurrentTab("recording"));
+    }
+  };
 
   return (
     <>
-      <div className="space-y-6">
-        {/* Header with Context Toggle */}
+      <div className="space-y-6 pt-3">
+        {/* Actions Section */}
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Analysis Results</h2>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(paths.questions)}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Questions
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTryAgain}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Try Again
+            </Button>
+          </div>
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             onClick={() => setIsContextOpen(!isContextOpen)}
             className="flex items-center gap-2"
@@ -217,22 +254,16 @@ function StructuredAnalysisDisplay({
 
         {/* Metrics Bento Grid */}
         {isProUser && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Communication Skills Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {metricEntries.map(([metric, detail]) => (
-                  <MetricBentoCard
-                    key={metric}
-                    metric={metric}
-                    detail={detail}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold">
+              Communication Skills Breakdown
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {metricEntries.map(([metric, detail]) => (
+                <MetricBentoCard key={metric} metric={metric} detail={detail} />
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Feedback Sections */}
@@ -319,7 +350,7 @@ function StructuredAnalysisDisplay({
       <ContextDrawer
         isOpen={isContextOpen}
         onClose={() => setIsContextOpen(false)}
-        prompt={prompt}
+        prompt={prompt.question}
         response={response}
       />
     </>
@@ -366,8 +397,9 @@ export function AnalysisTab() {
   return (
     <StructuredAnalysisDisplay
       analysis={currentAnalysis.structuredAnalysis}
-      prompt={currentPrompt}
+      prompt={{ id: reviewData?.prompt?.id, question: currentPrompt }}
       response={currentTranscription || "No response available"}
+      isReviewMode={isReviewMode}
     />
   );
 }

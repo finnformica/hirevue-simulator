@@ -1,12 +1,9 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { AnalysisTab } from "@/components/analysis-tab";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { resetReview, setReviewData } from "@/lib/store/slices/simulatorSlice";
@@ -84,19 +81,11 @@ export default function ReviewPage() {
   return (
     <div className="container mx-auto py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Interview Review</h1>
-          <p className="text-gray-400">
-            {new Date(reviewData.interview.created_at).toLocaleDateString()}
-          </p>
-        </div>
-        <Link href={paths.questions}>
-          <Button variant="outline" className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Questions
-          </Button>
-        </Link>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Interview Review</h1>
+        <p className="text-gray-400">
+          {new Date(reviewData.interview.created_at).toLocaleDateString()}
+        </p>
       </div>
 
       {/* Question Card */}
