@@ -16,6 +16,7 @@ import { setTheme } from "@/lib/store/slices/userSlice";
 import { useAuth } from "@/providers/auth-provider";
 import { paths } from "@/utils/paths";
 import {
+  Check,
   CircleDotDashed,
   LogOut,
   Menu,
@@ -38,10 +39,12 @@ export function UserMenu() {
     ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
     : user?.email;
 
-  const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
-    dispatch(setTheme(newTheme));
-    setNextTheme(newTheme);
-  };
+  const handleThemeChange =
+    (newTheme: "light" | "dark" | "system") => (event: React.MouseEvent) => {
+      event.preventDefault();
+      dispatch(setTheme(newTheme));
+      setNextTheme(newTheme);
+    };
 
   const handleSignOut = async () => {
     await signOut();
@@ -62,7 +65,7 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="p-2 text-gray-400 hover:text-white">
+        <button className="p-2 text-muted-foreground hover:text-foreground">
           <Menu className="h-5 w-5" />
         </button>
       </DropdownMenuTrigger>
@@ -88,17 +91,20 @@ export function UserMenu() {
             <span>Theme</span>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
-            <DropdownMenuItem onClick={() => handleThemeChange("light")}>
+            <DropdownMenuItem onClick={handleThemeChange("light")}>
               <Sun className="mr-2 h-4 w-4" />
               <span>Light</span>
+              {theme === "light" && <Check className="ml-auto h-4 w-4" />}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
+            <DropdownMenuItem onClick={handleThemeChange("dark")}>
               <Moon className="mr-2 h-4 w-4" />
               <span>Dark</span>
+              {theme === "dark" && <Check className="ml-auto h-4 w-4" />}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleThemeChange("system")}>
+            <DropdownMenuItem onClick={handleThemeChange("system")}>
               <Monitor className="mr-2 h-4 w-4" />
               <span>System</span>
+              {theme === "system" && <Check className="ml-auto h-4 w-4" />}
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>

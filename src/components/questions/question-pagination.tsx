@@ -49,7 +49,6 @@ export function QuestionPagination({
                   onPageChange(page);
                 }}
                 isActive={currentPage === page}
-                className="bg-gray-900 border-gray-700 text-white hover:bg-gray-800"
               >
                 {page}
               </PaginationLink>

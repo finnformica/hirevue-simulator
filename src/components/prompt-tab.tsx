@@ -22,8 +22,10 @@ export function PromptTab() {
           <CardContent>
             <div className="flex items-center justify-center py-8">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400 mx-auto mb-4"></div>
-                <p className="text-gray-400">Loading your question...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4"></div>
+                <p className="text-muted-foreground">
+                  Loading your question...
+                </p>
               </div>
             </div>
           </CardContent>
@@ -47,7 +49,7 @@ export function PromptTab() {
           <CardTitle>Your Interview Question</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-300 leading-relaxed">{prompt.question}</p>
+          <p className="text-foreground leading-relaxed">{prompt.question}</p>
         </CardContent>
       </Card>
       <div className="flex justify-center">

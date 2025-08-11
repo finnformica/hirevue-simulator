@@ -14,9 +14,10 @@ import { useGetUser } from "@/utils/api/user";
 import { paths } from "@/utils/paths";
 
 const difficultyColors = {
-  easy: "bg-green-500/20 text-green-400 border-green-500/30",
-  medium: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  hard: "bg-red-500/20 text-red-400 border-red-500/30",
+  easy: "bg-brand/10 text-brand border-brand/20",
+  medium:
+    "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+  hard: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
 };
 
 // Helper function to get color classes based on result
@@ -24,14 +25,14 @@ function getResultColorClasses(result: AnalysisGrade | null): string {
   switch (result) {
     case "Excellent":
     case "Good":
-      return "bg-green-500/20 text-green-400 border-green-500/30";
+      return "bg-brand/10 text-brand border-brand/20";
     case "Average":
-      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
     case "Poor":
     case "Failed":
-      return "bg-red-500/20 text-red-400 border-red-500/30";
+      return "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20";
     default:
-      return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+      return "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700";
   }
 }
 
@@ -40,14 +41,14 @@ function getResultTextColorClasses(result: AnalysisGrade | null): string {
   switch (result) {
     case "Excellent":
     case "Good":
-      return "text-green-400";
+      return "text-brand";
     case "Average":
-      return "text-yellow-400";
+      return "text-amber-600 dark:text-amber-400";
     case "Poor":
     case "Failed":
-      return "text-red-400";
+      return "text-red-600 dark:text-red-400";
     default:
-      return "text-gray-400";
+      return "text-muted-foreground";
   }
 }
 
@@ -104,14 +105,14 @@ export function QuestionRow({
 
   return (
     <>
-      <TableRow className="border-gray-800 hover:bg-gray-800/30">
+      <TableRow className="border-border hover:bg-muted/30">
         {isProUser && (
           <TableCell className="w-12">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleToggle}
-              className="p-1 h-6 w-6 text-gray-400 hover:text-white"
+              className="p-1 h-6 w-6 text-muted-foreground hover:text-foreground"
             >
               {isExpanded ? (
                 <ChevronDown className="w-4 h-4" />
@@ -121,7 +122,7 @@ export function QuestionRow({
             </Button>
           </TableCell>
         )}
-        <TableCell className="text-gray-200 max-w-0">
+        <TableCell className="text-foreground max-w-0">
           <div className="line-clamp-4 sm:line-clamp-3 md:line-clamp-3 lg:line-clamp-2 overflow-hidden text-ellipsis">
             {question.question}
           </div>
@@ -134,13 +135,13 @@ export function QuestionRow({
             {question.difficulty}
           </Badge>
         </TableCell>
-        <TableCell className="w-32 text-gray-300 capitalize">
+        <TableCell className="w-32 text-muted-foreground capitalize">
           {question.category}
         </TableCell>
-        <TableCell className="w-24 text-gray-300">
+        <TableCell className="w-24 text-muted-foreground">
           {question.duration / 60} min
         </TableCell>
-        <TableCell className="w-32 text-gray-300">
+        <TableCell className="w-32 text-muted-foreground">
           {question.lastAttempt ? (
             <div className="text-sm">
               <div>{question.lastAttempt.date}</div>
@@ -163,7 +164,7 @@ export function QuestionRow({
         </TableCell>
         <TableCell className="w-32">
           <Button
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-brand hover:bg-brand/90 text-brand-foreground"
             onClick={handlePracticeClick}
           >
             Practice
@@ -171,20 +172,20 @@ export function QuestionRow({
         </TableCell>
       </TableRow>
       {isExpanded && (
-        <TableRow className="border-gray-800 bg-gray-800/30">
+        <TableRow className="border-border bg-muted/30">
           <TableCell colSpan={7} className="p-6">
             <div className="space-y-4">
               <div>
-                <h4 className="font-semibold text-white mb-2">
+                <h4 className="font-semibold text-foreground mb-2">
                   Full Question:
                 </h4>
-                <p className="text-gray-300 leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed">
                   {question.question}
                 </p>
               </div>
 
               <div>
-                <h4 className="font-semibold text-white mb-3">
+                <h4 className="font-semibold text-foreground mb-3">
                   Past Attempts ({totalCount} total):
                 </h4>
                 {attempts.length > 0 ? (
@@ -193,10 +194,10 @@ export function QuestionRow({
                       {displayedAttempts.map((attempt: InterviewAttempt) => (
                         <div
                           key={attempt.id}
-                          className="flex items-center justify-between bg-gray-900 p-3 rounded-lg"
+                          className="flex items-center justify-between bg-muted p-3 rounded-lg"
                         >
                           <div className="flex items-center gap-4">
-                            <span className="text-gray-300">
+                            <span className="text-muted-foreground">
                               {attempt.date}
                             </span>
                             <Badge
@@ -210,7 +211,7 @@ export function QuestionRow({
                             disabled={!isProUser}
                             variant="outline"
                             size="sm"
-                            className="border-gray-600 text-gray-300 hover:bg-gray-700 bg-transparent"
+                            className="border-border text-foreground hover:bg-muted/90 hover:border-muted-foreground"
                             onClick={() => handleReviewClick(attempt.id)}
                           >
                             Review Attempt
@@ -228,11 +229,11 @@ export function QuestionRow({
                           size="sm"
                           onClick={handleShowMore}
                           disabled={isLoading}
-                          className="border-gray-600 text-gray-300 hover:bg-gray-700 bg-transparent flex items-center gap-2"
+                          className="flex items-center gap-2"
                         >
                           {isLoading ? (
                             <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-400"></div>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand"></div>
                               Loading...
                             </>
                           ) : (
@@ -250,7 +251,7 @@ export function QuestionRow({
                           variant="outline"
                           size="sm"
                           onClick={handleHide}
-                          className="border-gray-600 text-gray-300 hover:bg-gray-700 bg-transparent flex items-center gap-2"
+                          className="border-border text-foreground hover:bg-muted flex items-center gap-2"
                         >
                           <ChevronUp className="w-4 h-4" />
                           Hide
@@ -260,7 +261,7 @@ export function QuestionRow({
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-400">
+                    <p className="text-muted-foreground">
                       No attempts yet. Start practicing!
                     </p>
                   </div>

@@ -70,7 +70,7 @@ export default function ReviewPage() {
       <div className="container mx-auto py-8">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4"></div>
             <p className="text-gray-400">Loading interview data...</p>
           </div>
         </div>

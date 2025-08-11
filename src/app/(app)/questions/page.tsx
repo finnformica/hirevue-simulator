@@ -77,8 +77,8 @@ export default function PracticeQuestionsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading questions...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading questions...</p>
         </div>
       </div>
     );
@@ -92,7 +92,7 @@ export default function PracticeQuestionsPage() {
           <p className="text-red-400 mb-4">Error: {error.message}</p>
           <Button
             onClick={() => window.location.reload()}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-brand hover:bg-brand/90 text-brand-foreground"
           >
             Try Again
           </Button>

@@ -6,7 +6,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <span className="text-green-400 font-bold text-xl">GradGuru</span>
+              <span className="text-brand font-bold text-xl">GradGuru</span>
             </div>
             <p className="text-gray-400 text-sm mb-4">
               Helping graduates ace their interviews and land their dream jobs.

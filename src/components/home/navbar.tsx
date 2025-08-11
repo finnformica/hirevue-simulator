@@ -11,7 +11,7 @@ export function Navbar() {
     <nav className="w-full border-b border-gray-800 bg-black py-4 px-6 md:px-12">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-2">
-          <span className="text-green-400 font-bold text-2xl">GradGuru</span>
+          <span className="text-brand font-bold text-2xl">GradGuru</span>
         </div>
 
         {/* Desktop Navigation */}
@@ -50,7 +50,7 @@ export function Navbar() {
           </a>
           <a
             href={paths.auth.createAccount}
-            className="bg-green-500 hover:bg-green-600 text-black font-medium px-4 py-2 rounded-md transition-colors"
+            className="bg-brand hover:bg-brand/90 text-brand-foreground font-medium px-4 py-2 rounded-md transition-colors"
           >
             Get Started
           </a>
@@ -103,7 +103,7 @@ export function Navbar() {
               </a>
               <a
                 href={paths.auth.createAccount}
-                className="bg-green-500 hover:bg-green-600 text-black font-medium px-4 py-2 rounded-md transition-colors text-center"
+                className="bg-brand hover:bg-brand/90 text-brand-foreground font-medium px-4 py-2 rounded-md transition-colors text-center"
               >
                 Get Started
               </a>

@@ -57,7 +57,7 @@ export function SignIn() {
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-4 bg-black">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href={paths.home} className="text-green-400 font-bold text-3xl">
+          <Link href={paths.home} className="text-brand font-bold text-3xl">
             GradGuru
           </Link>
           <p className="text-gray-400 mt-2">Sign in to your account</p>
@@ -84,14 +84,14 @@ export function SignIn() {
                   type="email"
                   id="email"
                   required
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                   placeholder="Enter your email"
                 />
               </div>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-500/70 text-black font-medium py-2 rounded-md transition-colors mt-6"
+                className="w-full bg-brand hover:bg-brand/90 disabled:bg-brand/70 text-brand-foreground font-medium py-2 rounded-md transition-colors mt-6"
               >
                 {isLoading ? "Sending link..." : "Send Magic Link"}
               </button>
@@ -101,15 +101,15 @@ export function SignIn() {
             </form>
           ) : (
             <div className="text-center py-4">
-              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
-                <p className="text-green-400 font-medium">Check your email</p>
+              <div className="bg-brand/10 border border-brand/30 rounded-lg p-4 mb-6">
+                <p className="text-brand font-medium">Check your email</p>
                 <p className="text-gray-400 text-sm mt-1">
                   We've sent you a magic link to sign in to your account
                 </p>
               </div>
               <button
                 onClick={() => setIsEmailSent(false)}
-                className="text-green-400 hover:text-green-300 text-sm"
+                className="text-brand hover:text-brand/80 text-sm"
               >
                 Use a different email address
               </button>
@@ -120,7 +120,7 @@ export function SignIn() {
               Don't have an account?{" "}
               <Link
                 href={paths.auth.createAccount}
-                className="text-green-400 hover:text-green-300"
+                className="text-brand hover:text-brand/80"
               >
                 Create one now
               </Link>

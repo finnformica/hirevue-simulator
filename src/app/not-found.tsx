@@ -15,10 +15,10 @@ export default function NotFound() {
 
   // Show a minimal loading state while redirecting
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400 mx-auto mb-4"></div>
-        <p className="text-gray-400">Redirecting...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Redirecting...</p>
       </div>
     </div>
   );

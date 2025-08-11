@@ -30,7 +30,7 @@ function MetricBentoCard({
   detail: MetricDetail;
 }) {
   const getScoreColor = (score: number) => {
-    if (score >= 8) return "text-green-500";
+    if (score >= 8) return "text-brand";
     if (score >= 6) return "text-yellow-500";
     if (score >= 4) return "text-orange-500";
     return "text-red-500";
@@ -137,7 +137,7 @@ function ContextDrawer({
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm">
-                  <MessageSquare className="h-4 w-4 text-green-500" />
+                  <MessageSquare className="h-4 w-4 text-brand" />
                   Your Response
                 </CardTitle>
               </CardHeader>
@@ -232,7 +232,7 @@ function StructuredAnalysisDisplay({
                   className={cn(
                     "text-sm font-medium px-2 py-1 rounded-full",
                     analysis.overallScore >= 8
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-brand/10 text-brand"
                       : analysis.overallScore >= 6
                         ? "bg-yellow-100 text-yellow-700"
                         : analysis.overallScore >= 4
@@ -272,12 +272,12 @@ function StructuredAnalysisDisplay({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  <CheckCircle2 className="h-5 w-5 text-brand" />
                   Strengths
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2 list-disc list-inside [&>li::marker]:text-green-500">
+                <ul className="space-y-2 list-disc list-inside [&>li::marker]:text-brand">
                   {analysis.feedback.strengths.map((strength, index) => (
                     <li key={index} className="text-sm text-muted-foreground">
                       {strength}

@@ -2,7 +2,7 @@ import { BarChart3, FileText, MessageSquare, Zap } from "lucide-react";
 export function FeatureSection() {
   const features = [
     {
-      icon: <MessageSquare className="h-10 w-10 text-green-400" />,
+      icon: <MessageSquare className="h-10 w-10 text-brand" />,
       title: "Industry-Specific Prompts",
       description:
         "Access a wide range of interview questions tailored to major graduate employers across different industries.",
@@ -10,7 +10,7 @@ export function FeatureSection() {
         "Our database includes real questions from top companies that regularly recruit graduates.",
     },
     {
-      icon: <BarChart3 className="h-10 w-10 text-green-400" />,
+      icon: <BarChart3 className="h-10 w-10 text-brand" />,
       title: "Automated Analysis",
       description:
         "Get instant AI-powered analysis of your interview responses including speech patterns, confidence, and clarity.",
@@ -18,7 +18,7 @@ export function FeatureSection() {
         "Our technology evaluates both what you say and how you say it to provide comprehensive feedback.",
     },
     {
-      icon: <Zap className="h-10 w-10 text-green-400" />,
+      icon: <Zap className="h-10 w-10 text-brand" />,
       title: "Actionable Feedback",
       description:
         "Receive personalised tips to improve your responses and boost your interview performance score.",
@@ -26,7 +26,7 @@ export function FeatureSection() {
         "Learn exactly what recruiters are looking for and how to structure your answers for maximum impact.",
     },
     {
-      icon: <FileText className="h-10 w-10 text-green-400" />,
+      icon: <FileText className="h-10 w-10 text-brand" />,
       title: "Interview Documentation",
       description:
         "Access guides and resources covering all aspects of the interview process beyond HireVue.",
@@ -50,7 +50,7 @@ export function FeatureSection() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-green-500/50 transition-colors"
+              className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-brand/50 transition-colors"
             >
               <div className="mb-4">{feature.icon}</div>
               <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
@@ -59,13 +59,13 @@ export function FeatureSection() {
             </div>
           ))}
         </div>
-        <div className="mt-16 bg-gradient-to-r from-green-500/20 to-green-500/5 border border-green-500/30 rounded-lg p-8">
+        <div className="mt-16 bg-gradient-to-r from-brand/20 to-brand/5 border border-brand/30 rounded-lg p-8">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-3/5 mb-6 md:mb-0 md:pr-8">
               <h3 className="text-2xl font-bold mb-4">How GradGuru Works</h3>
               <ol className="space-y-4">
                 <li className="flex">
-                  <span className="bg-green-500 text-black h-6 w-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <span className="bg-brand text-brand-foreground h-6 w-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                     1
                   </span>
                   <p className="text-gray-300">
@@ -74,7 +74,7 @@ export function FeatureSection() {
                   </p>
                 </li>
                 <li className="flex">
-                  <span className="bg-green-500 text-black h-6 w-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <span className="bg-brand text-brand-foreground h-6 w-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                     2
                   </span>
                   <p className="text-gray-300">
@@ -82,7 +82,7 @@ export function FeatureSection() {
                   </p>
                 </li>
                 <li className="flex">
-                  <span className="bg-green-500 text-black h-6 w-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <span className="bg-brand text-brand-foreground h-6 w-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                     3
                   </span>
                   <p className="text-gray-300">
@@ -90,7 +90,7 @@ export function FeatureSection() {
                   </p>
                 </li>
                 <li className="flex">
-                  <span className="bg-green-500 text-black h-6 w-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <span className="bg-brand text-brand-foreground h-6 w-6 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                     4
                   </span>
                   <p className="text-gray-300">

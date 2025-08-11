@@ -35,20 +35,20 @@ export function QuestionFilters({
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-6">
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <Input
           placeholder="Search questions..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10 bg-gray-900 border-gray-700 text-white placeholder-gray-400"
+          className="pl-10"
         />
       </div>
 
       <Select value={difficultyFilter} onValueChange={onDifficultyChange}>
-        <SelectTrigger className="w-full sm:w-40 bg-gray-900 border-gray-700 text-white">
+        <SelectTrigger className="w-full sm:w-40">
           <SelectValue placeholder="Difficulty" />
         </SelectTrigger>
-        <SelectContent className="bg-gray-900 border-gray-700">
+        <SelectContent>
           <SelectItem value="all">All Difficulties</SelectItem>
           {difficulties.map((difficulty) => (
             <SelectItem key={difficulty} value={difficulty}>
@@ -59,10 +59,10 @@ export function QuestionFilters({
       </Select>
 
       <Select value={categoryFilter} onValueChange={onCategoryChange}>
-        <SelectTrigger className="w-full sm:w-40 bg-gray-900 border-gray-700 text-white">
+        <SelectTrigger className="w-full sm:w-40">
           <SelectValue placeholder="Category" />
         </SelectTrigger>
-        <SelectContent className="bg-gray-900 border-gray-700">
+        <SelectContent>
           <SelectItem value="all">All Categories</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category} value={category}>

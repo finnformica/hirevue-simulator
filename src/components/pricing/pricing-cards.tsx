@@ -144,7 +144,7 @@ export function PricingCards({
         <Icon
           size={18}
           className={`mr-2 flex-shrink-0 mt-0.5 ${
-            feature.included ? "text-green-400" : "text-gray-500"
+            feature.included ? "text-brand" : "text-gray-500"
           }`}
         />
         <span
@@ -173,7 +173,7 @@ export function PricingCards({
           href={paths.auth.signIn}
           className={`w-full inline-block text-center font-medium px-4 py-2 rounded-md transition-colors ${
             plan.popular
-              ? "bg-green-500 hover:bg-green-600 text-black"
+              ? "bg-brand hover:bg-brand/90 text-brand-foreground"
               : "bg-gray-800 hover:bg-gray-700 text-white"
           }`}
         >
@@ -208,7 +208,7 @@ export function PricingCards({
         <input type="hidden" name="priceId" value={plan.priceId || ""} />
         <Button
           type="submit"
-          className="w-full bg-green-500 hover:bg-green-600"
+          className="w-full bg-brand hover:bg-brand/90"
         >
           {plan.buttonText}
         </Button>
@@ -222,16 +222,16 @@ export function PricingCards({
         <div
           key={plan.name}
           className={`bg-black border border-gray-800 rounded-lg p-6 flex flex-col ${
-            plan.popular ? "bg-green-500/10 border-green-500/30 relative" : ""
+            plan.popular ? "bg-brand/10 border-brand/30 relative" : ""
           }`}
         >
           {plan.popular && (
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-500 text-black text-xs font-bold px-3 py-1 rounded-full">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-brand text-brand-foreground text-xs font-bold px-3 py-1 rounded-full">
               MOST POPULAR
             </div>
           )}
           <div
-            className={`mb-2 ${plan.popular ? "text-green-400" : "text-gray-400"}`}
+            className={`mb-2 ${plan.popular ? "text-brand" : "text-gray-400"}`}
           >
             {plan.name}
           </div>
@@ -255,12 +255,12 @@ export function PricingCards({
       <Card
         key={plan.name}
         className={`relative bg-gray-900 border-gray-800 ${
-          plan.popular ? "ring-2 ring-green-500" : ""
+          plan.popular ? "ring-2 ring-brand" : ""
         }`}
       >
         {plan.popular && (
           <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-            <span className="bg-green-500 text-black px-4 py-1 rounded-full text-sm font-medium">
+            <span className="bg-brand text-brand-foreground px-4 py-1 rounded-full text-sm font-medium">
               Most Popular
             </span>
           </div>
@@ -306,7 +306,7 @@ export function PricingCards({
           >
             Quarterly
             {monthlyPrice?.unitAmount && quarterlyPrice?.unitAmount && (
-              <span className="ml-2 text-green-500 text-xs">
+              <span className="ml-2 text-brand text-xs">
                 (Save{" "}
                 {Math.round(
                   ((monthlyPrice.unitAmount * 3 - quarterlyPrice.unitAmount) /

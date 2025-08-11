@@ -10,7 +10,7 @@ export function UpgradeButton() {
     <Button
       onClick={() => router.push(paths.pricing)}
       variant="outline"
-      className="bg-gray-800 hover:bg-gray-700 text-white border-gray-700 w-full"
+      className="w-full bg-muted hover:bg-muted/50"
     >
       Upgrade to Pro
     </Button>

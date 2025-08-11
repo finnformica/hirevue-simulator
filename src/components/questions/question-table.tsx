@@ -24,29 +24,29 @@ export function QuestionTable({
 }: QuestionTableProps) {
   const { isProUser } = useGetUser();
   return (
-    <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
+    <div className="bg-card rounded-lg border border-border overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="border-gray-800 hover:bg-gray-800/50">
+          <TableRow className="border-border hover:bg-muted/50">
             {isProUser && (
-              <TableHead className="text-gray-300 font-semibold w-12" />
+              <TableHead className="text-muted-foreground font-semibold w-12" />
             )}
-            <TableHead className="text-gray-300 font-semibold">
+            <TableHead className="text-muted-foreground font-semibold">
               Question
             </TableHead>
-            <TableHead className="text-gray-300 font-semibold w-24">
+            <TableHead className="text-muted-foreground font-semibold w-24">
               Difficulty
             </TableHead>
-            <TableHead className="text-gray-300 font-semibold w-32">
+            <TableHead className="text-muted-foreground font-semibold w-32">
               Category
             </TableHead>
-            <TableHead className="text-gray-300 font-semibold w-24">
+            <TableHead className="text-muted-foreground font-semibold w-24">
               Duration
             </TableHead>
-            <TableHead className="text-gray-300 font-semibold w-32">
+            <TableHead className="text-muted-foreground font-semibold w-32">
               Last Attempt
             </TableHead>
-            <TableHead className="text-gray-300 font-semibold w-32">
+            <TableHead className="text-muted-foreground font-semibold w-32">
               Action
             </TableHead>
           </TableRow>
