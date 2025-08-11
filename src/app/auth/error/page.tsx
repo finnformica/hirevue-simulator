@@ -13,6 +13,37 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+const authIssues = [
+  {
+    icon: Mail,
+    iconColor: "text-blue-400",
+    title: "Email Not Received",
+    description:
+      "Check your spam folder or try requesting a new magic link. Make sure you entered the correct email address.",
+  },
+  {
+    icon: Clock,
+    iconColor: "text-yellow-400",
+    title: "Link Expired",
+    description:
+      "Magic links expire after 30 minutes to keep your account secure. You'll need to request a new one to continue.",
+  },
+  {
+    icon: Shield,
+    iconColor: "text-green-400",
+    title: "Browser Security",
+    description:
+      "Some browsers block magic links. Try opening the link in a different browser or disable pop-up blockers.",
+  },
+  {
+    icon: AlertTriangle,
+    iconColor: "text-red-400",
+    title: "Invalid Link",
+    description:
+      "The link may have been tampered with or corrupted. Request a fresh magic link to resolve this.",
+  },
+];
+
 export default function AuthErrorPage() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
@@ -79,50 +110,22 @@ export default function AuthErrorPage() {
           <h3 className="text-xl font-semibold text-white mb-6">
             Common Issues & Solutions
           </h3>
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            <div className="bg-gray-900/50 p-6 rounded-lg border border-gray-800 text-left">
-              <div className="flex items-center gap-3 mb-3">
-                <Mail className="w-5 h-5 text-blue-400" />
-                <h4 className="font-medium text-white">Email Not Received</h4>
-              </div>
-              <p className="text-gray-400 text-sm">
-                Check your spam folder or try requesting a new magic link. Make
-                sure you entered the correct email address.
-              </p>
-            </div>
-
-            <div className="bg-gray-900/50 p-6 rounded-lg border border-gray-800 text-left">
-              <div className="flex items-center gap-3 mb-3">
-                <Clock className="w-5 h-5 text-yellow-400" />
-                <h4 className="font-medium text-white">Link Expired</h4>
-              </div>
-              <p className="text-gray-400 text-sm">
-                Magic links expire after 24 hours for security. You'll need to
-                request a new one to continue.
-              </p>
-            </div>
-
-            <div className="bg-gray-900/50 p-6 rounded-lg border border-gray-800 text-left">
-              <div className="flex items-center gap-3 mb-3">
-                <Shield className="w-5 h-5 text-green-400" />
-                <h4 className="font-medium text-white">Browser Security</h4>
-              </div>
-              <p className="text-gray-400 text-sm">
-                Some browsers block magic links. Try opening the link in a
-                different browser or disable pop-up blockers.
-              </p>
-            </div>
-
-            <div className="bg-gray-900/50 p-6 rounded-lg border border-gray-800 text-left">
-              <div className="flex items-center gap-3 mb-3">
-                <AlertTriangle className="w-5 h-5 text-red-400" />
-                <h4 className="font-medium text-white">Invalid Link</h4>
-              </div>
-              <p className="text-gray-400 text-sm">
-                The link may have been tampered with or corrupted. Request a
-                fresh magic link to resolve this.
-              </p>
-            </div>
+          <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {authIssues.map((issue, index) => {
+              const IconComponent = issue.icon;
+              return (
+                <div
+                  key={index}
+                  className="bg-gray-900/50 p-6 rounded-lg border border-gray-800 text-left"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <IconComponent className={`w-5 h-5 ${issue.iconColor}`} />
+                    <h4 className="font-medium text-white">{issue.title}</h4>
+                  </div>
+                  <p className="text-gray-400 text-sm">{issue.description}</p>
+                </div>
+              );
+            })}
           </div>
         </motion.div>
 
