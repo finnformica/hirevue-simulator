@@ -5,7 +5,7 @@ export interface UserStats {
   totalInterviews: number;
   averageScore: number;
   bestScore: number;
-  totalHours: number;
+  totalMinutes: number;
 }
 
 export interface RecentActivity {
@@ -19,14 +19,14 @@ export interface RecentActivity {
 export async function getUserStats(userId: string): Promise<UserStats> {
   const supabase = await createClientForServer();
 
-  // Use raw SQL for efficient aggregations
+  // Call db function which aggregates the data on Supabase side
   const { data } = await supabase.rpc('get_user_stats', { user_id: userId });
 
   return {
     totalInterviews: data?.[0]?.total_interviews ?? 0,
     averageScore: data?.[0]?.avg_score ?? 0,
     bestScore: data?.[0]?.best_score ?? 0,
-    totalHours: data?.[0]?.total_hours ?? 0,
+    totalMinutes: data?.[0]?.total_minutes ?? 0, // db function assumes a constant 2 minutes per interview
   };
 }
 

@@ -45,8 +45,8 @@ export default async function Profile() {
       icon: <Trophy className="h-5 w-5 text-green-400" />,
     },
     {
-      label: "Hours Practiced",
-      value: userStats?.totalHours.toString() || "0",
+      label: "Minutes Practiced",
+      value: userStats?.totalMinutes.toString() || "0",
       icon: <Clock className="h-5 w-5 text-green-400" />,
     },
   ];
