@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { customerPortalAction } from "@/lib/payments/actions";
 import { getUserSubscriptionInfo } from "@/lib/stripe-tables";
+import {
+  getRecentActivity,
+  getUserStats,
+  RecentActivity,
+} from "@/utils/api/user-stats";
 import { paths } from "@/utils/paths";
 import { createClientForServer } from "@/utils/supabase/server";
 import { BarChart2, Clock, Trophy, User, Video } from "lucide-react";
@@ -12,53 +17,37 @@ export default async function Profile() {
   const session = await supabase.auth.getUser();
   const { user } = session.data;
 
-  // Fetch user profile data including subscription info
+  // Fetch user profile data including subscription info and statistics
   let subscriptionInfo = null;
+  let userStats = null;
+  let recentActivity: RecentActivity[] = [];
+
   if (user) {
     subscriptionInfo = await getUserSubscriptionInfo(user.id);
+    userStats = await getUserStats(user.id);
+    recentActivity = await getRecentActivity(user.id);
   }
 
   const stats = [
     {
       label: "Practice Interviews",
-      value: "24",
+      value: userStats?.totalInterviews.toString() || "0",
       icon: <Video className="h-5 w-5 text-green-400" />,
     },
     {
       label: "Avg. Score",
-      value: "87%",
+      value: userStats?.averageScore ? `${userStats.averageScore}/10` : "0/10",
       icon: <BarChart2 className="h-5 w-5 text-green-400" />,
     },
     {
       label: "Best Performance",
-      value: "94%",
+      value: userStats?.bestScore ? `${userStats.bestScore}/10` : "0/10",
       icon: <Trophy className="h-5 w-5 text-green-400" />,
     },
     {
       label: "Hours Practiced",
-      value: "12.5",
+      value: userStats?.totalHours.toString() || "0",
       icon: <Clock className="h-5 w-5 text-green-400" />,
-    },
-  ];
-
-  const recentActivity = [
-    {
-      type: "Practice Interview",
-      title: "Software Engineering - Amazon",
-      date: "Today",
-      score: "92%",
-    },
-    {
-      type: "Practice Interview",
-      title: "Product Management - Google",
-      date: "Yesterday",
-      score: "88%",
-    },
-    {
-      type: "Feedback Review",
-      title: "Communication Skills Analysis",
-      date: "2 days ago",
-      score: null,
     },
   ];
 
@@ -106,23 +95,40 @@ export default async function Profile() {
         <div className="lg:col-span-2">
           <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
           <div className="bg-gray-900 border border-gray-800 rounded-lg divide-y divide-gray-800">
-            {recentActivity.map((activity, index) => (
-              <div
-                key={index}
-                className="p-4 hover:bg-gray-800/50 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-gray-400">{activity.type}</span>
-                  <span className="text-sm text-gray-400">{activity.date}</span>
+            {recentActivity.length > 0 ? (
+              recentActivity.map((activity, index) => (
+                <div
+                  key={activity.id}
+                  className="p-4 hover:bg-gray-800/50 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-gray-400">
+                      {activity.type}
+                    </span>
+                    <span className="text-sm text-gray-400">
+                      {activity.date}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium truncate max-w-[90%]">
+                      {activity.title}
+                    </span>
+                    {activity.score && (
+                      <span className="text-green-400 flex-shrink-0 ml-2">
+                        {activity.score}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{activity.title}</span>
-                  {activity.score && (
-                    <span className="text-green-400">{activity.score}</span>
-                  )}
-                </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-gray-400">
+                <p>No practice interviews yet</p>
+                <p className="text-sm mt-2">
+                  Start your first interview to see your activity here
+                </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
         {/* Settings Panel */}

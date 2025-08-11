@@ -78,15 +78,15 @@ export async function getActiveSubscription(customerId: string): Promise<StripeS
     .eq('customer', customerId)
     .in('status', ['active', 'trialing'])
     .order('created', { ascending: false })
-    .limit(1)
-    .single();
+    .limit(1);
 
   if (error) {
     console.error('Error fetching active subscription:', error);
     return null;
   }
 
-  return data;
+  // Return the first (most recent) subscription or null if none found
+  return data && data.length > 0 ? data[0] : null;
 }
 
 /**
