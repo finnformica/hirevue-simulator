@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div
@@ -28,7 +28,7 @@ export default function NotFound() {
           className="mb-8"
         >
           <motion.h1
-            className="text-8xl md:text-9xl font-bold text-foreground mb-4"
+            className="text-8xl md:text-9xl font-bold text-white mb-4"
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -39,7 +39,7 @@ export default function NotFound() {
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="h-1 bg-brand mx-auto max-w-xs"
+            className="h-1 bg-green-500 mx-auto max-w-xs"
           />
         </motion.div>
 
@@ -50,10 +50,10 @@ export default function NotFound() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-semibold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">
             Page Not Found
           </h2>
-          <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
+          <p className="text-gray-400 max-w-md mx-auto leading-relaxed">
             The page you're looking for doesn't exist or has been moved to a
             different location
           </p>
@@ -69,7 +69,7 @@ export default function NotFound() {
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Link
               href={paths.root}
-              className="inline-flex items-center gap-2 bg-brand hover:bg-brand/90 text-brand-foreground font-medium px-6 py-3 rounded-lg transition-colors duration-200"
+              className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-black font-medium px-6 py-3 rounded-lg transition-colors duration-200"
             >
               <Home size={20} />
               Go Home
@@ -79,7 +79,7 @@ export default function NotFound() {
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <button
               onClick={() => window.history.back()}
-              className="inline-flex items-center gap-2 bg-muted hover:bg-muted/80 text-foreground font-medium px-6 py-3 rounded-lg transition-colors duration-200"
+              className="inline-flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white font-medium px-6 py-3 rounded-lg transition-colors duration-200"
             >
               <ArrowLeft size={20} />
               Go Back

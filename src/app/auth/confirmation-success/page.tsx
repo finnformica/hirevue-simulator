@@ -8,7 +8,7 @@ const ConfirmationSuccessPage = () => {
     <div className="flex items-center justify-center h-screen">
       <div className="max-w-md bg-card rounded-lg border border-border p-8 text-center">
         <div className="mb-8">
-          <CheckCircle className="w-20 h-20 text-brand mx-auto mb-6" />
+          <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-6" />
           <h2 className="text-3xl font-bold text-foreground mb-4">
             Email Confirmed!
           </h2>
@@ -28,7 +28,7 @@ const ConfirmationSuccessPage = () => {
             </Link>
 
             <Link href={paths.auth.signIn} className="flex-1">
-              <Button className="w-full bg-brand hover:bg-brand/90 text-brand-foreground font-medium">
+              <Button className="w-full bg-green-500 hover:bg-green-600 text-black font-medium">
                 <LogIn className="w-4 h-4 mr-2" />
                 Sign In
               </Button>

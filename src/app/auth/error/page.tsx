@@ -29,7 +29,7 @@ const authIssues = [
   },
   {
     icon: Shield,
-    iconColor: "text-brand",
+    iconColor: "text-green-400",
     title: "Browser Security",
     description:
       "Some browsers block magic links. Try opening the link in a different browser or disable pop-up blockers.",
@@ -45,7 +45,7 @@ const authIssues = [
 
 export default function AuthErrorPage() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div
@@ -90,10 +90,10 @@ export default function AuthErrorPage() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-semibold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">
             Authentication Error
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8">
+          <p className="text-gray-400 max-w-2xl mx-auto leading-relaxed mb-8">
             We encountered an issue with your authentication. This is usually
             related to the magic link email verification process.
           </p>
@@ -106,7 +106,7 @@ export default function AuthErrorPage() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="mb-12"
         >
-          <h3 className="text-xl font-semibold text-foreground mb-6">
+          <h3 className="text-xl font-semibold text-white mb-6">
             Common Issues & Solutions
           </h3>
           <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -115,17 +115,13 @@ export default function AuthErrorPage() {
               return (
                 <div
                   key={index}
-                  className="bg-card/50 p-6 rounded-lg border border-border text-left"
+                  className="bg-gray-900/50 p-6 rounded-lg border border-gray-800 text-left"
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <IconComponent className={`w-5 h-5 ${issue.iconColor}`} />
-                    <h4 className="font-medium text-foreground">
-                      {issue.title}
-                    </h4>
+                    <h4 className="font-medium text-white">{issue.title}</h4>
                   </div>
-                  <p className="text-muted-foreground text-sm">
-                    {issue.description}
-                  </p>
+                  <p className="text-gray-400 text-sm">{issue.description}</p>
                 </div>
               );
             })}
@@ -152,7 +148,7 @@ export default function AuthErrorPage() {
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Link
               href={paths.auth.signIn}
-              className="inline-flex items-center gap-2 bg-brand hover:bg-brand/90 text-brand-foreground font-medium px-6 py-3 rounded-lg transition-colors duration-200"
+              className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-black font-medium px-6 py-3 rounded-lg transition-colors duration-200"
             >
               <RefreshCw size={20} />
               Try Again
