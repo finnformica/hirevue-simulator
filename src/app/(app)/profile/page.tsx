@@ -70,7 +70,7 @@ export default async function Profile() {
         </div>
         <Link
           href={paths.questions}
-          className="bg-brand hover:bg-brand/90 text-brand-foreground font-medium px-4 py-2 rounded-md transition-colors"
+          className="bg-brand hover:bg-brand/90 text-black font-medium px-4 py-2 rounded-md transition-colors"
         >
           Start Practice Interview
         </Link>
