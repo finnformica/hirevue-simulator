@@ -328,7 +328,7 @@ function StructuredAnalysisDisplay({
 
 export function AnalysisTab() {
   const dispatch = useAppDispatch();
-  const { analysis, isAnalysing, error, transcription, reviewData, prompt } =
+  const { analysis, isAnalysing, transcription, reviewData, prompt } =
     useAppSelector((state) => state.simulator);
 
   // Use review data if available, otherwise use simulator data
