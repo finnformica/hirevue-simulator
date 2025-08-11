@@ -16,8 +16,8 @@ export async function middleware(request: NextRequest) {
   // If user is signed in and trying to access auth pages, redirect to profile
   if (
     user &&
-    (request.nextUrl.pathname === paths.signIn ||
-      request.nextUrl.pathname === paths.createAccount)
+    (request.nextUrl.pathname === paths.auth.signIn ||
+      request.nextUrl.pathname === paths.auth.createAccount)
   ) {
     return NextResponse.redirect(new URL(paths.profile, request.url));
   }

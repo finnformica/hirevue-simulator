@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { checkoutAction } from "@/lib/payments/actions";
 import { ProPrice } from "@/lib/payments/fetch";
+import { paths } from "@/utils/paths";
 
 interface Plan {
   name: string;
@@ -160,7 +161,7 @@ export function PricingCards({
       if (plan.isFreePlan) {
         return (
           <a
-            href="/auth/sign-in"
+            href={paths.auth.signIn}
             className="bg-gray-800 hover:bg-gray-700 text-white font-medium px-4 py-2 rounded-md transition-colors text-center"
           >
             Get Started
@@ -169,7 +170,7 @@ export function PricingCards({
       }
       return (
         <a
-          href="/auth/sign-in"
+          href={paths.auth.signIn}
           className={`w-full inline-block text-center font-medium px-4 py-2 rounded-md transition-colors ${
             plan.popular
               ? "bg-green-500 hover:bg-green-600 text-black"

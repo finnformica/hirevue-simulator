@@ -9,9 +9,11 @@ export const paths = {
   error: {
     404: "/error/404",
   },
-  signIn: "/auth/sign-in",
-  createAccount: "/auth/create-account",
-  signOut: "/auth/sign-out",
-  confirm: "/auth/confirm",
-  authCodeError: "/auth/auth-code-error",
+  auth: {
+    authCodeError: "/auth/auth-code-error",
+    confirm: "/auth/confirm",
+    confirmationSuccess: "/auth/confirmation-success",
+    createAccount: "/auth/create-account",
+    signIn: "/auth/sign-in",
+  }
 };

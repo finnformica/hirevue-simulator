@@ -56,7 +56,7 @@ export async function createCheckoutSession({ priceId }: { priceId: string }) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(paths.createAccount);
+    redirect(paths.auth.createAccount);
   }
 
   const customerId = await getOrCreateStripeCustomer(user);
@@ -83,7 +83,7 @@ export async function createCustomerPortalSession(user: User) {
   const customerId = await getOrCreateStripeCustomer(user);
 
   if (!customerId) {
-    redirect("/pricing");
+    redirect(paths.pricing);
   }
 
   let configuration: Stripe.BillingPortal.Configuration;
