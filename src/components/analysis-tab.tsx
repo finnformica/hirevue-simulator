@@ -3,118 +3,19 @@ import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { setCurrentTab } from "@/lib/store/slices/simulatorSlice";
 import { MetricDetail, StructuredAnalysis } from "@/lib/types/analysis";
 import { cn } from "@/lib/utils";
+import { useGetUser } from "@/utils/api/user";
 import {
   AlertCircle,
   CheckCircle2,
   FileText,
   Lightbulb,
   MessageSquare,
-  Minus,
   TrendingUp,
   X,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
 
-function FeedbackSection({
-  title,
-  items,
-  type,
-}: {
-  title: string;
-  items: string[];
-  type: "strength" | "improvement" | "recommendation" | "exercise";
-}) {
-  if (items.length === 0) return null;
-
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "strength":
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case "improvement":
-        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-      case "recommendation":
-        return <TrendingUp className="h-4 w-4 text-blue-500" />;
-      case "exercise":
-        return <Minus className="h-4 w-4 text-purple-500" />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      <h3 className="text-lg font-semibold flex items-center gap-2">
-        {getIcon(type)}
-        {title}
-      </h3>
-      <ul className="space-y-2">
-        {items.map((item, index) => (
-          <li key={index} className="text-sm text-muted-foreground">
-            • {item}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function AnalysisSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
-  );
-}
-
-function MetricFeedbackSection({
-  metric,
-  feedback,
-}: {
-  metric: string;
-  feedback: {
-    strengths: string[];
-    areasForImprovement: string[];
-    specificRecommendations: string[];
-    practiceExercises: string[];
-  };
-}) {
-  return (
-    <div className="space-y-4">
-      <FeedbackSection
-        title="Strengths"
-        items={feedback.strengths}
-        type="strength"
-      />
-      <FeedbackSection
-        title="Areas for Improvement"
-        items={feedback.areasForImprovement}
-        type="improvement"
-      />
-      <FeedbackSection
-        title="Specific Recommendations"
-        items={feedback.specificRecommendations}
-        type="recommendation"
-      />
-      <FeedbackSection
-        title="Practice Exercises"
-        items={feedback.practiceExercises}
-        type="exercise"
-      />
-    </div>
-  );
-}
-
-// New structured analysis components
 function MetricBentoCard({
   metric,
   detail,
@@ -260,6 +161,7 @@ function StructuredAnalysisDisplay({
   prompt: string;
   response: string;
 }) {
+  const { isProUser } = useGetUser();
   const [isContextOpen, setIsContextOpen] = useState(false);
   const metricEntries = Object.entries(analysis.metrics);
 
@@ -314,78 +216,88 @@ function StructuredAnalysisDisplay({
         </Card>
 
         {/* Metrics Bento Grid */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Communication Skills Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {metricEntries.map(([metric, detail]) => (
-                <MetricBentoCard key={metric} metric={metric} detail={detail} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {isProUser && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Communication Skills Breakdown</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {metricEntries.map(([metric, detail]) => (
+                  <MetricBentoCard
+                    key={metric}
+                    metric={metric}
+                    detail={detail}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Feedback Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                Strengths
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 list-disc list-inside [&>li::marker]:text-green-500">
-                {analysis.feedback.strengths.map((strength, index) => (
-                  <li key={index} className="text-sm text-muted-foreground">
-                    {strength}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+        {isProUser && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  Strengths
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 list-disc list-inside [&>li::marker]:text-green-500">
+                  {analysis.feedback.strengths.map((strength, index) => (
+                    <li key={index} className="text-sm text-muted-foreground">
+                      {strength}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-yellow-500" />
-                Areas for Improvement
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 list-disc list-inside [&>li::marker]:text-yellow-500">
-                {analysis.feedback.areasForImprovement.map((area, index) => (
-                  <li key={index} className="text-sm text-muted-foreground">
-                    {area}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-yellow-500" />
+                  Areas for Improvement
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 list-disc list-inside [&>li::marker]:text-yellow-500">
+                  {analysis.feedback.areasForImprovement.map((area, index) => (
+                    <li key={index} className="text-sm text-muted-foreground">
+                      {area}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Specific Suggestions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
-              Specific Suggestions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3 list-disc list-inside [&>li::marker]:text-blue-500">
-              {analysis.feedback.specificSuggestions.map(
-                (suggestion, index) => (
-                  <li key={index} className="text-sm text-muted-foreground">
-                    {suggestion}
-                  </li>
-                )
-              )}
-            </ul>
-          </CardContent>
-        </Card>
+        {isProUser && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-500" />
+                Specific Suggestions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3 list-disc list-inside [&>li::marker]:text-blue-500">
+                {analysis.feedback.specificSuggestions.map(
+                  (suggestion, index) => (
+                    <li key={index} className="text-sm text-muted-foreground">
+                      {suggestion}
+                    </li>
+                  )
+                )}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Key Advice */}
         <Card>
