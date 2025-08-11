@@ -119,7 +119,7 @@ export function SignIn() {
             <p className="text-center text-sm text-gray-400">
               Don't have an account?{" "}
               <Link
-                href={paths.createAccount}
+                href={paths.auth.createAccount}
                 className="text-green-400 hover:text-green-300"
               >
                 Create one now

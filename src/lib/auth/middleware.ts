@@ -14,7 +14,7 @@ export function withUser<T>(action: ActionWithUserFunction<T>) {
     } = await supabase.auth.getUser();
 
     if (error || !user) {
-      redirect(paths.createAccount);
+      redirect(paths.auth.createAccount);
     }
 
     return action(formData, user);

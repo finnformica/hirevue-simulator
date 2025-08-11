@@ -10,7 +10,7 @@ export async function AuthGuard({ children }: { children: React.ReactNode }) {
   } = await supabase.auth.getSession();
 
   if (!session) {
-    redirect(paths.signIn);
+    redirect(paths.auth.signIn);
   }
 
   return <>{children}</>;

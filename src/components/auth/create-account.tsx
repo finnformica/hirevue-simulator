@@ -29,8 +29,7 @@ export function CreateAccount() {
     setIsLoading(true);
     setErrorMsg(null);
 
-    const emailRedirectTo =
-      process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+    const emailRedirectTo = `${process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"}${paths.auth.confirmationSuccess}`;
 
     const { error } = await supabase.auth.signInWithOtp({
       email: formData.email,
@@ -193,7 +192,7 @@ export function CreateAccount() {
             <p className="text-center text-sm text-gray-400">
               Already have an account?{" "}
               <Link
-                href={paths.signIn}
+                href={paths.auth.signIn}
                 className="text-green-400 hover:text-green-300"
               >
                 Sign in instead
