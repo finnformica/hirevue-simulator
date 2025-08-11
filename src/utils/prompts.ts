@@ -11,6 +11,15 @@ The candidate has been asked the following question:
 Transcription:
 "${transcription}"
 
+Guidelines:
+- Scores should be 1-10 where 10 is excellent.
+- For the metric denoted repetition below, analyse the transcription, and determine the less repeated words there are the higher the score.
+- For the metric denoted fillerWordsUsed below, analyse the transcription, and determine the less filler words there are the higher the score.
+- Provide specific, actionable feedback for each metric, although if the candidate displays a strong performance in a metric, provide complementary feedback.
+- Keep feedback constructive and encouraging.
+- Focus on both content and delivery.
+- Make feedback personalized to the candidate's specific response.
+
 Return ONLY a JSON object with the following structure. No explanations, no markdown, no additional text:
 
 {
@@ -50,12 +59,12 @@ Return ONLY a JSON object with the following structure. No explanations, no mark
     },
     "repetition": {
       "score": [number 1-10],
-      "feedback": "[Personalized feedback about repetition]",
+      "feedback": "[Personalized feedback about repetition. Did the candidate use the same words or phrases multiple times?]",
       "description": "[Brief description of what repetition means]"
     },
     "fillerWordsUsed": {
       "score": [number 1-10],
-      "feedback": "[Personalized feedback about filler words]",
+      "feedback": "[Personalized feedback about filler words. Did the candidate use filler words such "ummm" and "aahhh" during the interview?]",
       "description": "[Brief description of what filler words means]"
     },
     "keywords": {
@@ -83,13 +92,5 @@ Return ONLY a JSON object with the following structure. No explanations, no mark
     ],
     "keyAdvice": "[One paragraph of the most important advice for this candidate]"
   }
-}
-
-Guidelines:
-- Scores should be 1-10 where 10 is excellent
-- For repetition and filler words, lower scores indicate more usage (worse performance)
-- Provide specific, actionable feedback for each metric
-- Keep feedback constructive and encouraging
-- Focus on both content and delivery
-- Make feedback personalized to the candidate's specific response`;
+}`;
 };
