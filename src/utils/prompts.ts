@@ -13,8 +13,8 @@ Transcription:
 
 Guidelines:
 - Scores should be 1-10 where 10 is excellent.
-- For the metric denoted repetition below, the less repeated words there are the higher the score.
-- For the metric denoted fillerWordsUse below, the less filler words there are the higher the score.
+- For the metric denoted repetition below, analyse the transcription, and determine the less repeated words there are the higher the score.
+- For the metric denoted fillerWordsUse below, analyse the transcription, and determine the less filler words there are the higher the score.
 - Provide specific, actionable feedback for each metric, although if the candidate displays a strong performance in a metric, provide complimentary feedback.
 - Keep feedback constructive and encouraging.
 - Focus on both content and delivery.
