@@ -1,6 +1,5 @@
 "use client";
 
-import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { Video } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuid } from "uuid";
@@ -40,7 +39,6 @@ export const RecordingTab = () => {
   const [permission, setPermission] = useState<Permission>("pending"); // camera and microphone permission
 
   const chunksRef = useRef<Blob[]>([]);
-  const ffmpegRef = useRef<FFmpeg | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
@@ -65,6 +63,31 @@ export const RecordingTab = () => {
     }
   }
 
+  const cleanupMedia = () => {
+    // Stop recording if active
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+
+    // Stop video stream
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+
+    // Stop all media tracks
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+
+    // Clear countdown
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
+  };
+
   // recording timer display in mm:ss
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -82,10 +105,7 @@ export const RecordingTab = () => {
     setupMedia();
 
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
-      if (countdownRef.current) clearInterval(countdownRef.current);
+      cleanupMedia();
     };
   }, []);
 

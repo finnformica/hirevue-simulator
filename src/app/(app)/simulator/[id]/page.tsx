@@ -1,9 +1,13 @@
 "use client";
 
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+
 import { AnalysisTab } from "@/components/analysis-tab";
 import PlaybackTab from "@/components/playback-tab";
 import { PromptTab } from "@/components/prompt-tab";
 import { RecordingTab } from "@/components/recording-tab";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import {
@@ -12,6 +16,7 @@ import {
   setPrompt,
 } from "@/lib/store/slices/simulatorSlice";
 import { usePrompt } from "@/utils/api/prompts";
+import { paths } from "@/utils/paths";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 
@@ -63,7 +68,15 @@ export default function SimulatorPage() {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8">Hirevue Simulator</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">Hirevue Simulator</h1>
+        <Link href={paths.questions}>
+          <Button variant="outline" className="flex items-center gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Questions
+          </Button>
+        </Link>
+      </div>
       <Tabs
         value={currentTab}
         onValueChange={(value) => dispatch(setCurrentTab(value))}
