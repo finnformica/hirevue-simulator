@@ -164,7 +164,7 @@ export function QuestionRow({
         </TableCell>
         <TableCell className="w-32">
           <Button
-            className="bg-brand hover:bg-brand/90 text-brand-foreground"
+            className="bg-brand hover:bg-brand/90 text-white dark:text-black"
             onClick={handlePracticeClick}
           >
             Practice
