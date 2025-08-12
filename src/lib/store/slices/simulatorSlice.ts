@@ -143,6 +143,9 @@ const simulatorSlice = createSlice({
   name: "simulator",
   initialState,
   reducers: {
+    resetSimulatorState: () => {
+      return initialState;
+    },
     setCurrentTab: (state, action) => {
       state.currentTab = action.payload;
     },
@@ -181,6 +184,7 @@ const simulatorSlice = createSlice({
 });
 
 export const {
+  resetSimulatorState,
   setCurrentTab,
   setPrompt,
   setVideoUrl,
