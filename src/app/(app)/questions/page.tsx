@@ -14,42 +14,33 @@ export default function PracticeQuestionsPage() {
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
-  // Fetch data in the parent component
-  const { prompts: questions, isLoading, error } = usePrompts();
+  const itemsPerPage = 10; // Show 10 items per page
+
+  // Fetch data from server with pagination
+  const {
+    prompts: questions,
+    pagination,
+    isLoading,
+    error,
+  } = usePrompts({
+    page: currentPage,
+    limit: itemsPerPage, // Request 10 items per page
+    search: searchQuery,
+    category: categoryFilter === "all" ? "" : categoryFilter,
+    difficulty: difficultyFilter === "all" ? "" : difficultyFilter,
+  });
 
   const toggleRow = (id: string) => {
     const newExpanded = new Set(expandedRows);
     if (newExpanded.has(id)) {
       newExpanded.delete(id);
     } else {
-      // Close other expanded rows and open this one
       newExpanded.clear();
       newExpanded.add(id);
     }
     setExpandedRows(newExpanded);
   };
-
-  // Filter questions based on search and filters
-  const filteredQuestions = questions.filter((question) => {
-    const matchesSearch = question.question
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesDifficulty =
-      difficultyFilter === "all" || question.difficulty === difficultyFilter;
-    const matchesCategory =
-      categoryFilter === "all" || question.category === categoryFilter;
-    return matchesSearch && matchesDifficulty && matchesCategory;
-  });
-
-  // Paginate filtered questions
-  const totalPages = Math.ceil(filteredQuestions.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedQuestions = filteredQuestions.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
 
   // Handle page changes
   const handlePageChange = (page: number) => {
@@ -120,15 +111,15 @@ export default function PracticeQuestionsPage() {
 
       {/* Table Component */}
       <QuestionTable
-        questions={paginatedQuestions}
+        questions={questions}
         expandedRows={expandedRows}
         onToggleRow={toggleRow}
       />
 
       {/* Pagination Component */}
       <QuestionPagination
-        currentPage={currentPage}
-        totalPages={totalPages}
+        currentPage={pagination.page}
+        totalPages={pagination.totalPages}
         onPageChange={handlePageChange}
       />
     </>

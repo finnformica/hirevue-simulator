@@ -2,9 +2,10 @@ import {
   AnalysisGrade,
   InterviewAttempt,
   PromptSchema,
+  PaginationSchema,
 } from "@/lib/types/schemas";
 import { supabaseClientForBrowser } from "@/utils/supabase/client";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { endpoints } from "../endpoints";
 import { getFetcher } from "./fetchers";
 
@@ -16,6 +17,11 @@ export interface PromptWithLastAttempt extends PromptSchema {
   } | null;
 }
 
+export interface PromptWithLastAttemptResponse {
+  data: PromptWithLastAttempt[];
+  pagination: PaginationSchema;
+}
+
 // Custom hook for fetching prompts
 export function usePrompts(params: {
   page?: number;
@@ -24,23 +30,85 @@ export function usePrompts(params: {
   category?: string;
   difficulty?: string;
 } = {}) {
+  const { page = 1, limit = 10, search = "", category = "", difficulty = "" } = params;
+  const { mutate } = useSWRConfig();
 
-  
   const queryParams = new URLSearchParams();
 
+  if (page) queryParams.set("page", page.toString());
+  if (limit) queryParams.set("limit", limit.toString());
+  if (search) queryParams.set("search", search);
+  if (category) queryParams.set("category", category);
+  if (difficulty) queryParams.set("difficulty", difficulty);
 
+  const queryString = queryParams.toString();
 
+  const url = `${endpoints.prompts}${queryString ? `?${queryString}` : ""}`;
 
-  const { data, error, isLoading, mutate } = useSWR<PromptWithLastAttempt[]>(
-    endpoints.prompts,
-    getFetcher
+  const { data, error, isLoading, mutate: mutateData } = useSWR<PromptWithLastAttemptResponse>(
+    url,
+    getFetcher,
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+    }
   );
 
+  // Prefetch next page in the background
+  const prefetchNextPage = () => {
+    if (data?.pagination?.hasNext) {
+      const nextPage = page + 1;
+      const nextQueryParams = new URLSearchParams();
+      nextQueryParams.set("page", nextPage.toString());
+      nextQueryParams.set("limit", limit.toString());
+      if (search) nextQueryParams.set("search", search);
+      if (category) nextQueryParams.set("category", category);
+      if (difficulty) nextQueryParams.set("difficulty", difficulty);
+
+      const nextUrl = `${endpoints.prompts}?${nextQueryParams.toString()}`;
+      mutate(nextUrl);
+    }
+  };
+
+  // Prefetch previous page in the background
+  const prefetchPrevPage = () => {
+    if (data?.pagination?.hasPrev) {
+      const prevPage = page - 1;
+      const prevQueryParams = new URLSearchParams();
+      prevQueryParams.set("page", prevPage.toString());
+      prevQueryParams.set("limit", limit.toString());
+      if (search) prevQueryParams.set("search", search);
+      if (category) prevQueryParams.set("category", category);
+      if (difficulty) prevQueryParams.set("difficulty", difficulty);
+
+      const prevUrl = `${endpoints.prompts}?${prevQueryParams.toString()}`;
+      mutate(prevUrl);
+    }
+  };
+
+  // Auto-prefetch next page when data loads successfully
+  if (data && data.data.length > 0 && data.pagination.hasNext) {
+    // Use setTimeout to avoid blocking the current request
+    setTimeout(() => {
+      prefetchNextPage();
+    }, 100);
+  }
+
   return {
-    prompts: data || [],
+    prompts: data?.data || [],
+    pagination: data?.pagination || {
+      page: 1,
+      limit: 10,
+      total: 0,
+      totalPages: 1,
+      hasNext: false,
+      hasPrev: false,
+    },
     isLoading,
     error,
-    refresh: mutate,
+    refresh: mutateData,
+    prefetchNext: prefetchNextPage,
+    prefetchPrev: prefetchPrevPage,
   };
 }
 

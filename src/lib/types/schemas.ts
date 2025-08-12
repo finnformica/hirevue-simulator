@@ -40,6 +40,16 @@ export interface AnalysisSchema {
 }
 
 export type AnalysisSchemaInsert = Omit<AnalysisSchema, "id" | "created_at">;
+
+export interface PaginationSchema {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
 export interface PromptSchema {
   id: string; // uuid
   created_at: string; // ISO timestamp

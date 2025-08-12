@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
 
     // Extract pagination and search parameters
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const page = parseInt(searchParams.get("page") ?? "1");
+    const limit = parseInt(searchParams.get("limit") ?? "10");
     const search = searchParams.get("search") || "";
     const category = searchParams.get("category") || "";
     const difficulty = searchParams.get("difficulty") || "";
