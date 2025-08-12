@@ -17,7 +17,20 @@ export interface PromptWithLastAttempt extends PromptSchema {
 }
 
 // Custom hook for fetching prompts
-export function usePrompts() {
+export function usePrompts(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: string;
+  difficulty?: string;
+} = {}) {
+
+  
+  const queryParams = new URLSearchParams();
+
+
+
+
   const { data, error, isLoading, mutate } = useSWR<PromptWithLastAttempt[]>(
     endpoints.prompts,
     getFetcher

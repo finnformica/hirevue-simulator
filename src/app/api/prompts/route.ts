@@ -19,6 +19,16 @@ export async function GET(request: NextRequest) {
     // Check if user has pro access using the SQL function
     const isProUser = await checkUserProAccess(user.id);
 
+    // Extract pagination and search parameters
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "20");
+    const search = searchParams.get("search") || "";
+    const category = searchParams.get("category") || "";
+    const difficulty = searchParams.get("difficulty") || "";
+
+    const offset = (page - 1) * limit;
+
     // Build the query
     let query = supabase
       .from("prompts")
@@ -37,7 +47,8 @@ export async function GET(request: NextRequest) {
             grade
           )
         )
-      `
+      `,
+      {count: "exact"}
       )
       .order("created_at", { ascending: false });
 
@@ -46,7 +57,19 @@ export async function GET(request: NextRequest) {
       query = query.eq("category", "basic");
     }
 
-    const { data: prompts, error: promptsError } = await query;
+    if (search) {
+      query = query.textSearch("question", `%${search}%`)
+    }
+
+    if (category && isProUser) {
+      query = query.eq("category", category);
+    }
+
+    if (difficulty) {
+      query = query.eq("difficulty", difficulty);
+    }
+
+    const { data: prompts, count, error: promptsError } = await query.range(offset, offset + limit - 1);
 
     if (promptsError) {
       return NextResponse.json(
@@ -75,7 +98,20 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json(promptsWithAttempts);
+    const totalPages = Math.ceil((count ?? 0) / limit);
+
+    return NextResponse.json({
+      data: promptsWithAttempts,
+      pagination: {
+        page,
+        limit,
+        total: count,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    });
+
   } catch (error) {
     console.error("Error in prompts API:", error);
     return NextResponse.json(
