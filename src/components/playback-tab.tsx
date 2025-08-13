@@ -17,12 +17,12 @@ import { setCurrentTab } from "@/lib/store/slices/simulatorSlice";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Slider } from "./ui/slider";
+import { Spinner } from "./ui/spinner";
 
 const PlaybackTab = () => {
   const dispatch = useAppDispatch();
-  const { videoUrl, transcription, isTranscribing } = useAppSelector(
-    (state) => state.simulator
-  );
+  const { videoUrl, transcription, isTranscribing, isAnalysing } =
+    useAppSelector((state) => state.simulator);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -126,6 +126,12 @@ const PlaybackTab = () => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  };
+
+  const getViewAnalysisButtonText = () => {
+    if (isTranscribing) return "Transcribing...";
+    if (isAnalysing) return "Analysing...";
+    return "View Analysis";
   };
 
   const renderTranscription = () => {
@@ -237,9 +243,14 @@ const PlaybackTab = () => {
                 <Button
                   onClick={() => dispatch(setCurrentTab("analysis"))}
                   className="flex items-center gap-2"
+                  disabled={isTranscribing || isAnalysing}
                 >
-                  <PlayIcon className="h-5 w-5" />
-                  View Analysis
+                  {isTranscribing || isAnalysing ? (
+                    <Spinner className="h-5 w-5" />
+                  ) : (
+                    <PlayIcon className="h-5 w-5" />
+                  )}
+                  {getViewAnalysisButtonText()}
                 </Button>
               </div>
             </div>

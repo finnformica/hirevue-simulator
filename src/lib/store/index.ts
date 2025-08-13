@@ -11,9 +11,14 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         // Ignore these action types
-        ignoredActions: ["simulator/setVideoBlob"],
+        ignoredActions: [
+          "simulator/setVideoBlob",
+          "simulator/processRecording/pending",
+          "simulator/processRecording/fulfilled",
+          "simulator/processRecording/rejected"
+        ],
         // Ignore these field paths in all actions
-        ignoredActionPaths: ["payload.videoBlob"],
+        ignoredActionPaths: ["payload.videoBlob", "meta.arg.videoBlob", "meta.arg.audioBlob"],
         // Ignore these paths in the state
         ignoredPaths: ["simulator.videoBlob"],
       },

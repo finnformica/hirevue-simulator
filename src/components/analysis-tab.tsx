@@ -14,13 +14,63 @@ import { useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
-import { setCurrentTab } from "@/lib/store/slices/simulatorSlice";
+import {
+  resetSimulatorState,
+  setCurrentTab,
+} from "@/lib/store/slices/simulatorSlice";
 import { MetricDetail, StructuredAnalysis } from "@/lib/types/analysis";
 import { cn } from "@/lib/utils";
 import { useGetUser } from "@/utils/api/user";
 import { paths } from "@/utils/paths";
 
 import { Button } from "./ui/button";
+
+// Extracted action buttons component that can be used in all states
+function AnalysisActionButtons({
+  isReviewMode = false,
+  promptId,
+}: {
+  isReviewMode?: boolean;
+  promptId?: string;
+}) {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const handleTryAgain = () => {
+    dispatch(resetSimulatorState());
+
+    if (isReviewMode && promptId) {
+      router.push(paths.simulator(promptId));
+    } else {
+      dispatch(setCurrentTab("recording"));
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push(paths.questions)}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Questions
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleTryAgain}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Try Again
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function MetricBentoCard({
   metric,
@@ -169,45 +219,19 @@ function StructuredAnalysisDisplay({
   response: string;
   isReviewMode?: boolean;
 }) {
-  const router = useRouter();
   const { isProUser } = useGetUser();
   const [isContextOpen, setIsContextOpen] = useState(false);
   const metricEntries = Object.entries(analysis.metrics);
-  const dispatch = useAppDispatch();
-
-  const handleTryAgain = () => {
-    if (isReviewMode && prompt?.id) {
-      router.push(paths.simulator(prompt.id));
-    } else {
-      dispatch(setCurrentTab("recording"));
-    }
-  };
 
   return (
     <>
       <div className="space-y-6 pt-3">
         {/* Actions Section */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(paths.questions)}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Questions
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTryAgain}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Try Again
-            </Button>
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <AnalysisActionButtons
+            isReviewMode={isReviewMode}
+            promptId={prompt.id}
+          />
           <Button
             variant="default"
             size="sm"
@@ -372,24 +396,36 @@ export function AnalysisTab() {
 
   if (isAnalysing && !isReviewMode) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <p className="text-lg">Analysing your response...</p>
+      <div className="space-y-6">
+        <AnalysisActionButtons
+          isReviewMode={isReviewMode}
+          promptId={undefined}
+        />
+        <div className="flex items-center justify-center p-8">
+          <p className="text-lg">Analysing your response...</p>
+        </div>
       </div>
     );
   }
 
   if (!currentAnalysis?.structuredAnalysis) {
     return (
-      <div className="text-center p-8">
-        <p className="text-lg">No analysis available</p>
-        {!isReviewMode && (
-          <Button
-            onClick={() => dispatch(setCurrentTab("recording"))}
-            className="mt-4"
-          >
-            Record Response
-          </Button>
-        )}
+      <div className="space-y-6">
+        <AnalysisActionButtons
+          isReviewMode={isReviewMode}
+          promptId={undefined}
+        />
+        <div className="text-center p-8">
+          <p className="text-lg">No analysis available</p>
+          {!isReviewMode && (
+            <Button
+              onClick={() => dispatch(setCurrentTab("recording"))}
+              className="mt-4"
+            >
+              Record Response
+            </Button>
+          )}
+        </div>
       </div>
     );
   }

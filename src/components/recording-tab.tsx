@@ -37,6 +37,7 @@ export const RecordingTab = () => {
   const [isCountingDown, setIsCountingDown] = useState(false); // display countdown timer
   const [countdownValue, setCountdownValue] = useState(countdown); // countdown value for the time in seconds
   const [permission, setPermission] = useState<Permission>("pending"); // camera and microphone permission
+  const [hasProcessedRecording, setHasProcessedRecording] = useState(false); // prevent duplicate processing
 
   const chunksRef = useRef<Blob[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -86,6 +87,9 @@ export const RecordingTab = () => {
       clearInterval(countdownRef.current);
       countdownRef.current = null;
     }
+
+    // Reset processing flag
+    setHasProcessedRecording(false);
   };
 
   // recording timer display in mm:ss
@@ -130,6 +134,7 @@ export const RecordingTab = () => {
     if (!streamRef.current) return;
 
     setError(null);
+    setHasProcessedRecording(false);
 
     const recorder = new MediaRecorder(streamRef.current, {
       mimeType: "video/webm",
@@ -144,11 +149,20 @@ export const RecordingTab = () => {
     };
 
     recorder.onstop = async () => {
-      if (loading) return;
+      if (loading || hasProcessedRecording) return;
       if (!user || !prompt) {
         setError("Error processing recording, please try again.");
         return;
       }
+
+      // Prevent multiple executions of this handler
+      if (mediaRecorderRef.current === null) return;
+
+      // Clear the recorder reference to prevent multiple executions
+      mediaRecorderRef.current = null;
+
+      // Set flag to prevent duplicate processing
+      setHasProcessedRecording(true);
 
       const interviewId = uuid();
 
@@ -298,7 +312,11 @@ export const RecordingTab = () => {
           onClick={isRecording ? stopRecording : startCountdown}
           variant={isRecording ? "destructive" : "default"}
           className="flex items-center gap-2"
-          disabled={isCountingDown}
+          disabled={
+            isCountingDown ||
+            permission === "pending" ||
+            permission === "denied"
+          }
         >
           <Video className="h-5 w-5" />
           {isRecording ? "Stop Recording" : "Start Recording"}

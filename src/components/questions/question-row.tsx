@@ -7,6 +7,8 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { resetSimulatorState } from "@/lib/store/slices/simulatorSlice";
 import { AnalysisGrade, InterviewAttempt } from "@/lib/types/schemas";
 import { useInterviewAttempts } from "@/utils/api/interview";
 import { PromptWithLastAttempt } from "@/utils/api/prompts";
@@ -66,7 +68,7 @@ export function QuestionRow({
   const [displayedCount, setDisplayedCount] = useState(5);
   const router = useRouter();
   const { isProUser } = useGetUser();
-
+  const dispatch = useAppDispatch();
   // Fetch attempts only when expanded, with increasing page size
   const { attempts, totalCount, isLoading } = useInterviewAttempts(
     isExpanded ? question.id : null,
@@ -90,6 +92,7 @@ export function QuestionRow({
   };
 
   const handlePracticeClick = () => {
+    dispatch(resetSimulatorState());
     // Navigate to the dynamic simulator route with the prompt ID
     router.push(`/simulator/${question.id}`);
   };

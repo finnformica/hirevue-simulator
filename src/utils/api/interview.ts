@@ -1,5 +1,5 @@
-import { insertRecords } from "@/lib/supabase/server";
 import { InterviewAttempt, InterviewSchemaInsert } from "@/lib/types/schemas";
+import { supabaseClientForBrowser as supabase } from "@/utils/supabase/client";
 import useSWR from "swr";
 import { fetchInterviewAttempts } from "./prompts";
 
@@ -71,10 +71,7 @@ export async function uploadInterview({
     },
   ];
 
-  const { data: interviewData, error: interviewError } = await insertRecords({
-    table: "interviews",
-    records,
-  });
+  const { data: interviewData, error: interviewError } = await supabase.from("interviews").insert(records).select().single();
 
   if (interviewError) {
     return { error: interviewError, data: null };
