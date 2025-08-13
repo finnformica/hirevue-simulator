@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
     if (!analysisResponse.ok) {
       const error = await analysisResponse.json();
-      throw new Error(error?.error ?? error?.message ?? "Failed to generate analysis");
+      throw new Error(error?.message ?? "Failed to generate analysis");
     }
 
     const analysisJSON = await analysisResponse.json();
