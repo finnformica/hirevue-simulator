@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useQueryState } from "nuqs";
 
 import { QuestionFilters } from "@/components/questions/question-filters";
 import { QuestionPagination } from "@/components/questions/question-pagination";
@@ -9,13 +10,59 @@ import { Button } from "@/components/ui/button";
 import { usePrompts } from "@/utils/api/prompts";
 
 export default function PracticeQuestionsPage() {
+  // Local state for immediate input updates (prevents re-renders)
+  const [localSearchQuery, setLocalSearchQuery] = useState("");
+
+  // URL search params (debounced)
+  const [searchQuery, setSearchQuery] = useQueryState("search", {
+    defaultValue: "",
+    parse: (value) => value,
+    serialize: (value) => value,
+    throttleMs: 500,
+  });
+
+  const [difficultyFilter, setDifficultyFilter] = useQueryState("difficulty", {
+    defaultValue: "all",
+    parse: (value) => value,
+    serialize: (value) => value,
+    throttleMs: 500,
+  });
+
+  const [categoryFilter, setCategoryFilter] = useQueryState("category", {
+    defaultValue: "all",
+    parse: (value) => value,
+    serialize: (value) => value,
+    throttleMs: 500,
+  });
+
+  const [currentPage, setCurrentPage] = useQueryState("page", {
+    defaultValue: "1",
+    parse: (value) => value,
+    serialize: (value) => value,
+    throttleMs: 500,
+  });
+
+  // Keep expanded rows as local state since it's UI-specific
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [searchQuery, setSearchQuery] = useState("");
-  const [difficultyFilter, setDifficultyFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 10; // Show 10 items per page
+
+  // Initialize local search query from URL on mount
+  useEffect(() => {
+    setLocalSearchQuery(searchQuery || "");
+  }, [searchQuery]);
+
+  // Debounced effect to update URL search param
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearchQuery !== searchQuery) {
+        setSearchQuery(localSearchQuery);
+        setCurrentPage("1"); // Reset to first page when search changes
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [localSearchQuery, searchQuery, setSearchQuery, setCurrentPage]);
 
   // Fetch data from server with pagination
   const {
@@ -24,11 +71,12 @@ export default function PracticeQuestionsPage() {
     isLoading,
     error,
   } = usePrompts({
-    page: currentPage,
-    limit: itemsPerPage, // Request 10 items per page
+    page: parseInt(currentPage, 10),
+    limit: itemsPerPage,
     search: searchQuery,
     category: categoryFilter === "all" ? "" : categoryFilter,
     difficulty: difficultyFilter === "all" ? "" : difficultyFilter,
+    debounceMs: 500, // Debounce API calls by 500ms
   });
 
   const toggleRow = (id: string) => {
@@ -44,23 +92,22 @@ export default function PracticeQuestionsPage() {
 
   // Handle page changes
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    setCurrentPage(page.toString());
   };
 
-  // Handle filter changes
+  // Handle search changes (immediate local update)
   const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    setCurrentPage(1); // Reset to first page when filtering
+    setLocalSearchQuery(value);
   };
 
   const handleDifficultyChange = (value: string) => {
     setDifficultyFilter(value);
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage("1"); // Reset to first page when filtering
   };
 
   const handleCategoryChange = (value: string) => {
     setCategoryFilter(value);
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage("1"); // Reset to first page when filtering
   };
 
   // Loading state
@@ -101,7 +148,7 @@ export default function PracticeQuestionsPage() {
 
       {/* Filters Component */}
       <QuestionFilters
-        searchQuery={searchQuery}
+        searchQuery={localSearchQuery} // Use local state for immediate UI updates
         difficultyFilter={difficultyFilter}
         categoryFilter={categoryFilter}
         onSearchChange={handleSearchChange}

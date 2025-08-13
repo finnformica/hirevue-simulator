@@ -29,8 +29,9 @@ export function usePrompts(params: {
   search?: string;
   category?: string;
   difficulty?: string;
+  debounceMs?: number;
 } = {}) {
-  const { page = 1, limit = 10, search = "", category = "", difficulty = "" } = params;
+  const { page = 1, limit = 10, search = "", category = "", difficulty = "", debounceMs = 500 } = params;
   const { mutate } = useSWRConfig();
 
   const queryParams = new URLSearchParams();
@@ -51,6 +52,7 @@ export function usePrompts(params: {
     {
       keepPreviousData: true,
       revalidateOnFocus: false,
+      dedupingInterval: debounceMs, // Dedupe requests within the specified interval
     }
   );
 
