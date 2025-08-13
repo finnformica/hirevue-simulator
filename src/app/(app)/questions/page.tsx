@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useQueryState } from "nuqs";
+import { useState, useCallback, useRef } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { debounce } from "lodash";
 
 import { QuestionFilters } from "@/components/questions/question-filters";
 import { QuestionPagination } from "@/components/questions/question-pagination";
@@ -10,59 +11,44 @@ import { Button } from "@/components/ui/button";
 import { usePrompts } from "@/utils/api/prompts";
 
 export default function PracticeQuestionsPage() {
-  // Local state for immediate input updates (prevents re-renders)
-  const [localSearchQuery, setLocalSearchQuery] = useState("");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // URL search params (debounced)
-  const [searchQuery, setSearchQuery] = useQueryState("search", {
-    defaultValue: "",
-    parse: (value) => value,
-    serialize: (value) => value,
-    throttleMs: 500,
-  });
-
-  const [difficultyFilter, setDifficultyFilter] = useQueryState("difficulty", {
-    defaultValue: "all",
-    parse: (value) => value,
-    serialize: (value) => value,
-    throttleMs: 500,
-  });
-
-  const [categoryFilter, setCategoryFilter] = useQueryState("category", {
-    defaultValue: "all",
-    parse: (value) => value,
-    serialize: (value) => value,
-    throttleMs: 500,
-  });
-
-  const [currentPage, setCurrentPage] = useQueryState("page", {
-    defaultValue: "1",
-    parse: (value) => value,
-    serialize: (value) => value,
-    throttleMs: 500,
-  });
+  // Get current values from URL search params
+  const searchQuery = searchParams.get("search") || "";
+  const difficultyFilter = searchParams.get("difficulty") || "all";
+  const categoryFilter = searchParams.get("category") || "all";
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
   // Keep expanded rows as local state since it's UI-specific
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const itemsPerPage = 10; // Show 10 items per page
 
-  // Initialize local search query from URL on mount
-  useEffect(() => {
-    setLocalSearchQuery(searchQuery || "");
-  }, [searchQuery]);
+  const updateSearchParams = useCallback((updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString());
+  
+    Object.entries(updates).forEach(([key, value]) => {
+      value && value !== "all" 
+        ? params.set(key, value) 
+        : params.delete(key);
+    });
+  
+    router.push(`${pathname}?${params.toString()}`);
+  }, [searchParams, router, pathname]);
 
-  // Debounced effect to update URL search param
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localSearchQuery !== searchQuery) {
-        setSearchQuery(localSearchQuery);
-        setCurrentPage("1"); // Reset to first page when search changes
-      }
-    }, 500);
+  // Create debounced search function using Lodash
+  const debouncedSearchRef = useRef(
+    debounce((value: string) => {
+      updateSearchParams({ search: value, page: "1" });
+    }, 500)
+  );
 
-    return () => clearTimeout(timer);
-  }, [localSearchQuery, searchQuery, setSearchQuery, setCurrentPage]);
+  // Search handler with Lodash debouncing
+  const handleSearchChange = useCallback((value: string) => {
+    debouncedSearchRef.current(value);
+  }, []);
 
   // Fetch data from server with pagination
   const {
@@ -71,12 +57,11 @@ export default function PracticeQuestionsPage() {
     isLoading,
     error,
   } = usePrompts({
-    page: parseInt(currentPage, 10),
+    page: currentPage,
     limit: itemsPerPage,
     search: searchQuery,
     category: categoryFilter === "all" ? "" : categoryFilter,
     difficulty: difficultyFilter === "all" ? "" : difficultyFilter,
-    debounceMs: 500, // Debounce API calls by 500ms
   });
 
   const toggleRow = (id: string) => {
@@ -91,24 +76,26 @@ export default function PracticeQuestionsPage() {
   };
 
   // Handle page changes
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page.toString());
-  };
+  const handlePageChange = useCallback(
+    (page: number) => {
+      updateSearchParams({ page: page.toString() });
+    },
+    [updateSearchParams]
+  );
 
-  // Handle search changes (immediate local update)
-  const handleSearchChange = (value: string) => {
-    setLocalSearchQuery(value);
-  };
+  const handleDifficultyChange = useCallback(
+    (value: string) => {
+      updateSearchParams({ difficulty: value, page: "1" });
+    },
+    [updateSearchParams]
+  );
 
-  const handleDifficultyChange = (value: string) => {
-    setDifficultyFilter(value);
-    setCurrentPage("1"); // Reset to first page when filtering
-  };
-
-  const handleCategoryChange = (value: string) => {
-    setCategoryFilter(value);
-    setCurrentPage("1"); // Reset to first page when filtering
-  };
+  const handleCategoryChange = useCallback(
+    (value: string) => {
+      updateSearchParams({ category: value, page: "1" });
+    },
+    [updateSearchParams]
+  );
 
   // Loading state
   if (isLoading) {
@@ -148,7 +135,7 @@ export default function PracticeQuestionsPage() {
 
       {/* Filters Component */}
       <QuestionFilters
-        searchQuery={localSearchQuery} // Use local state for immediate UI updates
+        searchQuery={searchQuery}
         difficultyFilter={difficultyFilter}
         categoryFilter={categoryFilter}
         onSearchChange={handleSearchChange}

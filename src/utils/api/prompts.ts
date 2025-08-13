@@ -29,9 +29,8 @@ export function usePrompts(params: {
   search?: string;
   category?: string;
   difficulty?: string;
-  debounceMs?: number;
 } = {}) {
-  const { page = 1, limit = 10, search = "", category = "", difficulty = "", debounceMs = 500 } = params;
+  const { page = 1, limit = 10, search = "", category = "", difficulty = "" } = params;
 
   // Get the mutate function from the SWR config
   const { mutate } = useSWRConfig();
@@ -51,59 +50,8 @@ export function usePrompts(params: {
 
   const { data, error, isLoading, mutate: mutateData } = useSWR<PromptWithLastAttemptResponse>(
     url,
-    getFetcher,
-    {
-      keepPreviousData: true, // Keeps old data visisble while making new requests
-      revalidateOnFocus: false, // Don't refetch when window regains focus
-      dedupingInterval: debounceMs, // Dedupe requests within the specified interval
-    }
+    getFetcher
   );
-
-  // Prefetch next page in the background
-  const prefetchNextPage = () => {
-    if (data?.pagination?.hasNext) {
-      // Set query params for next page
-      const nextPage = page + 1;
-      const nextQueryParams = new URLSearchParams();
-      nextQueryParams.set("page", nextPage.toString());
-      nextQueryParams.set("limit", limit.toString());
-      if (search) nextQueryParams.set("search", search);
-      if (category) nextQueryParams.set("category", category);
-      if (difficulty) nextQueryParams.set("difficulty", difficulty);
-
-      // Make the request
-      const nextUrl = `${endpoints.prompts}?${nextQueryParams.toString()}`;
-      // Update the cache
-      mutate(nextUrl);
-    }
-  };
-
-  // Prefetch previous page in the background
-  const prefetchPrevPage = () => {
-    if (data?.pagination?.hasPrev) {
-      // Set query params for previous page
-      const prevPage = page - 1;
-      const prevQueryParams = new URLSearchParams();
-      prevQueryParams.set("page", prevPage.toString());
-      prevQueryParams.set("limit", limit.toString());
-      if (search) prevQueryParams.set("search", search);
-      if (category) prevQueryParams.set("category", category);
-      if (difficulty) prevQueryParams.set("difficulty", difficulty);
-
-      // Make the request
-      const prevUrl = `${endpoints.prompts}?${prevQueryParams.toString()}`; 
-      // Update the cache
-      mutate(prevUrl);
-    }
-  };
-
-  // Auto-prefetch next page when data loads successfully
-  if (data && data.data.length > 0 && data.pagination.hasNext) {
-    // Use setTimeout to avoid blocking the current request
-    setTimeout(() => {
-      prefetchNextPage();
-    }, 100);
-  }
 
   return {
     prompts: data?.data || [],
@@ -118,8 +66,6 @@ export function usePrompts(params: {
     isLoading,
     error,
     refresh: mutateData,
-    prefetchNext: prefetchNextPage,
-    prefetchPrev: prefetchPrevPage,
   };
 }
 
