@@ -32,8 +32,11 @@ export function usePrompts(params: {
   debounceMs?: number;
 } = {}) {
   const { page = 1, limit = 10, search = "", category = "", difficulty = "", debounceMs = 500 } = params;
+
+  // Get the mutate function from the SWR config
   const { mutate } = useSWRConfig();
 
+  // Create a URLSearchParams object to store the query parameters
   const queryParams = new URLSearchParams();
 
   if (page) queryParams.set("page", page.toString());
@@ -50,8 +53,8 @@ export function usePrompts(params: {
     url,
     getFetcher,
     {
-      keepPreviousData: true,
-      revalidateOnFocus: false,
+      keepPreviousData: true, // Keeps old data visisble while making new requests
+      revalidateOnFocus: false, // Don't refetch when window regains focus
       dedupingInterval: debounceMs, // Dedupe requests within the specified interval
     }
   );
@@ -59,6 +62,7 @@ export function usePrompts(params: {
   // Prefetch next page in the background
   const prefetchNextPage = () => {
     if (data?.pagination?.hasNext) {
+      // Set query params for next page
       const nextPage = page + 1;
       const nextQueryParams = new URLSearchParams();
       nextQueryParams.set("page", nextPage.toString());
@@ -67,7 +71,9 @@ export function usePrompts(params: {
       if (category) nextQueryParams.set("category", category);
       if (difficulty) nextQueryParams.set("difficulty", difficulty);
 
+      // Make the request
       const nextUrl = `${endpoints.prompts}?${nextQueryParams.toString()}`;
+      // Update the cache
       mutate(nextUrl);
     }
   };
@@ -75,6 +81,7 @@ export function usePrompts(params: {
   // Prefetch previous page in the background
   const prefetchPrevPage = () => {
     if (data?.pagination?.hasPrev) {
+      // Set query params for previous page
       const prevPage = page - 1;
       const prevQueryParams = new URLSearchParams();
       prevQueryParams.set("page", prevPage.toString());
@@ -83,7 +90,9 @@ export function usePrompts(params: {
       if (category) prevQueryParams.set("category", category);
       if (difficulty) prevQueryParams.set("difficulty", difficulty);
 
-      const prevUrl = `${endpoints.prompts}?${prevQueryParams.toString()}`;
+      // Make the request
+      const prevUrl = `${endpoints.prompts}?${prevQueryParams.toString()}`; 
+      // Update the cache
       mutate(prevUrl);
     }
   };
