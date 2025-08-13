@@ -52,7 +52,7 @@ export async function POST(request: Request) {
         Authorization: `Bearer ${HUGGINGFACE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "meta-llama/Llama-3.3-70B-Instruct",
+        model: "meta-llama/Llama-3.3-70B-Instruct:cerebras",
         messages: [
           {
             role: "system",
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
 
     if (!analysisResponse.ok) {
       const error = await analysisResponse.json();
-      throw new Error(error.error || "Failed to generate analysis");
+      throw new Error(error?.message ?? "Failed to generate analysis");
     }
 
     const analysisJSON = await analysisResponse.json();
