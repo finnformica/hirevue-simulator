@@ -14,7 +14,7 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="w-full border-b border-gray-800 bg-black py-4 px-6 md:px-12">
+    <nav className="w-full border-b border-gray-800 bg-black py-4 px-6 lg:px-12">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <Link href={paths.home}>
@@ -26,25 +26,25 @@ export function Navbar() {
         <div className="hidden lg:flex items-center space-x-8">
           <a
             onClick={(e) => handleSmoothScroll(e, "features")}
-            className="text-gray-300 hover:text-white transition-colors"
+            className="text-gray-300 hover:text-white transition-colors cursor-pointer"
           >
             Features
           </a>
           <a
             onClick={(e) => handleSmoothScroll(e, "how-it-works")}
-            className="text-gray-300 hover:text-white transition-colors"
+            className="text-gray-300 hover:text-white transition-colors cursor-pointer"
           >
             How it Works
           </a>
           <a
             onClick={(e) => handleSmoothScroll(e, "pricing")}
-            className="text-gray-300 hover:text-white transition-colors"
+            className="text-gray-300 hover:text-white transition-colors cursor-pointer"
           >
             Pricing
           </a>
           <a
             onClick={() => router.push(paths.about)}
-            className="text-gray-300 hover:text-white transition-colors"
+            className="text-gray-300 hover:text-white transition-colors cursor-pointer"
           >
             About
           </a>
@@ -61,13 +61,13 @@ export function Navbar() {
             <>
               <a
                 href={paths.auth.signIn}
-                className="text-gray-300 hover:text-white transition-colors"
+                className="text-gray-300 hover:text-white transition-colors cursor-pointer"
               >
                 Sign in
               </a>
               <a
                 href={paths.auth.createAccount}
-                className="bg-green-500 hover:bg-green-600 text-black font-medium px-4 py-2 rounded-md transition-colors"
+                className="bg-green-500 hover:bg-green-600 text-black font-medium px-4 py-2 rounded-md transition-colors cursor-pointer"
               >
                 Get Started
               </a>
@@ -103,64 +103,68 @@ export function Navbar() {
         </div>
       </div>
       {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="lg:hidden absolute top-16 left-0 right-0 bg-black border-b border-gray-800 z-50">
-          <div className="flex flex-col space-y-4 p-6">
-            <a
-              href="#features"
-              onClick={(e) => handleSmoothScroll(e, "features")}
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Features
-            </a>
-            <a
-              href="#how-it-works"
-              onClick={(e) => handleSmoothScroll(e, "how-it-works")}
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              How it Works
-            </a>
-            <a
-              href="#pricing"
-              onClick={(e) => handleSmoothScroll(e, "pricing")}
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              Pricing
-            </a>
-            <a
-              onClick={() => router.push(paths.about)}
-              className="text-gray-300 hover:text-white transition-colors"
-            >
-              About
-            </a>
-            <div className="pt-4 border-t border-gray-800 flex flex-col space-y-4">
-              {user ? (
+      <div
+        className={`lg:hidden absolute top-16 left-0 right-0 bg-black border-b border-gray-800 z-50 transition-all duration-300 ease-in-out ${
+          isMenuOpen
+            ? "opacity-100 transform translate-y-0"
+            : "opacity-0 transform -translate-y-4 pointer-events-none"
+        }`}
+      >
+        <div className="flex flex-col space-y-4 p-6">
+          <a
+            href="#features"
+            onClick={(e) => handleSmoothScroll(e, "features")}
+            className="text-gray-300 hover:text-white transition-colors cursor-pointer"
+          >
+            Features
+          </a>
+          <a
+            href="#how-it-works"
+            onClick={(e) => handleSmoothScroll(e, "how-it-works")}
+            className="text-gray-300 hover:text-white transition-colors cursor-pointer"
+          >
+            How it Works
+          </a>
+          <a
+            href="#pricing"
+            onClick={(e) => handleSmoothScroll(e, "pricing")}
+            className="text-gray-300 hover:text-white transition-colors cursor-pointer"
+          >
+            Pricing
+          </a>
+          <a
+            onClick={() => router.push(paths.about)}
+            className="text-gray-300 hover:text-white transition-colors cursor-pointer"
+          >
+            About
+          </a>
+          <div className="pt-4 border-t border-gray-800 flex flex-col space-y-4">
+            {user ? (
+              <a
+                onClick={() => router.push(paths.profile)}
+                className="bg-green-500 hover:bg-green-600 text-black font-medium px-4 py-2 rounded-md transition-colors text-center cursor-pointer"
+              >
+                Profile
+              </a>
+            ) : (
+              <>
                 <a
-                  onClick={() => router.push(paths.profile)}
+                  href={paths.auth.signIn}
+                  className="text-gray-300 hover:text-white transition-colors cursor-pointer"
+                >
+                  Sign in
+                </a>
+                <a
+                  href={paths.auth.createAccount}
                   className="bg-green-500 hover:bg-green-600 text-black font-medium px-4 py-2 rounded-md transition-colors text-center cursor-pointer"
                 >
-                  Profile
+                  Get Started
                 </a>
-              ) : (
-                <>
-                  <a
-                    href={paths.auth.signIn}
-                    className="text-gray-300 hover:text-white transition-colors"
-                  >
-                    Sign in
-                  </a>
-                  <a
-                    href={paths.auth.createAccount}
-                    className="bg-green-500 hover:bg-green-600 text-black font-medium px-4 py-2 rounded-md transition-colors text-center"
-                  >
-                    Get Started
-                  </a>
-                </>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 }
