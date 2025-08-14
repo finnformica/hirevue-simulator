@@ -20,8 +20,6 @@ export function QuestionPagination({
   totalPages,
   onPageChange,
 }: QuestionPaginationProps) {
-  if (totalPages <= 1) return null;
-
   return (
     <div className="mt-6 flex justify-center">
       <Pagination>
