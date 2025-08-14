@@ -37,10 +37,6 @@ export function QuestionFilters({
 
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
 
-  useEffect(() => {
-    setLocalSearchQuery(searchQuery);
-  }, [searchQuery]);
-
   const handleLocalSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLocalSearchQuery(value);

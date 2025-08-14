@@ -30,21 +30,12 @@ export function usePrompts(params: {
   category?: string;
   difficulty?: string;
 } = {}) {
-  const { page = 1, limit = 10, search = "", category = "", difficulty = "" } = params;
+
+  const queryParams = new URLSearchParams(params as Record<string, string>);
+  const queryString = queryParams.toString();
 
   // Get the mutate function from the SWR config
   const { mutate } = useSWRConfig();
-
-  // Create a URLSearchParams object to store the query parameters
-  const queryParams = new URLSearchParams();
-
-  if (page) queryParams.set("page", page.toString());
-  if (limit) queryParams.set("limit", limit.toString());
-  if (search) queryParams.set("search", search);
-  if (category) queryParams.set("category", category);
-  if (difficulty) queryParams.set("difficulty", difficulty);
-
-  const queryString = queryParams.toString();
 
   const url = `${endpoints.prompts}${queryString ? `?${queryString}` : ""}`;
 
@@ -54,8 +45,8 @@ export function usePrompts(params: {
   );
 
   return {
-    prompts: data?.data || [],
-    pagination: data?.pagination || {
+    prompts: data?.data ?? [],
+    pagination: data?.pagination ?? {
       page: 1,
       limit: 10,
       total: 0,
