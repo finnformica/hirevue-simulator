@@ -2,7 +2,6 @@
 
 import _ from "lodash";
 import { Search } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
 
 import { Input } from "@/components/ui/input";
 import {
@@ -25,7 +24,6 @@ interface QuestionFiltersProps {
 const categories = ["basic", "general", "finance", "consulting", "software"];
 const difficulties = ["easy", "medium", "hard"];
 
-
 export function QuestionFilters({
   searchQuery,
   difficultyFilter,
@@ -34,24 +32,15 @@ export function QuestionFilters({
   onDifficultyChange,
   onCategoryChange,
 }: QuestionFiltersProps) {
-
-  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
-
-  const handleLocalSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setLocalSearchQuery(value);
-    onSearchChange(value);
-  }, [onSearchChange]);
-
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-6">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <Input
           placeholder="Search questions..."
-          value={localSearchQuery}
-          onChange={handleLocalSearchChange}
+          onChange={(e) => onSearchChange(e.target.value)}
           className="pl-10"
+          defaultValue={searchQuery}
         />
       </div>
 

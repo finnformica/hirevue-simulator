@@ -6,6 +6,7 @@ import {
 } from "@/lib/types/schemas";
 import { supabaseClientForBrowser } from "@/utils/supabase/client";
 import useSWR, { useSWRConfig } from "swr";
+import { useMemo } from "react";
 import { endpoints } from "../endpoints";
 import { getFetcher } from "./fetchers";
 
@@ -29,13 +30,9 @@ export function usePrompts(params: {
   search?: string;
   category?: string;
   difficulty?: string;
-} = {}) {
-
+}) {
   const queryParams = new URLSearchParams(params as Record<string, string>);
   const queryString = queryParams.toString();
-
-  // Get the mutate function from the SWR config
-  const { mutate } = useSWRConfig();
 
   const url = `${endpoints.prompts}${queryString ? `?${queryString}` : ""}`;
 
@@ -44,20 +41,20 @@ export function usePrompts(params: {
     getFetcher
   );
 
-  return {
-    prompts: data?.data ?? [],
-    pagination: data?.pagination ?? {
-      page: 1,
-      limit: 10,
-      total: 0,
-      totalPages: 1,
-      hasNext: false,
-      hasPrev: false,
-    },
-    isLoading,
-    error,
-    refresh: mutateData,
-  };
+    return {
+      prompts: data?.data ?? [],
+      pagination: data?.pagination ?? {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      },
+      isLoading,
+      error,
+      refresh: mutateData,
+    };
 }
 
 export async function fetchPromptById(
