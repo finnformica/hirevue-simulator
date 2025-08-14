@@ -1,105 +1,90 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { debounce } from "lodash";
 
 import { QuestionFilters } from "@/components/questions/question-filters";
 import { QuestionPagination } from "@/components/questions/question-pagination";
 import { QuestionTable } from "@/components/questions/question-table";
-import { Button } from "@/components/ui/button";
 import { usePrompts } from "@/utils/api/prompts";
 
 export default function PracticeQuestionsPage() {
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [searchQuery, setSearchQuery] = useState("");
-  const [difficultyFilter, setDifficultyFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // Fetch data in the parent component
-  const { prompts: questions, isLoading, error } = usePrompts();
+  // Get current values from URL search params
+  const searchQuery = searchParams.get("search") ?? "";
+  const difficultyFilter = searchParams.get("difficulty") ?? "all";
+  const categoryFilter = searchParams.get("category") ?? "all";
+  const currentPage = parseInt(searchParams.get("page") ?? "1", 10);
+  const expandedRows = searchParams.get("expanded") ?? undefined;
 
-  const toggleRow = (id: string) => {
-    const newExpanded = new Set(expandedRows);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      // Close other expanded rows and open this one
-      newExpanded.clear();
-      newExpanded.add(id);
-    }
-    setExpandedRows(newExpanded);
-  };
 
-  // Filter questions based on search and filters
-  const filteredQuestions = questions.filter((question) => {
-    const matchesSearch = question.question
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesDifficulty =
-      difficultyFilter === "all" || question.difficulty === difficultyFilter;
-    const matchesCategory =
-      categoryFilter === "all" || question.category === categoryFilter;
-    return matchesSearch && matchesDifficulty && matchesCategory;
-  });
+  const updateSearchParams = useCallback(
+    (updates: Record<string, string | undefined>) => {
+      const params = new URLSearchParams(searchParams.toString());
 
-  // Paginate filtered questions
-  const totalPages = Math.ceil(filteredQuestions.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedQuestions = filteredQuestions.slice(
-    startIndex,
-    startIndex + itemsPerPage
+      Object.entries({expanded: undefined, ...updates}).forEach(([key, value]) => {
+        value && value !== "all" ? params.set(key, value) : params.delete(key);
+      });
+
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [searchParams, router, pathname]
   );
 
+  // Search handler with Lodash debouncing
+  const handleSearchChange = useCallback(
+    debounce((value: string) => {
+      updateSearchParams({ search: value, page: "1" });
+    }, 250),
+    [updateSearchParams]
+  );
+
+  // Fetch data from server with pagination
+  const {
+    prompts: questions,
+    pagination,
+    isLoading,
+    error,
+  } = usePrompts({
+    page: currentPage,
+    search: searchQuery,
+    category: categoryFilter === "all" ? "" : categoryFilter,
+    difficulty: difficultyFilter === "all" ? "" : difficultyFilter,
+  });
+
+  const toggleRow = useCallback((index: number) => {      
+    if (expandedRows === index.toString()) {  
+      updateSearchParams({ expanded: undefined }); 
+    } else {
+      updateSearchParams({ expanded: index.toString() });
+    }
+  }, [updateSearchParams]);
+
   // Handle page changes
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const handlePageChange = useCallback(
+    (page: number) => {
+      updateSearchParams({ page: page.toString() });
+    },
+    [updateSearchParams]
+  );
 
-  // Handle filter changes
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    setCurrentPage(1); // Reset to first page when filtering
-  };
+  const handleDifficultyChange = useCallback(
+    (value: string) => {
+      updateSearchParams({ difficulty: value, page: "1" });
+    },
+    [updateSearchParams]
+  );
 
-  const handleDifficultyChange = (value: string) => {
-    setDifficultyFilter(value);
-    setCurrentPage(1); // Reset to first page when filtering
-  };
-
-  const handleCategoryChange = (value: string) => {
-    setCategoryFilter(value);
-    setCurrentPage(1); // Reset to first page when filtering
-  };
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading questions...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <p className="text-red-400 mb-4">Error: {error.message}</p>
-          <Button
-            onClick={() => window.location.reload()}
-            className="bg-brand hover:bg-brand/90 text-brand-foreground"
-          >
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const handleCategoryChange = useCallback(
+    (value: string) => {
+      updateSearchParams({ category: value, page: "1" });
+    },
+    [updateSearchParams]
+  );
 
   return (
     <>
@@ -120,15 +105,17 @@ export default function PracticeQuestionsPage() {
 
       {/* Table Component */}
       <QuestionTable
-        questions={paginatedQuestions}
+        questions={questions}
         expandedRows={expandedRows}
         onToggleRow={toggleRow}
+        isLoading={isLoading}
+        error={error}
       />
 
       {/* Pagination Component */}
       <QuestionPagination
-        currentPage={currentPage}
-        totalPages={totalPages}
+        currentPage={pagination.page}
+        totalPages={pagination.totalPages}
         onPageChange={handlePageChange}
       />
     </>

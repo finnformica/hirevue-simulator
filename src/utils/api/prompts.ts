@@ -2,6 +2,7 @@ import {
   AnalysisGrade,
   InterviewAttempt,
   PromptSchema,
+  PaginationSchema,
 } from "@/lib/types/schemas";
 import { supabaseClientForBrowser } from "@/utils/supabase/client";
 import useSWR from "swr";
@@ -16,19 +17,43 @@ export interface PromptWithLastAttempt extends PromptSchema {
   } | null;
 }
 
+export interface PromptWithLastAttemptResponse {
+  data: PromptWithLastAttempt[];
+  pagination: PaginationSchema;
+}
+
 // Custom hook for fetching prompts
-export function usePrompts() {
-  const { data, error, isLoading, mutate } = useSWR<PromptWithLastAttempt[]>(
-    endpoints.prompts,
+export function usePrompts(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: string;
+  difficulty?: string;
+}) {
+  const queryParams = new URLSearchParams(params as Record<string, string>);
+  const queryString = queryParams.toString();
+
+  const url = `${endpoints.prompts}${queryString ? `?${queryString}` : ""}`;
+
+  const { data, error, isLoading, mutate: mutateData } = useSWR<PromptWithLastAttemptResponse>(
+    url,
     getFetcher
   );
 
-  return {
-    prompts: data || [],
-    isLoading,
-    error,
-    refresh: mutate,
-  };
+    return {
+      prompts: data?.data ?? [],
+      pagination: data?.pagination ?? {
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      },
+      isLoading,
+      error,
+      refresh: mutateData,
+    };
 }
 
 export async function fetchPromptById(
