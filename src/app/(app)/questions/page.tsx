@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { debounce } from "lodash";
 
@@ -26,7 +26,7 @@ export default function PracticeQuestionsPage() {
     (updates: Record<string, string | undefined>) => {
       const params = new URLSearchParams(searchParams.toString());
 
-      Object.entries(updates).forEach(([key, value]) => {
+      Object.entries({expanded: undefined, ...updates}).forEach(([key, value]) => {
         value && value !== "all" ? params.set(key, value) : params.delete(key);
       });
 

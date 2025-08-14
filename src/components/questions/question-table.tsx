@@ -1,6 +1,5 @@
 "use client";
 
-import { memo } from "react";
 import { QuestionRow } from "@/components/questions/question-row";
 import {
   Table,
@@ -21,7 +20,7 @@ interface QuestionTableProps {
   error: Error | null;
 }
 
-export const QuestionTable = memo(function QuestionTable({
+export function QuestionTable({
   questions,
   expandedRows,
   onToggleRow,
@@ -99,4 +98,4 @@ export const QuestionTable = memo(function QuestionTable({
       </Table>
     </div>
   );
-});
+};

@@ -5,8 +5,7 @@ import {
   PaginationSchema,
 } from "@/lib/types/schemas";
 import { supabaseClientForBrowser } from "@/utils/supabase/client";
-import useSWR, { useSWRConfig } from "swr";
-import { useMemo } from "react";
+import useSWR from "swr";
 import { endpoints } from "../endpoints";
 import { getFetcher } from "./fetchers";
 
