@@ -14,7 +14,7 @@ export default async function AppLayout({
         <header className="border-b border-border bg-background">
           <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
-              <Link href={paths.root} className="text-brand font-bold text-2xl">
+              <Link href={paths.home} className="text-brand font-bold text-2xl">
                 GradGuru
               </Link>
               <div className="flex items-center space-x-4">

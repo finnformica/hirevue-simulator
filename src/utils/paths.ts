@@ -1,6 +1,8 @@
 export const paths = {
   root: "/",
   home: "/home",
+  about: "/about",
+  privacy: "/privacy",
   profile: "/profile",
   pricing: "/pricing",
   simulator: (id: string) => `/simulator/${id}`,

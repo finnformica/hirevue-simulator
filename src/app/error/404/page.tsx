@@ -68,7 +68,7 @@ export default function NotFound() {
         >
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Link
-              href={paths.root}
+              href={paths.home}
               className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-black font-medium px-6 py-3 rounded-lg transition-colors duration-200"
             >
               <Home size={20} />
