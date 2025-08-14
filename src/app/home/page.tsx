@@ -1,8 +1,10 @@
 import { CtaSection } from "@/components/home/cta";
+import { FaqSection } from "@/components/home/faq";
 import { FeatureSection } from "@/components/home/feature";
 import { Footer } from "@/components/home/footer";
 import { HeroSection } from "@/components/home/hero";
 import { Navbar } from "@/components/home/navbar";
+import { TestimonialsSection } from "@/components/home/testimonials";
 import { getPricingData } from "@/lib/payments/fetch";
 
 // Prices are fresh for one hour max
@@ -18,6 +20,8 @@ export default async function HomePage() {
         <HeroSection />
         <FeatureSection />
         <CtaSection proPrices={proPrices} currentPlan={currentPlan} />
+        <TestimonialsSection />
+        <FaqSection />
       </main>
       <Footer />
     </div>

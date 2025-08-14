@@ -1,5 +1,13 @@
+"use client";
+
+import { paths } from "@/utils/paths";
+import { handleSmoothScroll } from "@/utils/smooth-scroll";
 import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import { useRouter } from "next/navigation";
+
 export function Footer() {
+  const router = useRouter();
+
   return (
     <footer className="w-full bg-black border-t border-gray-800 py-12 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
@@ -44,6 +52,7 @@ export function Footer() {
               <li>
                 <a
                   href="#features"
+                  onClick={(e) => handleSmoothScroll(e, "features")}
                   className="text-gray-400 hover:text-white transition-colors text-sm"
                 >
                   Features
@@ -52,6 +61,7 @@ export function Footer() {
               <li>
                 <a
                   href="#pricing"
+                  onClick={(e) => handleSmoothScroll(e, "pricing")}
                   className="text-gray-400 hover:text-white transition-colors text-sm"
                 >
                   Pricing
@@ -60,6 +70,7 @@ export function Footer() {
               <li>
                 <a
                   href="#testimonials"
+                  onClick={(e) => handleSmoothScroll(e, "testimonials")}
                   className="text-gray-400 hover:text-white transition-colors text-sm"
                 >
                   Testimonials
@@ -68,6 +79,7 @@ export function Footer() {
               <li>
                 <a
                   href="#faq"
+                  onClick={(e) => handleSmoothScroll(e, "faq")}
                   className="text-gray-400 hover:text-white transition-colors text-sm"
                 >
                   FAQ
@@ -80,34 +92,10 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="#blog"
+                  href="https://medium.com/@gradguruapp"
                   className="text-gray-400 hover:text-white transition-colors text-sm"
                 >
                   Blog
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#guides"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Interview Guides
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#tips"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Career Tips
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#webinars"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Webinars
                 </a>
               </li>
             </ul>
@@ -117,7 +105,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="#about"
+                  onClick={() => router.push(paths.about)}
                   className="text-gray-400 hover:text-white transition-colors text-sm"
                 >
                   About Us
@@ -125,15 +113,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="#careers"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#contact"
+                  href="mailto:gradguruapp@gmail.com"
                   className="text-gray-400 hover:text-white transition-colors text-sm"
                 >
                   Contact
@@ -141,8 +121,8 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="#privacy"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  onClick={() => router.push(paths.privacy)}
+                  className="text-gray-400 hover:text-white transition-colors text-sm cursor-pointer"
                 >
                   Privacy Policy
                 </a>

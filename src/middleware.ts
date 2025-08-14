@@ -26,12 +26,12 @@ export async function middleware(request: NextRequest) {
   // Handled by Auth Guard in the app layout
 
   // If user is signed in and on the root page, redirect to profile
-  if (user && request.nextUrl.pathname === "/") {
+  if (user && request.nextUrl.pathname === paths.root) {
     return NextResponse.redirect(new URL(paths.profile, request.url));
   }
 
   // If user is not signed in and on the root page, redirect to home
-  if (!user && request.nextUrl.pathname === "/") {
+  if (!user && request.nextUrl.pathname === paths.root) {
     return NextResponse.redirect(new URL(paths.home, request.url));
   }
 

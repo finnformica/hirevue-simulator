@@ -59,7 +59,10 @@ export function FeatureSection() {
             </div>
           ))}
         </div>
-        <div className="mt-16 bg-gradient-to-r from-green-500/20 to-green-500/5 border border-green-500/30 rounded-lg p-8">
+        <div
+          id="how-it-works"
+          className="mt-16 bg-gradient-to-r from-green-500/20 to-green-500/5 border border-green-500/30 rounded-lg p-8"
+        >
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-3/5 mb-6 md:mb-0 md:pr-8">
               <h3 className="text-2xl font-bold mb-4">How GradGuru Works</h3>

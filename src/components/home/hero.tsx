@@ -1,7 +1,17 @@
+"use client";
+
+import { paths } from "@/utils/paths";
 import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+
 export function HeroSection() {
+  const router = useRouter();
+
   return (
-    <section className="w-full bg-black py-20 px-6 md:px-12 relative overflow-hidden">
+    <section
+      id="hero"
+      className="w-full bg-black py-20 px-6 md:px-12 relative overflow-hidden"
+    >
       {/* Dotted background pattern */}
       <div
         className="absolute inset-0 opacity-30"
@@ -25,19 +35,19 @@ export function HeroSection() {
             AI-powered feedback, and expert guidance to land your dream job.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-            <a
-              href="#start"
+            <button
+              onClick={() => router.push(paths.auth.createAccount)}
               className="bg-green-500 hover:bg-green-600 text-black font-medium px-6 py-3 rounded-md transition-colors flex items-center justify-center"
             >
               Start Practicing Now
               <ArrowRight size={18} className="ml-2" />
-            </a>
-            <a
-              href="#demo"
+            </button>
+            <button
+              onClick={() => {}}
               className="bg-gray-800 hover:bg-gray-700 text-white font-medium px-6 py-3 rounded-md transition-colors"
             >
               Watch Demo
-            </a>
+            </button>
           </div>
         </div>
         <div className="mt-12 bg-gray-900 border border-gray-800 rounded-lg p-4 max-w-4xl mx-auto">
@@ -49,7 +59,7 @@ export function HeroSection() {
         </div>
         <div className="mt-12 flex flex-wrap justify-center gap-8 text-center">
           <div className="flex flex-col items-center">
-            <div className="text-2xl font-bold text-white">500+</div>
+            <div className="text-2xl font-bold text-white">100+</div>
             <div className="text-gray-400">Interview Prompts</div>
           </div>
           <div className="flex flex-col items-center">
