@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      query = query.textSearch("question", `%${search}%`)
+      query = query.ilike("question", `%${search}%`)
     }
 
     if (category && isProUser) {
