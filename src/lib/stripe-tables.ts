@@ -33,7 +33,7 @@ export async function getStripeCustomerByUserId(userId: string): Promise<StripeC
     .select('*')
     .eq('metadata->>supabase_user_id', userId)
     .eq('deleted', false)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error fetching Stripe customer:', error);
@@ -55,7 +55,7 @@ export async function getStripeCustomerById(customerId: string): Promise<StripeC
     .select('*')
     .eq('id', customerId)
     .eq('deleted', false)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error fetching Stripe customer:', error);
@@ -100,7 +100,7 @@ export async function getSubscriptionById(subscriptionId: string): Promise<Strip
     .from('subscriptions')
     .select('*')
     .eq('id', subscriptionId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error fetching subscription:', error);

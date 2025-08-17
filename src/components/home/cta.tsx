@@ -10,7 +10,7 @@ interface CtaSectionProps {
 
 export function CtaSection({ proPrices, currentPlan }: CtaSectionProps) {
   return (
-    <section className="w-full bg-black py-20 px-6 md:px-12">
+    <section id="pricing" className="w-full bg-black py-20 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="bg-gradient-to-b from-gray-900 to-black border border-gray-800 rounded-lg p-8 md:p-12">
           <div className="text-center mb-12">
@@ -40,10 +40,10 @@ export function CtaSection({ proPrices, currentPlan }: CtaSectionProps) {
                 </p>
               </div>
               <a
-                href="#book-demo"
+                href="mailto:gradguruapp@gmail.com"
                 className="bg-gray-800 hover:bg-gray-700 text-white font-medium px-6 py-3 rounded-md transition-colors whitespace-nowrap"
               >
-                Book a Demo
+                Contact Us
               </a>
             </div>
           </div>

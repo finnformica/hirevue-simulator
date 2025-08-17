@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { debounce } from "lodash";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback } from "react";
 
 import { QuestionFilters } from "@/components/questions/question-filters";
 import { QuestionPagination } from "@/components/questions/question-pagination";
@@ -21,14 +21,17 @@ export default function PracticeQuestionsPage() {
   const currentPage = parseInt(searchParams.get("page") ?? "1", 10);
   const expandedRows = searchParams.get("expanded") ?? undefined;
 
-
   const updateSearchParams = useCallback(
     (updates: Record<string, string | undefined>) => {
       const params = new URLSearchParams(searchParams.toString());
 
-      Object.entries({expanded: undefined, ...updates}).forEach(([key, value]) => {
-        value && value !== "all" ? params.set(key, value) : params.delete(key);
-      });
+      Object.entries({ expanded: undefined, ...updates }).forEach(
+        ([key, value]) => {
+          value && value !== "all"
+            ? params.set(key, value)
+            : params.delete(key);
+        }
+      );
 
       router.push(`${pathname}?${params.toString()}`);
     },
@@ -38,7 +41,7 @@ export default function PracticeQuestionsPage() {
   // Search handler with Lodash debouncing
   const handleSearchChange = useCallback(
     debounce((value: string) => {
-      updateSearchParams({ search: value, page: "1" });
+      updateSearchParams({ search: value, page: undefined });
     }, 250),
     [updateSearchParams]
   );
@@ -56,13 +59,16 @@ export default function PracticeQuestionsPage() {
     difficulty: difficultyFilter === "all" ? "" : difficultyFilter,
   });
 
-  const toggleRow = useCallback((index: number) => {      
-    if (expandedRows === index.toString()) {  
-      updateSearchParams({ expanded: undefined }); 
-    } else {
-      updateSearchParams({ expanded: index.toString() });
-    }
-  }, [updateSearchParams]);
+  const toggleRow = useCallback(
+    (index: number) => {
+      if (expandedRows === index.toString()) {
+        updateSearchParams({ expanded: undefined });
+      } else {
+        updateSearchParams({ expanded: index.toString() });
+      }
+    },
+    [updateSearchParams]
+  );
 
   // Handle page changes
   const handlePageChange = useCallback(
@@ -74,14 +80,14 @@ export default function PracticeQuestionsPage() {
 
   const handleDifficultyChange = useCallback(
     (value: string) => {
-      updateSearchParams({ difficulty: value, page: "1" });
+      updateSearchParams({ difficulty: value, page: undefined });
     },
     [updateSearchParams]
   );
 
   const handleCategoryChange = useCallback(
     (value: string) => {
-      updateSearchParams({ category: value, page: "1" });
+      updateSearchParams({ category: value, page: undefined });
     },
     [updateSearchParams]
   );
