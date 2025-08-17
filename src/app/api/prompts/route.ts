@@ -57,8 +57,10 @@ export async function GET(request: NextRequest) {
       query = query.eq("category", "basic");
     }
 
-    if (search) {
-      query = query.ilike("question", `%${search}%`)
+    const sanitizedSearch = search.replace(/[&|!()]/g, ' ');
+
+    if (sanitizedSearch && sanitizedSearch.trim()) {
+      query = query.textSearch("question", sanitizedSearch)
     }
 
     if (category && isProUser) {
