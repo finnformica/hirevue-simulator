@@ -21,7 +21,7 @@ interface QuestionFiltersProps {
   onIndustryChange: (value: string) => void;
 }
 
-const industries = ["basic", "general", "finance", "consulting", "software"];
+const industries = ["basic", "general", "consulting"];
 const difficulties = ["easy", "medium", "hard"];
 
 export function QuestionFilters({

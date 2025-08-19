@@ -20,8 +20,6 @@ export interface StructuredAnalysis {
   overallScore: number;
   grade: "Excellent" | "Good" | "Average" | "Poor" | "Failed";
   overallStatement: string;
-  readinessAssessment: string;
-  lengthAssessment: string;
   metrics: {
     contentQuality: MetricDetail;
     professionalCompetency: MetricDetail;

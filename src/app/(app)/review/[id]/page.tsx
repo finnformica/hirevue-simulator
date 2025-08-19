@@ -43,10 +43,8 @@ export default function ReviewPage() {
                 roleSpecificAdvice: "No specific advice available.",
                 nextInterviewPrep: "No preparation advice available.",
               },
-              readinessAssessment: "Assessment not available.",
-              lengthAssessment: "Length assessment not available.",
             },
-            rawAnalysis: data.analysis.summary, // Use summary as raw analysis for fallback
+            rawAnalysis: data.analysis.summary,
           }
         : null;
 

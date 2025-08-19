@@ -46,9 +46,9 @@ export async function POST(request: Request) {
       body: audioBuffer,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to transcribe audio");
+    if (!response.ok || response.status !== 200) {
+      const error = response.statusText
+      throw new Error(error || "Failed to transcribe audio");
     }
 
     const result = await response.json();

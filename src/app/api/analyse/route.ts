@@ -55,7 +55,6 @@ export async function POST(request: Request) {
     if (
       !interviewId ||
       !transcription ||
-      !duration_seconds ||
       !prompt ||
       !expectedLength
     ) {
@@ -109,9 +108,9 @@ export async function POST(request: Request) {
     });
 
 
-    if (!analysisResponse.ok) {
-      const error = await analysisResponse.json();
-      throw new Error(error?.message ?? "Failed to generate analysis");
+    if (!analysisResponse.ok || analysisResponse.status !== 200) {
+      const error = analysisResponse.statusText
+      throw new Error(error || "Failed to generate analysis");
     }
 
     const analysisJSON = await analysisResponse.json();

@@ -245,12 +245,6 @@ function StructuredAnalysisDisplay({
     nextInterviewPrep: "No preparation advice available.",
   };
 
-  // Safety check for assessment fields
-  const readinessAssessment =
-    analysis.readinessAssessment || "Assessment not available.";
-  const lengthAssessment =
-    analysis.lengthAssessment || "Length assessment not available.";
-
   return (
     <>
       <div className="space-y-6 pt-3">
@@ -299,24 +293,6 @@ function StructuredAnalysisDisplay({
             <p className="text-muted-foreground leading-relaxed">
               {analysis.overallStatement}
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Readiness Assessment
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {readinessAssessment}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Length Assessment
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {lengthAssessment}
-                </p>
-              </div>
-            </div>
           </CardContent>
         </Card>
 

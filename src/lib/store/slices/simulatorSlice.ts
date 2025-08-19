@@ -21,7 +21,7 @@ type Prompt = {
 export interface SimulatorState {
   currentTab: TabValue;
   prompt: Prompt | null; // prompt obj from db
-  duration: number; // how long the user took to answer the question
+  duration: number | undefined; // how long the user took to answer the question
   videoUrl: string | null;
   transcription: string | null;
   analysis: AnalysisResponse | null;
@@ -41,7 +41,7 @@ export interface SimulatorState {
 const initialState: SimulatorState = {
   currentTab: "prompt",
   prompt: null,
-  duration: 120, // default duration of 2 minutes
+  duration: undefined,
   videoUrl: null,
   transcription: null,
   analysis: null,
