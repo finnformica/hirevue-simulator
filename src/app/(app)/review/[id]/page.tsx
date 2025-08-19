@@ -45,11 +45,6 @@ export default function ReviewPage() {
               },
               readinessAssessment: "Assessment not available.",
               lengthAssessment: "Length assessment not available.",
-              benchmarkComparison: {
-                relativeToRoleLevel: "Comparison not available.",
-                marketReadiness: "Market readiness assessment not available.",
-                lengthAppropriate: "Length appropriateness not available.",
-              },
             },
             rawAnalysis: data.analysis.summary, // Use summary as raw analysis for fallback
           }

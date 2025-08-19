@@ -37,11 +37,6 @@ export interface StructuredAnalysis {
     roleSpecificAdvice: string;
     nextInterviewPrep: string;
   };
-  benchmarkComparison: {
-    relativeToRoleLevel: string;
-    marketReadiness: string;
-    lengthAppropriate: string;
-  };
 }
 
 export interface MetricDetail {

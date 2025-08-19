@@ -148,8 +148,7 @@ export async function POST(request: Request) {
     if (
       !structuredAnalysis.overallScore ||
       !structuredAnalysis.metrics ||
-      !structuredAnalysis.detailedFeedback ||
-      !structuredAnalysis.benchmarkComparison
+      !structuredAnalysis.detailedFeedback
     ) {
       return NextResponse.json(
         { error: "Invalid structured analysis format" },
