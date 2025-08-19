@@ -12,7 +12,10 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
-import { setCurrentTab } from "@/lib/store/slices/simulatorSlice";
+import {
+  setCurrentTab,
+  setDuration as setDurationAction,
+} from "@/lib/store/slices/simulatorSlice";
 
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
@@ -27,9 +30,14 @@ const PlaybackTab = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [duration, _setDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(1);
+
+  const setDuration = (duration: number) => {
+    _setDuration(duration);
+    dispatch(setDurationAction(duration));
+  };
 
   useEffect(() => {
     const video = videoRef.current;

@@ -20,7 +20,8 @@ type Prompt = {
 
 export interface SimulatorState {
   currentTab: TabValue;
-  prompt: Prompt | null;
+  prompt: Prompt | null; // prompt obj from db
+  duration: number; // how long the user took to answer the question
   videoUrl: string | null;
   transcription: string | null;
   analysis: AnalysisResponse | null;
@@ -40,6 +41,7 @@ export interface SimulatorState {
 const initialState: SimulatorState = {
   currentTab: "prompt",
   prompt: null,
+  duration: 120, // default duration of 2 minutes
   videoUrl: null,
   transcription: null,
   analysis: null,
@@ -106,13 +108,13 @@ export const processRecording = createAsyncThunk(
       dispatch(setAnalysing(true));
 
       // Get the current prompt data from state
-      const { prompt } = state.simulator;
+      const { prompt, duration } = state.simulator;
       if (!prompt) throw new Error("No prompt found");
 
       const payload = {
         interviewId,
         transcription,
-        duration_seconds: prompt.duration, // TODO: calculate duration from audio wav file
+        duration_seconds: duration, // how long the user took to answer the question
         prompt: prompt.question,
         questionType: prompt.type ?? 'general',
         roleLevel: prompt.role_level,
@@ -120,7 +122,7 @@ export const processRecording = createAsyncThunk(
         interviewStage: "Screening",
         keyCompetencies: prompt.key_competencies,
         relevantKeywords: prompt.relevant_keywords,
-        expectedLength: prompt.duration,
+        expectedLength: prompt.duration, // how long the user was given to answer the question
       };
 
       const analysisResponse = await fetch(endpoints.analyse, {
@@ -159,6 +161,9 @@ const simulatorSlice = createSlice({
     setCurrentTab: (state, action) => {
       state.currentTab = action.payload;
     },
+    setDuration: (state, action) => {
+      state.duration = action.payload;
+    },
     setPrompt: (state, action) => {
       state.prompt = action.payload;
     },
@@ -196,6 +201,7 @@ const simulatorSlice = createSlice({
 export const {
   resetSimulatorState,
   setCurrentTab,
+  setDuration,
   setPrompt,
   setVideoUrl,
   setTranscription,
