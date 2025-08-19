@@ -1,8 +1,8 @@
 import {
   AnalysisGrade,
   InterviewAttempt,
-  PromptSchema,
   PaginationSchema,
+  PromptSchema,
 } from "@/lib/types/schemas";
 import { supabaseClientForBrowser } from "@/utils/supabase/client";
 import useSWR from "swr";
@@ -27,7 +27,7 @@ export function usePrompts(params: {
   page?: number;
   limit?: number;
   search?: string;
-  category?: string;
+  industry?: string;
   difficulty?: string;
 }) {
   const queryParams = new URLSearchParams(params as Record<string, string>);
@@ -68,7 +68,9 @@ export async function fetchPromptById(
       question,
       duration,
       difficulty,
-      category
+      industry,
+      type,
+      role_level
     `
     )
     .eq("id", promptId)
@@ -179,7 +181,9 @@ export async function fetchInterviewById(interviewId: string): Promise<{
     id: string;
     question: string;
     difficulty: string;
-    category: string;
+    industry: string;
+    type: string | null;
+    role_level: string;
     duration: number;
   } | null;
 }> {
@@ -206,7 +210,9 @@ export async function fetchInterviewById(interviewId: string): Promise<{
         id,
         question,
         difficulty,
-        category,
+        industry,
+        type,
+        role_level,
         duration
       )
     `

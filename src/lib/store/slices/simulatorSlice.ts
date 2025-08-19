@@ -10,8 +10,12 @@ type Prompt = {
   id: string;
   question: string;
   difficulty: string;
-  category: string;
+  industry: string;
+  type: string | null;
+  role_level: string;
   duration: number;
+  key_competencies: string[];
+  relevant_keywords: string[];
 };
 
 export interface SimulatorState {
@@ -53,12 +57,10 @@ export const processRecording = createAsyncThunk(
       interviewId,
       videoBlob,
       audioBlob,
-      prompt,
     }: {
       interviewId: string;
       videoBlob: Blob;
       audioBlob: Blob;
-      prompt: string;
     },
     { dispatch, getState }
   ) => {
@@ -84,7 +86,6 @@ export const processRecording = createAsyncThunk(
       dispatch(setTranscribing(true));
       const formData = new FormData();
       formData.append("audio", audioBlob);
-      formData.append("prompt", prompt);
       formData.append("interviewId", interviewId);
 
       const transcriptionResponse = await fetch(endpoints.transcribe, {
@@ -104,15 +105,24 @@ export const processRecording = createAsyncThunk(
       // Analyse the response
       dispatch(setAnalysing(true));
 
+      // Get the current prompt data from state
+      const { prompt } = state.simulator;
+      if (!prompt) throw new Error("No prompt found");
+
       const payload = {
         interviewId,
         transcription,
-        duration_seconds: 120,
-        required_keywords: ["rosemary", "projects"],
-        prompt,
+        duration_seconds: prompt.duration, // TODO: calculate duration from audio wav file
+        prompt: prompt.question,
+        questionType: prompt.type ?? 'general',
+        roleLevel: prompt.role_level,
+        industry: prompt.industry,
+        interviewStage: "Screening",
+        keyCompetencies: prompt.key_competencies,
+        relevantKeywords: prompt.relevant_keywords,
+        expectedLength: prompt.duration,
       };
 
-      // Old analysis
       const analysisResponse = await fetch(endpoints.analyse, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

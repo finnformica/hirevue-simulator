@@ -139,7 +139,7 @@ export function QuestionRow({
           </Badge>
         </TableCell>
         <TableCell className="w-32 text-muted-foreground capitalize">
-          {question.category}
+          {question.industry}
         </TableCell>
         <TableCell className="w-24 text-muted-foreground">
           {question.duration / 60} min

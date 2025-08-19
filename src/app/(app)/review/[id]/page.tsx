@@ -36,7 +36,20 @@ export default function ReviewPage() {
               overallStatement: data.analysis.summary,
               grade: data.analysis.grade,
               metrics: data.analysis.metrics,
-              feedback: data.analysis.feedback,
+              detailedFeedback: data.analysis.feedback || {
+                topStrengths: [],
+                criticalImprovements: [],
+                quickWins: [],
+                roleSpecificAdvice: "No specific advice available.",
+                nextInterviewPrep: "No preparation advice available.",
+              },
+              readinessAssessment: "Assessment not available.",
+              lengthAssessment: "Length assessment not available.",
+              benchmarkComparison: {
+                relativeToRoleLevel: "Comparison not available.",
+                marketReadiness: "Market readiness assessment not available.",
+                lengthAppropriate: "Length appropriateness not available.",
+              },
             },
             rawAnalysis: data.analysis.summary, // Use summary as raw analysis for fallback
           }

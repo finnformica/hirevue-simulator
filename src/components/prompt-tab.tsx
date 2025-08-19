@@ -1,11 +1,9 @@
 import { ArrowLeft, Video } from "lucide-react";
-import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import { setCurrentTab } from "@/lib/store/slices/simulatorSlice";
-import { paths } from "@/utils/paths";
 
 export function PromptTab() {
   const dispatch = useAppDispatch();
@@ -31,12 +29,14 @@ export function PromptTab() {
           </CardContent>
         </Card>
         <div className="flex justify-center">
-          <Link href={paths.questions}>
-            <Button variant="outline" className="flex items-center gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Questions
-            </Button>
-          </Link>
+          <Button
+            onClick={() => window.history.back()}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Questions
+          </Button>
         </div>
       </div>
     );

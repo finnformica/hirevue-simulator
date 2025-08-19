@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") ?? "1");
     const limit = parseInt(searchParams.get("limit") ?? "10");
     const search = searchParams.get("search") ?? "";
-    const category = searchParams.get("category") ?? "";
+    const industry = searchParams.get("industry") ?? "";
     const difficulty = searchParams.get("difficulty") ?? "";
 
     const offset = (page - 1) * limit;
@@ -39,7 +39,9 @@ export async function GET(request: NextRequest) {
         question,
         duration,
         difficulty,
-        category,
+        industry,
+        type,
+        role_level,
         last_attempt:interviews(
           id,
           created_at,
@@ -52,17 +54,17 @@ export async function GET(request: NextRequest) {
       )
       .order("created_at", { ascending: false });
 
-    // If user is not Pro, restrict to basic category only
+    // If user is not Pro, restrict to basic industry only
     if (!isProUser) {
-      query = query.eq("category", "basic");
+      query = query.eq("industry", "basic");
     }
 
     if (search) {
       query = query.textSearch("question", `%${search}%`)
     }
 
-    if (category && isProUser) {
-      query = query.eq("category", category);
+    if (industry && isProUser) {
+      query = query.eq("industry", industry);
     }
 
     if (difficulty) {
@@ -93,7 +95,9 @@ export async function GET(request: NextRequest) {
         question: prompt.question,
         duration: prompt.duration,
         difficulty: prompt.difficulty,
-        category: prompt.category,
+        industry: prompt.industry,
+        type: prompt.type,
+        role_level: prompt.role_level,
         lastAttempt: lastInterview ? { grade, date } : null,
       };
     });

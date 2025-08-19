@@ -1,6 +1,7 @@
 "use client";
 
 import { QuestionRow } from "@/components/questions/question-row";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,7 +11,6 @@ import {
 } from "@/components/ui/table";
 import { PromptWithLastAttempt } from "@/utils/api/prompts";
 import { useGetUser } from "@/utils/api/user";
-import { Button } from "@/components/ui/button";
 
 interface QuestionTableProps {
   questions: PromptWithLastAttempt[];
@@ -72,7 +72,7 @@ export function QuestionTable({
               Difficulty
             </TableHead>
             <TableHead className="text-muted-foreground font-semibold w-32">
-              Category
+              Industry
             </TableHead>
             <TableHead className="text-muted-foreground font-semibold w-24">
               Duration
@@ -98,4 +98,4 @@ export function QuestionTable({
       </Table>
     </div>
   );
-};
+}
