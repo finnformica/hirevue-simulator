@@ -198,7 +198,6 @@ export const RecordingTab = () => {
         processRecording({
           videoBlob,
           audioBlob: audio,
-          prompt: prompt.question,
           interviewId,
         })
       );

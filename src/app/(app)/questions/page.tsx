@@ -17,7 +17,7 @@ export default function PracticeQuestionsPage() {
   // Get current values from URL search params
   const searchQuery = searchParams.get("search") ?? "";
   const difficultyFilter = searchParams.get("difficulty") ?? "all";
-  const categoryFilter = searchParams.get("category") ?? "all";
+  const industryFilter = searchParams.get("industry") ?? "all";
   const currentPage = parseInt(searchParams.get("page") ?? "1", 10);
   const expandedRows = searchParams.get("expanded") ?? undefined;
 
@@ -55,7 +55,7 @@ export default function PracticeQuestionsPage() {
   } = usePrompts({
     page: currentPage,
     search: searchQuery,
-    category: categoryFilter === "all" ? "" : categoryFilter,
+    industry: industryFilter === "all" ? "" : industryFilter,
     difficulty: difficultyFilter === "all" ? "" : difficultyFilter,
   });
 
@@ -85,9 +85,9 @@ export default function PracticeQuestionsPage() {
     [updateSearchParams]
   );
 
-  const handleCategoryChange = useCallback(
+  const handleIndustryChange = useCallback(
     (value: string) => {
-      updateSearchParams({ category: value, page: undefined });
+      updateSearchParams({ industry: value, page: undefined });
     },
     [updateSearchParams]
   );
@@ -103,10 +103,10 @@ export default function PracticeQuestionsPage() {
       <QuestionFilters
         searchQuery={searchQuery}
         difficultyFilter={difficultyFilter}
-        categoryFilter={categoryFilter}
+        industryFilter={industryFilter}
         onSearchChange={handleSearchChange}
         onDifficultyChange={handleDifficultyChange}
-        onCategoryChange={handleCategoryChange}
+        onIndustryChange={handleIndustryChange}
       />
 
       {/* Table Component */}

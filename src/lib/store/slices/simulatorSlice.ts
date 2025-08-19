@@ -10,13 +10,18 @@ type Prompt = {
   id: string;
   question: string;
   difficulty: string;
-  category: string;
+  industry: string;
+  type: string | null;
+  role_level: string;
   duration: number;
+  key_competencies: string[];
+  relevant_keywords: string[];
 };
 
 export interface SimulatorState {
   currentTab: TabValue;
-  prompt: Prompt | null;
+  prompt: Prompt | null; // prompt obj from db
+  duration: number; // how long the user took to answer the question
   videoUrl: string | null;
   transcription: string | null;
   analysis: AnalysisResponse | null;
@@ -36,6 +41,7 @@ export interface SimulatorState {
 const initialState: SimulatorState = {
   currentTab: "prompt",
   prompt: null,
+  duration: 120, // default duration of 2 minutes
   videoUrl: null,
   transcription: null,
   analysis: null,
@@ -53,12 +59,10 @@ export const processRecording = createAsyncThunk(
       interviewId,
       videoBlob,
       audioBlob,
-      prompt,
     }: {
       interviewId: string;
       videoBlob: Blob;
       audioBlob: Blob;
-      prompt: string;
     },
     { dispatch, getState }
   ) => {
@@ -84,7 +88,6 @@ export const processRecording = createAsyncThunk(
       dispatch(setTranscribing(true));
       const formData = new FormData();
       formData.append("audio", audioBlob);
-      formData.append("prompt", prompt);
       formData.append("interviewId", interviewId);
 
       const transcriptionResponse = await fetch(endpoints.transcribe, {
@@ -104,15 +107,24 @@ export const processRecording = createAsyncThunk(
       // Analyse the response
       dispatch(setAnalysing(true));
 
+      // Get the current prompt data from state
+      const { prompt, duration } = state.simulator;
+      if (!prompt) throw new Error("No prompt found");
+
       const payload = {
         interviewId,
         transcription,
-        duration_seconds: 120,
-        required_keywords: ["rosemary", "projects"],
-        prompt,
+        duration_seconds: duration, // how long the user took to answer the question
+        prompt: prompt.question,
+        questionType: prompt.type ?? 'general',
+        roleLevel: prompt.role_level,
+        industry: prompt.industry,
+        interviewStage: "Screening",
+        keyCompetencies: prompt.key_competencies,
+        relevantKeywords: prompt.relevant_keywords,
+        expectedLength: prompt.duration, // how long the user was given to answer the question
       };
 
-      // Old analysis
       const analysisResponse = await fetch(endpoints.analyse, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -148,6 +160,9 @@ const simulatorSlice = createSlice({
     },
     setCurrentTab: (state, action) => {
       state.currentTab = action.payload;
+    },
+    setDuration: (state, action) => {
+      state.duration = action.payload;
     },
     setPrompt: (state, action) => {
       state.prompt = action.payload;
@@ -186,6 +201,7 @@ const simulatorSlice = createSlice({
 export const {
   resetSimulatorState,
   setCurrentTab,
+  setDuration,
   setPrompt,
   setVideoUrl,
   setTranscription,

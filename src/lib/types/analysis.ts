@@ -15,34 +15,35 @@ export interface AnalysisResult {
   grade?: AnalysisGrade;
 }
 
-// New structured analysis interface
+// Updated structured analysis interface to match new prompt output
 export interface StructuredAnalysis {
   overallScore: number;
+  grade: "Excellent" | "Good" | "Average" | "Poor" | "Failed";
   overallStatement: string;
-  grade: string;
+  readinessAssessment: string;
+  lengthAssessment: string;
   metrics: {
-    clarity: MetricDetail;
-    confidence: MetricDetail;
-    structure: MetricDetail;
-    grammar: MetricDetail;
-    vocabulary: MetricDetail;
-    sentenceComplexity: MetricDetail;
-    repetition: MetricDetail;
-    fillerWordsUsed: MetricDetail;
-    keywords: MetricDetail;
+    contentQuality: MetricDetail;
+    professionalCompetency: MetricDetail;
+    communicationClarity: MetricDetail;
+    languageProficiency: MetricDetail;
+    deliveryConfidence: MetricDetail;
+    fluency: MetricDetail;
   };
-  feedback: {
-    strengths: string[];
-    areasForImprovement: string[];
-    specificSuggestions: string[];
-    keyAdvice: string;
+  detailedFeedback: {
+    topStrengths: string[];
+    criticalImprovements: string[];
+    quickWins: string[];
+    roleSpecificAdvice: string;
+    nextInterviewPrep: string;
   };
 }
 
 export interface MetricDetail {
   score: number;
+  weight: string;
   feedback: string;
-  description: string;
+  keyObservation: string;
 }
 
 export interface AnalysisResponse {

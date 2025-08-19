@@ -15,22 +15,22 @@ import {
 interface QuestionFiltersProps {
   searchQuery: string;
   difficultyFilter: string;
-  categoryFilter: string;
+  industryFilter: string;
   onSearchChange: (value: string) => void;
   onDifficultyChange: (value: string) => void;
-  onCategoryChange: (value: string) => void;
+  onIndustryChange: (value: string) => void;
 }
 
-const categories = ["basic", "general", "finance", "consulting", "software"];
+const industries = ["basic", "general", "finance", "consulting", "software"];
 const difficulties = ["easy", "medium", "hard"];
 
 export function QuestionFilters({
   searchQuery,
   difficultyFilter,
-  categoryFilter,
+  industryFilter,
   onSearchChange,
   onDifficultyChange,
-  onCategoryChange,
+  onIndustryChange,
 }: QuestionFiltersProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -58,15 +58,15 @@ export function QuestionFilters({
         </SelectContent>
       </Select>
 
-      <Select value={categoryFilter} onValueChange={onCategoryChange}>
+      <Select value={industryFilter} onValueChange={onIndustryChange}>
         <SelectTrigger className="w-full sm:w-40">
-          <SelectValue placeholder="Category" />
+          <SelectValue placeholder="Industry" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Categories</SelectItem>
-          {categories.map((category) => (
-            <SelectItem key={category} value={category}>
-              {_.startCase(category)}
+          <SelectItem value="all">All Industries</SelectItem>
+          {industries.map((industry) => (
+            <SelectItem key={industry} value={industry}>
+              {_.startCase(industry)}
             </SelectItem>
           ))}
         </SelectContent>

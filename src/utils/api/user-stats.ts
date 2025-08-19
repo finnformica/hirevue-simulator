@@ -44,7 +44,9 @@ export async function getRecentActivity(userId: string): Promise<RecentActivity[
       ),
       prompt:prompts(
         question,
-        category
+        industry,
+        type,
+        role_level
       )
     `)
     .eq("user_id", userId)
@@ -80,7 +82,7 @@ export async function getRecentActivity(userId: string): Promise<RecentActivity[
 
     return {
       id: interview.id,
-      type: _.startCase(promptData?.category),
+      type: _.startCase(promptData?.industry),
       title: question,
       date: dateString,
       score: score ? `${score}/10` : null,

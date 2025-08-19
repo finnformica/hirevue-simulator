@@ -56,7 +56,9 @@ export interface PromptSchema {
   question: string;
   duration: number; // smallint
   difficulty: "easy" | "medium" | "hard"; // difficulty_level enum
-  category: "general" | "consulting" | "finance" | "basic"; // prompt_category enum
+  industry: "general" | "consulting" | "finance" | "technology" | "healthcare" | "basic"; // prompt_category enum
+  type: "behavioural" | "technical" | "situational" | "competency-based" | null; // prompt_type enum
+  role_level: "graduate" | "junior" | "mid-level" | "senior" | "executive"; // prompts_role_level enum
 }
 
 export type PromptSchemaInsert = Omit<PromptSchema, "id" | "created_at">;

@@ -52,7 +52,7 @@ function AnalysisActionButtons({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => router.push(paths.questions)}
+          onClick={() => window.history.back()}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -108,15 +108,28 @@ function MetricBentoCard({
           >
             {detail.score}/10
           </span>
-          <span
-            className={cn("text-xs font-medium", getScoreColor(detail.score))}
-          >
-            {getScoreLabel(detail.score)}
-          </span>
+          <div className="flex flex-col items-end gap-1">
+            <span
+              className={cn("text-xs font-medium", getScoreColor(detail.score))}
+            >
+              {getScoreLabel(detail.score)}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {detail.weight}
+            </span>
+          </div>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
           {detail.feedback}
         </p>
+        <div className="pt-2 border-t">
+          <p className="text-xs font-medium text-muted-foreground">
+            Key Observation:
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {detail.keyObservation}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
@@ -223,6 +236,21 @@ function StructuredAnalysisDisplay({
   const [isContextOpen, setIsContextOpen] = useState(false);
   const metricEntries = Object.entries(analysis.metrics);
 
+  // Safety check for detailedFeedback
+  const detailedFeedback = analysis.detailedFeedback || {
+    topStrengths: [],
+    criticalImprovements: [],
+    quickWins: [],
+    roleSpecificAdvice: "No specific advice available.",
+    nextInterviewPrep: "No preparation advice available.",
+  };
+
+  // Safety check for assessment fields
+  const readinessAssessment =
+    analysis.readinessAssessment || "Assessment not available.";
+  const lengthAssessment =
+    analysis.lengthAssessment || "Length assessment not available.";
+
   return (
     <>
       <div className="space-y-6 pt-3">
@@ -255,13 +283,11 @@ function StructuredAnalysisDisplay({
                 <span
                   className={cn(
                     "text-sm font-medium px-2 py-1 rounded-full",
-                    analysis.overallScore >= 8
+                    analysis.grade === "Excellent" || analysis.grade === "Good"
                       ? "bg-brand/10 text-brand"
-                      : analysis.overallScore >= 6
+                      : analysis.grade === "Average"
                         ? "bg-yellow-100 text-yellow-700"
-                        : analysis.overallScore >= 4
-                          ? "bg-orange-100 text-orange-700"
-                          : "bg-red-100 text-red-700"
+                        : "bg-red-100 text-red-700"
                   )}
                 >
                   {analysis.grade}
@@ -269,10 +295,28 @@ function StructuredAnalysisDisplay({
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <p className="text-muted-foreground leading-relaxed">
               {analysis.overallStatement}
             </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3 border-t">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Readiness Assessment
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {readinessAssessment}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Length Assessment
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {lengthAssessment}
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -280,9 +324,9 @@ function StructuredAnalysisDisplay({
         {isProUser && (
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">
-              Communication Skills Breakdown
+              Detailed Performance Metrics
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {metricEntries.map(([metric, detail]) => (
                 <MetricBentoCard key={metric} metric={metric} detail={detail} />
               ))}
@@ -297,16 +341,18 @@ function StructuredAnalysisDisplay({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-brand" />
-                  Strengths
+                  Top Strengths
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 list-disc list-inside [&>li::marker]:text-brand">
-                  {analysis.feedback.strengths.map((strength, index) => (
-                    <li key={index} className="text-sm text-muted-foreground">
-                      {strength}
-                    </li>
-                  ))}
+                  {detailedFeedback.topStrengths.map(
+                    (strength: string, index: number) => (
+                      <li key={index} className="text-sm text-muted-foreground">
+                        {strength}
+                      </li>
+                    )
+                  )}
                 </ul>
               </CardContent>
             </Card>
@@ -315,35 +361,37 @@ function StructuredAnalysisDisplay({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertCircle className="h-5 w-5 text-yellow-500" />
-                  Areas for Improvement
+                  Critical Improvements
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 list-disc list-inside [&>li::marker]:text-yellow-500">
-                  {analysis.feedback.areasForImprovement.map((area, index) => (
-                    <li key={index} className="text-sm text-muted-foreground">
-                      {area}
-                    </li>
-                  ))}
+                  {detailedFeedback.criticalImprovements.map(
+                    (area: string, index: number) => (
+                      <li key={index} className="text-sm text-muted-foreground">
+                        {area}
+                      </li>
+                    )
+                  )}
                 </ul>
               </CardContent>
             </Card>
           </div>
         )}
 
-        {/* Specific Suggestions */}
+        {/* Quick Wins */}
         {isProUser && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-blue-500" />
-                Specific Suggestions
+                Quick Wins
               </CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3 list-disc list-inside [&>li::marker]:text-blue-500">
-                {analysis.feedback.specificSuggestions.map(
-                  (suggestion, index) => (
+                {detailedFeedback.quickWins.map(
+                  (suggestion: string, index: number) => (
                     <li key={index} className="text-sm text-muted-foreground">
                       {suggestion}
                     </li>
@@ -354,17 +402,32 @@ function StructuredAnalysisDisplay({
           </Card>
         )}
 
-        {/* Key Advice */}
+        {/* Role Specific Advice */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Lightbulb className="h-5 w-5 text-purple-500" />
-              Key Advice
+              Role-Specific Advice
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground leading-relaxed">
-              {analysis.feedback.keyAdvice}
+              {detailedFeedback.roleSpecificAdvice}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Next Interview Prep */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-green-500" />
+              Next Interview Preparation
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground leading-relaxed">
+              {detailedFeedback.nextInterviewPrep}
             </p>
           </CardContent>
         </Card>
