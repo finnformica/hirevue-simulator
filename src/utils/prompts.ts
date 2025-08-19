@@ -234,11 +234,6 @@ You MUST return ONLY a valid JSON object with this exact structure. DO NOT wrap 
     "roleSpecificAdvice": "[Paragraph focused on expectations for this role level and industry context]",
     "nextInterviewPrep": "[Specific preparation recommendations for similar future interviews]"
   },
-  "benchmarkComparison": {
-    "relativeToRoleLevel": "[How this performance compares to typical candidates at this level]",
-    "marketReadiness": "[Assessment of competitiveness for roles at this level]",
-    "lengthAppropriate": "[Whether response length was suitable for the question and context]"
-  }
 }
 
 ## Quality Assurance Checklist

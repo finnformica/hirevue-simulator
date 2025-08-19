@@ -245,13 +245,6 @@ function StructuredAnalysisDisplay({
     nextInterviewPrep: "No preparation advice available.",
   };
 
-  // Safety check for benchmarkComparison
-  const benchmarkComparison = analysis.benchmarkComparison || {
-    relativeToRoleLevel: "Comparison not available.",
-    marketReadiness: "Market readiness assessment not available.",
-    lengthAppropriate: "Length appropriateness not available.",
-  };
-
   // Safety check for assessment fields
   const readinessAssessment =
     analysis.readinessAssessment || "Assessment not available.";
@@ -436,44 +429,6 @@ function StructuredAnalysisDisplay({
             <p className="text-muted-foreground leading-relaxed">
               {detailedFeedback.nextInterviewPrep}
             </p>
-          </CardContent>
-        </Card>
-
-        {/* Benchmark Comparison */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-indigo-500" />
-              Benchmark Comparison
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Relative to Role Level
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {benchmarkComparison.relativeToRoleLevel}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Market Readiness
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {benchmarkComparison.marketReadiness}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Length Appropriateness
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {benchmarkComparison.lengthAppropriate}
-                </p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
