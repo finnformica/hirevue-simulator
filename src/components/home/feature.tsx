@@ -1,5 +1,34 @@
-import { BarChart3, FileText, MessageSquare, Zap } from "lucide-react";
+"use client";
+
+import {
+  BarChart3,
+  FileText,
+  MessageSquare,
+  Pause,
+  Play,
+  Zap,
+} from "lucide-react";
+import { useRef, useState } from "react";
+
 export function FeatureSection() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setIsPlaying(false);
+  };
+
   const features = [
     {
       icon: <MessageSquare className="h-10 w-10 text-green-400" />,
@@ -104,8 +133,31 @@ export function FeatureSection() {
             </div>
             <div className="md:w-2/5">
               <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-                <div className="aspect-square md:aspect-video rounded-md bg-gray-900 flex items-center justify-center">
-                  <div className="text-gray-500 text-sm">Interactive demo</div>
+                <div className="aspect-square md:aspect-video rounded-md bg-gray-900 relative overflow-hidden">
+                  <video
+                    ref={videoRef}
+                    className="w-full h-full object-cover"
+                    muted
+                    onEnded={handleVideoEnded}
+                  >
+                    <source src="/videos/short-demo.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                  <button
+                    onClick={togglePlay}
+                    className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
+                      isPlaying
+                        ? "opacity-0 hover:opacity-100 bg-black/30 hover:bg-black/50"
+                        : "opacity-100 bg-black/30 hover:bg-black/50"
+                    }`}
+                    aria-label={isPlaying ? "Pause video" : "Play video"}
+                  >
+                    {isPlaying ? (
+                      <Pause className="h-12 w-12 text-white" />
+                    ) : (
+                      <Play className="h-12 w-12 text-white ml-1" />
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
