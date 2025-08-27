@@ -15,17 +15,17 @@ export function FaqSection() {
     {
       question: "What types of interviews does GradGuru cover?",
       answer:
-        "We cover HireVue interviews for major graduate employers across various industries including technology, finance, consulting, and more.",
+        "We cover HireVue interviews for major graduate employers such as Deloitte, JP Morgan and many more across various industries including technology, finance, and consulting.",
     },
     {
       question: "How accurate is the AI feedback?",
       answer:
-        "Our AI analysis evaluates speech patterns, confidence levels, clarity, and response structure to provide comprehensive feedback similar to what recruiters look for.",
+        "Our AI analysis evaluates speech patterns, technical vocabulary, clarity, and response structure to provide comprehensive feedback that aligns directly with HireVue scoring criteria.",
     },
     {
       question: "How many practice interviews can I do?",
       answer:
-        "You can practice as many times as you want! We have hundreds of industry-specific questions, and you can retry any question multiple times to improve your responses and track your progress.",
+        "You can practice as many times as you want! We have hundreds of industry-specific questions and motivational questions, with the option to retry each question multiple times to improve your responses, track your progress, and be well-prepared for your HireVue interview.",
     },
   ];
 

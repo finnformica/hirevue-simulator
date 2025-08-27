@@ -3,25 +3,25 @@ import { Star } from "lucide-react";
 export function TestimonialsSection() {
   const testimonials = [
     {
-      name: "Sarah Johnson",
-      role: "Software Engineer",
-      company: "Google",
+      name: "Sarah",
+      role: "Associate Consultant",
+      company: "Deloitte",
       content:
         "GradGuru helped me prepare for my HireVue interview perfectly. The AI feedback was incredibly detailed and helped me improve my responses significantly.",
       rating: 5,
     },
     {
-      name: "Michael Chen",
+      name: "Michael",
       role: "Data Analyst",
-      company: "Microsoft",
+      company: "JP Morgan",
       content:
         "The industry-specific prompts were spot on. I felt so much more confident going into my interview knowing I had practiced with relevant questions.",
       rating: 5,
     },
     {
-      name: "Emily Rodriguez",
-      role: "Marketing Associate",
-      company: "Amazon",
+      name: "Emily",
+      role: "Associate Consultant",
+      company: "PwC",
       content:
         "The automated analysis feature is amazing. It caught things I never would have noticed about my delivery and body language.",
       rating: 5,
@@ -44,7 +44,7 @@ export function TestimonialsSection() {
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-green-500/50 transition-colors"
+              className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-green-500/50 transition-colors flex flex-col"
             >
               <div className="flex mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
@@ -54,7 +54,7 @@ export function TestimonialsSection() {
                   />
                 ))}
               </div>
-              <p className="text-gray-300 mb-6 italic">
+              <p className="text-gray-300 mb-6 italic grow">
                 "{testimonial.content}"
               </p>
               <div>
