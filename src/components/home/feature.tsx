@@ -132,33 +132,31 @@ export function FeatureSection() {
               </ol>
             </div>
             <div className="md:w-2/5">
-              <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-                <div className="aspect-square md:aspect-video rounded-md bg-gray-900 relative overflow-hidden">
-                  <video
-                    ref={videoRef}
-                    className="w-full h-full object-cover"
-                    muted
-                    onEnded={handleVideoEnded}
-                  >
-                    <source src="/videos/short-demo.mp4" type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                  <button
-                    onClick={togglePlay}
-                    className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
-                      isPlaying
-                        ? "opacity-0 hover:opacity-100 bg-black/30 hover:bg-black/50"
-                        : "opacity-100 bg-black/30 hover:bg-black/50"
-                    }`}
-                    aria-label={isPlaying ? "Pause video" : "Play video"}
-                  >
-                    {isPlaying ? (
-                      <Pause className="h-12 w-12 text-white" />
-                    ) : (
-                      <Play className="h-12 w-12 text-white ml-1" />
-                    )}
-                  </button>
-                </div>
+              <div className="aspect-square md:aspect-video bg-gray-800 border border-gray-700 rounded-lg relative overflow-hidden">
+                <video
+                  ref={videoRef}
+                  className="w-full h-full object-cover"
+                  muted
+                  onEnded={handleVideoEnded}
+                >
+                  <source src="/videos/short-demo.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                <button
+                  onClick={togglePlay}
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
+                    isPlaying
+                      ? "opacity-0 hover:opacity-100 bg-black/30 hover:bg-black/50"
+                      : "opacity-100 bg-black/30 hover:bg-black/50"
+                  }`}
+                  aria-label={isPlaying ? "Pause video" : "Play video"}
+                >
+                  {isPlaying ? (
+                    <Pause className="h-12 w-12 text-white" />
+                  ) : (
+                    <Play className="h-12 w-12 text-white ml-1" />
+                  )}
+                </button>
               </div>
             </div>
           </div>

@@ -1,11 +1,29 @@
 "use client";
 
 import { paths } from "@/utils/paths";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Pause, Play } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 
 export function HeroSection() {
   const router = useRouter();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setIsPlaying(false);
+  };
 
   return (
     <section
@@ -50,11 +68,32 @@ export function HeroSection() {
             </button>
           </div>
         </div>
-        <div className="mt-12 bg-gray-900 border border-gray-800 rounded-lg p-4 max-w-4xl mx-auto">
-          <div className="aspect-video rounded-md bg-gray-800 flex items-center justify-center">
-            <div className="text-gray-500 text-sm">
-              Interview practice simulation preview
-            </div>
+        <div className="mt-12 max-w-4xl mx-auto">
+          <div className="aspect-video bg-gray-800 border border-gray-700 rounded-lg relative overflow-hidden">
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              muted
+              onEnded={handleVideoEnded}
+            >
+              <source src="/videos/product-intro.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <button
+              onClick={togglePlay}
+              className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
+                isPlaying
+                  ? "opacity-0 hover:opacity-100 bg-black/30 hover:bg-black/50"
+                  : "opacity-100 bg-black/30 hover:bg-black/50"
+              }`}
+              aria-label={isPlaying ? "Pause video" : "Play video"}
+            >
+              {isPlaying ? (
+                <Pause className="h-12 w-12 text-white" />
+              ) : (
+                <Play className="h-12 w-12 text-white ml-1" />
+              )}
+            </button>
           </div>
         </div>
         <div className="mt-12 flex flex-wrap justify-center gap-8 text-center">
