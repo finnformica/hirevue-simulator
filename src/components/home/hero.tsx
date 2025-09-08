@@ -73,7 +73,6 @@ export function HeroSection() {
             <video
               ref={videoRef}
               className="w-full h-full object-cover"
-              muted
               onEnded={handleVideoEnded}
             >
               <source src="/videos/product-intro.mp4" type="video/mp4" />
