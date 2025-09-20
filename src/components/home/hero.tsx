@@ -1,29 +1,12 @@
 "use client";
 
+import { VideoModal } from "@/components/VideoModal";
 import { paths } from "@/utils/paths";
-import { ArrowRight, Pause, Play } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
 
 export function HeroSection() {
   const router = useRouter();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  const handleVideoEnded = () => {
-    setIsPlaying(false);
-  };
 
   return (
     <section
@@ -60,40 +43,21 @@ export function HeroSection() {
               Start Practicing Now
               <ArrowRight size={18} className="ml-2" />
             </button>
-            <button
-              onClick={() => {}}
+            <VideoModal
+              videoSrc="/videos/product-intro.mp4"
+              title="Product Introduction"
               className="bg-gray-800 hover:bg-gray-700 text-white font-medium px-6 py-3 rounded-md transition-colors"
             >
               Watch Demo
-            </button>
+            </VideoModal>
           </div>
         </div>
         <div className="mt-12 max-w-4xl mx-auto">
-          <div className="aspect-video bg-gray-800 border border-gray-700 rounded-lg relative overflow-hidden">
-            <video
-              ref={videoRef}
-              className="w-full h-full object-cover"
-              onEnded={handleVideoEnded}
-            >
-              <source src="/videos/product-intro.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-            <button
-              onClick={togglePlay}
-              className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
-                isPlaying
-                  ? "opacity-0 hover:opacity-100 bg-black/30 hover:bg-black/50"
-                  : "opacity-100 bg-black/30 hover:bg-black/50"
-              }`}
-              aria-label={isPlaying ? "Pause video" : "Play video"}
-            >
-              {isPlaying ? (
-                <Pause className="h-12 w-12 text-white" />
-              ) : (
-                <Play className="h-12 w-12 text-white ml-1" />
-              )}
-            </button>
-          </div>
+          <VideoModal
+            videoSrc="/videos/product-intro.mp4"
+            title="Product Introduction"
+            showThumbnailPreview={true}
+          />
         </div>
         <div className="mt-12 flex flex-wrap justify-center gap-8 text-center">
           <div className="flex flex-col items-center">
