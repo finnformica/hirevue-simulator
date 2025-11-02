@@ -2,8 +2,8 @@ import { insertRecords } from "@/lib/supabase/server";
 import { TranscriptionSchemaInsert } from "@/lib/types/schemas";
 import { NextResponse } from "next/server";
 
-const HF_API_URL =
-  "https://api-inference.huggingface.co/models/openai/whisper-large-v3";
+const BASE_URL = 'https://router.huggingface.co/hf-inference'
+const HF_API_URL = `${BASE_URL}/models/openai/whisper-large-v3`;
 const HF_API_KEY = process.env.HUGGINGFACE_API_KEY;
 
 export async function POST(request: Request) {
